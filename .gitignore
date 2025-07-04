@@ -3,6 +3,7 @@
 # Build output
 dist/
 build/
+unminified/
 
 # Temporary files
 *.tmp
