@@ -38,16 +38,10 @@ local function getModulesAndRequire(files)
         local content = io.open(file.fullPath, "r"):read("*a")
         local moduleName = file.requirePath
 
-        local success, minified
-
-        if shouldMinify then
-            success, minified = minify(content)
-            if not success then
-                print("Error minifying file " .. file.fullPath .. ": " .. minified)
-                os.exit(1)
-            end
-        else
-            minified = content
+        local success, minified = minify(content)
+        if not success then
+            print("Error minifying file " .. file.fullPath .. ": " .. minified)
+            os.exit(1)
         end
 
         modules[moduleName] = {
@@ -122,24 +116,29 @@ local function bundle()
     local programs = getPrograms(modules)
 
     for name, program in pairs(programs) do
+        local outputMinified = { 'local modules = {}\n', 'local loadedModules = {}\n', 'local baseRequire = require\n',
+            'require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end\n' }
         local output = { 'local modules = {}\n', 'local loadedModules = {}\n', 'local baseRequire = require\n',
             'require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end\n' }
         local allRequires = collectAllRequires(modules, name)
 
         for _, req in ipairs(allRequires) do
             if modules[req] then
-                table.insert(output, string.format('modules["%s"] = function() %s end\n', req, modules[req].minified))
+                table.insert(outputMinified, string.format('modules["%s"] = function() %s end\n', req, modules[req].minified))
+                table.insert(output, string.format('modules["%s"] = function() %s end\n', req, modules[req].content))
             end
         end
+        table.insert(outputMinified, string.format('return modules["%s"]()', name))
         table.insert(output, string.format('return modules["%s"]()', name))
 
         local path = "release/" .. name:gsub("^programs%.", "") .. ".lua"
         local out = io.open(path, "w")
-        local content = table.concat(output)
-        out:write(content)
+        local minifiedCode = table.concat(outputMinified)
+        out:write(minifiedCode)
         out:close()
         print("Bundled program: " .. path)
 
+        local unminifiedCode = table.concat(output)
         for path in io.lines("tools/build_path.txt") do
             local otherOutputPath = path .. name:gsub("^programs%.", "") .. ".lua"
             local otherOutFile = io.open(otherOutputPath, "w")
@@ -147,7 +146,7 @@ local function bundle()
                 print("Error opening output file: " .. otherOutputPath)
                 os.exit(1)
             else
-                otherOutFile:write(content)
+                otherOutFile:write(unminifiedCode)
                 otherOutFile:close()
                 print("Write program: " .. otherOutputPath)
             end

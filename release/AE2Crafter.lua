@@ -2,10103 +2,3252 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.AE2Crafter"] = function() local basalt = require("libraries.basalt")
-local TabView = require("elements.TabView")
-local CraftingListTab = require("programs.ae2.crafter.CraftingListTab")
-local Logger = require("utils.Logger")
-local TurtleCraft = require("programs.ae2.crafter.TurtleCraft")
-local LogBox = require("elements.LogBox")
-
--- LOGGER
-local basaltLogEnabled = true
-basalt.LOGGER.setEnabled(basaltLogEnabled)
-basalt.LOGGER.setLogToFile(true)
-
-if basaltLogEnabled then
-    Logger.addPrintFunction(function(level, src, currentline, message)
-        message = string.format("[%s:%d] %s", src, currentline, message)
-        if level == Logger.levels.DEBUG then
-            basalt.LOGGER.debug(message)
-        elseif level == Logger.levels.INFO then
-            basalt.LOGGER.info(message)
-        elseif level == Logger.levels.WARN then
-            basalt.LOGGER.warn(message)
-        elseif level == Logger.levels.ERROR then
-            basalt.LOGGER.error(message)
-        end
-    end)
-end
-
---
-
-local main = basalt.getMainFrame()
-basalt.LOGGER.debug("Starting MachineController...")
-
-local tabView = TabView:new(main:addFrame(), 1, 1, main:getWidth(), main:getHeight())
-local craftingListTab = tabView:createTab("Crafting List")
-local logTab = tabView:createTab("Log")
-local settingsTab = tabView:createTab("Settings")
-local craftingListFrame = CraftingListTab:new(craftingListTab.frame):init()
-local logBox = LogBox:new(logTab.frame, 2, 2, logTab.frame:getWidth() -2, logTab.frame:getHeight() -2, colors.white, colors.gray)
-
-tabView:init()
-
-basalt.run()
-
- end
-modules["libraries.basalt"] = function() local minified = true
-local minified_elementDirectory = {}
-local minified_pluginDirectory = {}
-local project = {}
-local loadedProject = {}
-local baseRequire = require
-require = function(path)
-    if (project[path .. ".lua"]) then
-        if (loadedProject[path] == nil) then
-            loadedProject[path] = project[path .. ".lua"]()
-        end
-        return loadedProject[path]
-    end
-    return baseRequire(path)
-end
-minified_pluginDirectory["canvas"] = {}
-minified_pluginDirectory["debug"] = {}
-minified_pluginDirectory["reactive"] = {}
-minified_pluginDirectory["theme"] = {}
-minified_pluginDirectory["xml"] = {}
-minified_pluginDirectory["animation"] = {}
-minified_pluginDirectory["benchmark"] = {}
-minified_pluginDirectory["state"] = {}
-minified_elementDirectory["Scrollbar"] = {}
-minified_elementDirectory["Display"] = {}
-minified_elementDirectory["Dropdown"] = {}
-minified_elementDirectory["LineChart"] = {}
-minified_elementDirectory["Switch"] = {}
-minified_elementDirectory["Menu"] = {}
-minified_elementDirectory["Slider"] = {}
-minified_elementDirectory["Frame"] = {}
-minified_elementDirectory["Flexbox"] = {}
-minified_elementDirectory["Timer"] = {}
-minified_elementDirectory["VisualElement"] = {}
-minified_elementDirectory["Graph"] = {}
-minified_elementDirectory["BigFont"] = {}
-minified_elementDirectory["BaseFrame"] = {}
-minified_elementDirectory["Checkbox"] = {}
-minified_elementDirectory["Container"] = {}
-minified_elementDirectory["List"] = {}
-minified_elementDirectory["ProgressBar"] = {}
-minified_elementDirectory["Program"] = {}
-minified_elementDirectory["Tree"] = {}
-minified_elementDirectory["Image"] = {}
-minified_elementDirectory["Label"] = {}
-minified_elementDirectory["Input"] = {}
-minified_elementDirectory["BarChart"] = {}
-minified_elementDirectory["Button"] = {}
-minified_elementDirectory["BaseElement"] = {}
-minified_elementDirectory["TextBox"] = {}
-minified_elementDirectory["Table"] = {}
-project["plugins/canvas.lua"] = function(...)
-    local ba = require("libraries/colorHex")
-    local ca = require("errorManager")
-    local da = {}
-    da.__index = da;
-    local _b, ab = string.sub, string.rep
-    function da.new(cb)
-        local db = setmetatable({}, da)
-        db.commands = {
-            pre = {},
-            post = {}
-        }
-        db.type = "pre"
-        db.element = cb;
-        return db
-    end
-    function da:clear()
-        self.commands = {
-            pre = {},
-            post = {}
-        }
-        return self
-    end
-    function da:getValue(cb)
-        if type(cb) == "function" then
-            return cb(self.element)
-        end
-        return cb
-    end
-    function da:setType(cb)
-        if cb == "pre" or cb == "post" then
-            self.type = cb
-        else
-            ca.error("Invalid type. Use 'pre' or 'post'.")
-        end
-        return self
-    end
-    function da:addCommand(cb)
-        local db = #self.commands[self.type] + 1;
-        self.commands[self.type][db] = cb;
-        return db
-    end
-    function da:setCommand(cb, db)
-        self.commands[cb] = db;
-        return self
-    end
-    function da:removeCommand(cb)
-        table.remove(self.commands[self.type], cb)
-        return self
-    end
-    function da:text(cb, db, _c, ac, bc)
-        return self:addCommand(function(cc)
-            local dc, _d = self:getValue(cb), self:getValue(db)
-            local ad = self:getValue(_c)
-            local bd = self:getValue(ac)
-            local cd = self:getValue(bc)
-            local dd = type(bd) == "number" and ba[bd]:rep(#_c) or bd
-            local __a = type(cd) == "number" and ba[cd]:rep(#_c) or cd;
-            cc:drawText(dc, _d, ad)
-            if dd then
-                cc:drawFg(dc, _d, dd)
-            end
-            if __a then
-                cc:drawBg(dc, _d, __a)
-            end
-        end)
-    end
-    function da:bg(cb, db, _c)
-        return self:addCommand(function(ac)
-            ac:drawBg(cb, db, _c)
-        end)
-    end
-    function da:fg(cb, db, _c)
-        return self:addCommand(function(ac)
-            ac:drawFg(cb, db, _c)
-        end)
-    end
-    function da:rect(cb, db, _c, ac, bc, cc, dc)
-        return self:addCommand(function(_d)
-            local ad, bd = self:getValue(cb), self:getValue(db)
-            local cd, dd = self:getValue(_c), self:getValue(ac)
-            local __a = self:getValue(bc)
-            local a_a = self:getValue(cc)
-            local b_a = self:getValue(dc)
-            if (type(a_a) == "number") then
-                a_a = ba[a_a]
-            end
-            if (type(b_a) == "number") then
-                b_a = ba[b_a]
-            end
-            local c_a = b_a and _b(b_a:rep(cd), 1, cd)
-            local d_a = a_a and _b(a_a:rep(cd), 1, cd)
-            local _aa = __a and _b(__a:rep(cd), 1, cd)
-            for i = 0, dd - 1 do
-                if b_a then
-                    _d:drawBg(ad, bd + i, c_a)
-                end
-                if a_a then
-                    _d:drawFg(ad, bd + i, d_a)
-                end
-                if __a then
-                    _d:drawText(ad, bd + i, _aa)
-                end
-            end
-        end)
-    end
-    function da:line(cb, db, _c, ac, bc, cc, dc)
-        local function _d(cd, dd, __a, a_a)
-            local b_a = {}
-            local c_a = 0;
-            local d_a = math.abs(__a - cd)
-            local _aa = math.abs(a_a - dd)
-            local aaa = (cd < __a) and 1 or -1
-            local baa = (dd < a_a) and 1 or -1;
-            local caa = d_a - _aa
-            while true do
-                c_a = c_a + 1;
-                b_a[c_a] = {
-                    x = cd,
-                    y = dd
-                }
-                if (cd == __a) and (dd == a_a) then
-                    break
-                end
-                local daa = caa * 2
-                if daa > -_aa then
-                    caa = caa - _aa;
-                    cd = cd + aaa
-                end
-                if daa < d_a then
-                    caa = caa + d_a;
-                    dd = dd + baa
-                end
-            end
-            return b_a
-        end
-        local ad = false;
-        local bd
-        if type(cb) == "function" or type(db) == "function" or type(_c) == "function" or type(ac) == "function" then
-            ad = true
-        else
-            bd = _d(self:getValue(cb), self:getValue(db), self:getValue(_c), self:getValue(ac))
-        end
-        return self:addCommand(function(cd)
-            if ad then
-                bd = _d(self:getValue(cb), self:getValue(db), self:getValue(_c), self:getValue(ac))
-            end
-            local dd = self:getValue(bc)
-            local __a = self:getValue(cc)
-            local a_a = self:getValue(dc)
-            local b_a = type(__a) == "number" and ba[__a] or __a;
-            local c_a = type(a_a) == "number" and ba[a_a] or a_a
-            for d_a, _aa in ipairs(bd) do
-                local aaa = math.floor(_aa.x)
-                local baa = math.floor(_aa.y)
-                if dd then
-                    cd:drawText(aaa, baa, dd)
-                end
-                if b_a then
-                    cd:drawFg(aaa, baa, b_a)
-                end
-                if c_a then
-                    cd:drawBg(aaa, baa, c_a)
-                end
-            end
-        end)
-    end
-    function da:ellipse(cb, db, _c, ac, bc, cc, dc)
-        local function _d(bd, cd, dd, __a)
-            local a_a = {}
-            local b_a = 0;
-            local c_a = dd * dd;
-            local d_a = __a * __a;
-            local _aa = 0;
-            local aaa = __a;
-            local baa = d_a - c_a * __a + 0.25 * c_a;
-            local caa = 0;
-            local daa = 2 * c_a * aaa
-            local function _ba(aba, bba)
-                b_a = b_a + 1;
-                a_a[b_a] = {
-                    x = bd + aba,
-                    y = cd + bba
-                }
-                b_a = b_a + 1
-                a_a[b_a] = {
-                    x = bd - aba,
-                    y = cd + bba
-                }
-                b_a = b_a + 1;
-                a_a[b_a] = {
-                    x = bd + aba,
-                    y = cd - bba
-                }
-                b_a = b_a + 1;
-                a_a[b_a] = {
-                    x = bd - aba,
-                    y = cd - bba
-                }
-            end
-            _ba(_aa, aaa)
-            while caa < daa do
-                _aa = _aa + 1;
-                caa = caa + 2 * d_a
-                if baa < 0 then
-                    baa = baa + d_a + caa
-                else
-                    aaa = aaa - 1;
-                    daa = daa - 2 * c_a;
-                    baa = baa + d_a + caa - daa
-                end
-                _ba(_aa, aaa)
-            end
-            baa = d_a * (_aa + 0.5) * (_aa + 0.5) + c_a * (aaa - 1) * (aaa - 1) - c_a * d_a;
-            while aaa > 0 do
-                aaa = aaa - 1;
-                daa = daa - 2 * c_a;
-                if baa > 0 then
-                    baa = baa + c_a - daa
-                else
-                    _aa = _aa + 1
-                    caa = caa + 2 * d_a;
-                    baa = baa + c_a - daa + caa
-                end
-                _ba(_aa, aaa)
-            end
-            return a_a
-        end
-        local ad = _d(cb, db, _c, ac)
-        return self:addCommand(function(bd)
-            local cd = self:getValue(bc)
-            local dd = self:getValue(cc)
-            local __a = self:getValue(dc)
-            local a_a = type(dd) == "number" and ba[dd] or dd
-            local b_a = type(__a) == "number" and ba[__a] or __a
-            for c_a, d_a in pairs(ad) do
-                local _aa = math.floor(d_a.x)
-                local aaa = math.floor(d_a.y)
-                if cd then
-                    bd:drawText(_aa, aaa, cd)
-                end
-                if a_a then
-                    bd:drawFg(_aa, aaa, a_a)
-                end
-                if b_a then
-                    bd:drawBg(_aa, aaa, b_a)
-                end
-            end
-        end)
-    end
-    local bb = {
-        hooks = {}
-    }
-    function bb.setup(cb)
-        cb.defineProperty(cb, "canvas", {
-            default = nil,
-            type = "table",
-            getter = function(db)
-                if not db._values.canvas then
-                    db._values.canvas = da.new(db)
-                end
-                return db._values.canvas
-            end
-        })
-    end
-    function bb.hooks.render(cb)
-        local db = cb.get("canvas")
-        if db and #db.commands.pre > 0 then
-            for _c, ac in pairs(db.commands.pre) do
-                ac(cb)
-            end
-        end
-    end
-    function bb.hooks.postRender(cb)
-        local db = cb.get("canvas")
-        if db and #db.commands.post > 0 then
-            for _c, ac in pairs(db.commands.post) do
-                ac(cb)
-            end
-        end
-    end
-    return {
-        VisualElement = bb,
-        API = da
-    }
-end
-project["plugins/debug.lua"] = function(...)
-    local _b = require("log")
-    local ab = require("libraries/colorHex")
-    local bb = 10;
-    local cb = false;
-    local db = {
-        ERROR = 1,
-        WARN = 2,
-        INFO = 3,
-        DEBUG = 4
-    }
-    local function _c(dc)
-        local _d = {
-            renderCount = 0,
-            eventCount = {},
-            lastRender = os.epoch("utc"),
-            properties = {},
-            children = {}
-        }
-        return {
-            trackProperty = function(ad, bd)
-                _d.properties[ad] = bd
-            end,
-            trackRender = function()
-                _d.renderCount = _d.renderCount + 1;
-                _d.lastRender = os.epoch("utc")
-            end,
-            trackEvent = function(ad)
-                _d.eventCount[ad] = (_d.eventCount[ad] or 0) + 1
-            end,
-            dump = function()
-                return {
-                    type = dc.get("type"),
-                    id = dc.get("id"),
-                    stats = _d
-                }
-            end
-        }
-    end
-    local ac = {}
-    function ac.debug(dc, _d)
-        dc._debugger = _c(dc)
-        dc._debugLevel = _d or db.INFO;
-        return dc
-    end
-    function ac.dumpDebug(dc)
-        if not dc._debugger then
-            return
-        end
-        return dc._debugger.dump()
-    end
-    local bc = {}
-    function bc.openConsole(dc)
-        if not dc._debugFrame then
-            local _d = dc.get("width")
-            local ad = dc.get("height")
-            dc._debugFrame = dc:addFrame("basaltDebugLog"):setWidth(_d):setHeight(ad):listenEvent("mouse_scroll", true)
-            dc._debugFrame:addButton("basaltDebugLogClose"):setWidth(9):setHeight(1):setX(_d - 8):setY(ad):setText(
-                "Close"):onClick(function()
-                dc:closeConsole()
-            end)
-            dc._debugFrame._scrollOffset = 0
-            dc._debugFrame._processedLogs = {}
-            local function bd(b_a, c_a)
-                local d_a = {}
-                while #b_a > 0 do
-                    local _aa = b_a:sub(1, c_a)
-                    table.insert(d_a, _aa)
-                    b_a = b_a:sub(c_a + 1)
-                end
-                return d_a
-            end
-            local function cd()
-                local b_a = {}
-                local c_a = dc._debugFrame.get("width")
-                for d_a, _aa in ipairs(_b._logs) do
-                    local aaa = bd(_aa.message, c_a)
-                    for baa, caa in ipairs(aaa) do
-                        table.insert(b_a, {
-                            text = caa,
-                            level = _aa.level
-                        })
-                    end
-                end
-                return b_a
-            end
-            local dd = #cd() - dc.get("height")
-            dc._scrollOffset = dd
-            local __a = dc._debugFrame.render
-            dc._debugFrame.render = function(b_a)
-                __a(b_a)
-                b_a._processedLogs = cd()
-                local c_a = b_a.get("height") - 2;
-                local d_a = #b_a._processedLogs;
-                local _aa = math.max(0, d_a - c_a)
-                b_a._scrollOffset = math.min(b_a._scrollOffset, _aa)
-                for i = 1, c_a - 2 do
-                    local aaa = i + b_a._scrollOffset
-                    local baa = b_a._processedLogs[aaa]
-                    if baa then
-                        local caa = baa.level == _b.LEVEL.ERROR and colors.red or baa.level == _b.LEVEL.WARN and
-                                        colors.yellow or baa.level == _b.LEVEL.DEBUG and colors.lightGray or
-                                        colors.white;
-                        b_a:textFg(2, i, baa.text, caa)
-                    end
-                end
-            end;
-            local a_a = dc._debugFrame.dispatchEvent
-            dc._debugFrame.dispatchEvent = function(b_a, c_a, d_a, ...)
-                if (c_a == "mouse_scroll") then
-                    b_a._scrollOffset = math.max(0, b_a._scrollOffset + d_a)
-                    b_a:updateRender()
-                    return true
-                else
-                    return a_a(b_a, c_a, d_a, ...)
-                end
-            end
-        end
-        dc._debugFrame.set("width", dc.get("width"))
-        dc._debugFrame.set("height", dc.get("height"))
-        dc._debugFrame.set("visible", true)
-        return dc
-    end
-    function bc.closeConsole(dc)
-        if dc._debugFrame then
-            dc._debugFrame.set("visible", false)
-        end
-        return dc
-    end
-    function bc.toggleConsole(dc)
-        if dc._debugFrame and dc._debugFrame:getVisible() then
-            dc:closeConsole()
-        else
-            dc:openConsole()
-        end
-        return dc
-    end
-    local cc = {}
-    function cc.debugChildren(dc, _d)
-        dc:debug(_d)
-        for ad, bd in pairs(dc.get("children")) do
-            if bd.debug then
-                bd:debug(_d)
-            end
-        end
-        return dc
-    end
-    return {
-        BaseElement = ac,
-        Container = cc,
-        BaseFrame = bc
-    }
-end
-project["plugins/reactive.lua"] = function(...)
-    local ab = require("errorManager")
-    local bb = require("propertySystem")
-    local cb = {
-        colors = true,
-        math = true,
-        clamp = true,
-        round = true
-    }
-    local db = {
-        clamp = function(ad, bd, cd)
-            return math.min(math.max(ad, bd), cd)
-        end,
-        round = function(ad)
-            return math.floor(ad + 0.5)
-        end,
-        floor = math.floor,
-        ceil = math.ceil,
-        abs = math.abs
-    }
-    local function _c(ad, bd, cd)
-        ad = ad:gsub("^{(.+)}$", "%1")
-        ad = ad:gsub("([%w_]+)%$([%w_]+)", function(b_a, c_a)
-            if b_a == "self" then
-                return string.format('__getState("%s")', c_a)
-            elseif b_a == "parent" then
-                return string.format('__getParentState("%s")', c_a)
-            else
-                return string.format('__getElementState("%s", "%s")', b_a, c_a)
-            end
-        end)
-        ad = ad:gsub("([%w_]+)%.([%w_]+)", function(b_a, c_a)
-            if cb[b_a] then
-                return b_a .. "." .. c_a
-            end
-            if tonumber(b_a) then
-                return b_a .. "." .. c_a
-            end
-            return string.format('__getProperty("%s", "%s")', b_a, c_a)
-        end)
-        local dd = setmetatable({
-            colors = colors,
-            math = math,
-            tostring = tostring,
-            tonumber = tonumber,
-            __getState = function(b_a)
-                return bd:getState(b_a)
-            end,
-            __getParentState = function(b_a)
-                return bd.parent:getState(b_a)
-            end,
-            __getElementState = function(b_a, c_a)
-                if tonumber(b_a) then
-                    return nil
-                end
-                local d_a = bd:getBaseFrame():getChild(b_a)
-                if not d_a then
-                    ab.header = "Reactive evaluation error"
-                    ab.error("Could not find element: " .. b_a)
-                    return nil
-                end
-                return d_a:getState(c_a).value
-            end,
-            __getProperty = function(b_a, c_a)
-                if tonumber(b_a) then
-                    return nil
-                end
-                if b_a == "self" then
-                    return bd.get(c_a)
-                elseif b_a == "parent" then
-                    return bd.parent.get(c_a)
-                else
-                    local d_a = bd.parent:getChild(b_a)
-                    if not d_a then
-                        ab.header = "Reactive evaluation error"
-                        ab.error("Could not find element: " .. b_a)
-                        return nil
-                    end
-                    return d_a.get(c_a)
-                end
-            end
-        }, {
-            __index = db
-        })
-        if (bd._properties[cd].type == "string") then
-            ad = "tostring(" .. ad .. ")"
-        elseif (bd._properties[cd].type == "number") then
-            ad = "tonumber(" .. ad .. ")"
-        end
-        local __a, a_a = load("return " .. ad, "reactive", "t", dd)
-        if not __a then
-            ab.header = "Reactive evaluation error"
-            ab.error("Invalid expression: " .. a_a)
-            return function()
-                return nil
-            end
-        end
-        return __a
-    end
-    local function ac(ad, bd)
-        for cd in ad:gmatch("([%w_]+)%.") do
-            if not cb[cd] then
-                if cd == "self" then
-                elseif cd == "parent" then
-                    if not bd.parent then
-                        ab.header = "Reactive evaluation error"
-                        ab.error("No parent element available")
-                        return false
-                    end
-                else
-                    if (tonumber(cd) == nil) then
-                        local dd = bd.parent:getChild(cd)
-                        if not dd then
-                            ab.header = "Reactive evaluation error"
-                            ab.error("Referenced element not found: " .. cd)
-                            return false
-                        end
-                    end
-                end
-            end
-        end
-        return true
-    end
-    local bc = setmetatable({}, {
-        __mode = "k"
-    })
-    local cc = setmetatable({}, {
-        __mode = "k",
-        __index = function(ad, bd)
-            ad[bd] = {}
-            return ad[bd]
-        end
-    })
-    local function dc(ad, bd, cd)
-        if cc[ad][cd] then
-            for __a, a_a in ipairs(cc[ad][cd]) do
-                a_a.target:removeObserver(a_a.property, a_a.callback)
-            end
-        end
-        local dd = {}
-        for __a, a_a in bd:gmatch("([%w_]+)%.([%w_]+)") do
-            if not cb[__a] then
-                local b_a;
-                if __a == "self" then
-                    b_a = ad
-                elseif __a == "parent" then
-                    b_a = ad.parent
-                else
-                    b_a = ad:getBaseFrame():getChild(__a)
-                end
-                if b_a then
-                    local c_a = {
-                        target = b_a,
-                        property = a_a,
-                        callback = function()
-                            ad:updateRender()
-                        end
-                    }
-                    b_a:observe(a_a, c_a.callback)
-                    table.insert(dd, c_a)
-                end
-            end
-        end
-        cc[ad][cd] = dd
-    end
-    bb.addSetterHook(function(ad, bd, cd, dd)
-        if type(cd) == "string" and cd:match("^{.+}$") then
-            local __a = cd:gsub("^{(.+)}$", "%1")
-            if not ac(__a, ad) then
-                return dd.default
-            end
-            dc(ad, __a, bd)
-            if not bc[ad] then
-                bc[ad] = {}
-            end
-            if not bc[ad][cd] then
-                local a_a = _c(cd, ad, bd)
-                bc[ad][cd] = a_a
-            end
-            return function(a_a)
-                local b_a, c_a = pcall(bc[ad][cd])
-                if not b_a then
-                    ab.header = "Reactive evaluation error"
-                    if type(c_a) == "string" then
-                        ab.error("Error evaluating expression: " .. c_a)
-                    else
-                        ab.error("Error evaluating expression")
-                    end
-                    return dd.default
-                end
-                return c_a
-            end
-        end
-    end)
-    local _d = {}
-    _d.hooks = {
-        destroy = function(ad)
-            if cc[ad] then
-                for bd, cd in pairs(cc[ad]) do
-                    for dd, __a in ipairs(cd) do
-                        __a.target:removeObserver(__a.property, __a.callback)
-                    end
-                end
-                cc[ad] = nil
-            end
-        end
-    }
-    return {
-        BaseElement = _d
-    }
-end
-project["plugins/theme.lua"] = function(...)
-    local ab = require("errorManager")
-    local bb = {
-        default = {
-            background = colors.lightGray,
-            foreground = colors.black
-        },
-        BaseFrame = {
-            background = colors.white,
-            foreground = colors.black,
-            Frame = {
-                background = colors.black,
-                names = {
-                    basaltDebugLogClose = {
-                        background = colors.blue,
-                        foreground = colors.white
-                    }
-                }
-            },
-            Button = {
-                background = "{self.clicked and colors.black or colors.cyan}",
-                foreground = "{self.clicked and colors.cyan or colors.black}"
-            },
-            names = {
-                basaltDebugLog = {
-                    background = colors.red,
-                    foreground = colors.white
-                },
-                test = {
-                    background = "{self.clicked and colors.black or colors.green}",
-                    foreground = "{self.clicked and colors.green or colors.black}"
-                }
-            }
-        }
-    }
-    local cb = {
-        default = bb
-    }
-    local db = "default"
-    local _c = {
-        hooks = {
-            postInit = {
-                pre = function(ad)
-                    if ad._postInitialized then
-                        return ad
-                    end
-                    ad:applyTheme()
-                end
-            }
-        }
-    }
-    function _c.____getElementPath(ad, bd)
-        if bd then
-            table.insert(bd, 1, ad._values.type)
-        else
-            bd = {ad._values.type}
-        end
-        local cd = ad.parent;
-        if cd then
-            return cd.____getElementPath(cd, bd)
-        else
-            return bd
-        end
-    end
-    local function ac(ad, bd)
-        local cd = ad
-        for i = 1, #bd do
-            local dd = false;
-            local __a = bd[i]
-            for a_a, b_a in ipairs(__a) do
-                if cd[b_a] then
-                    cd = cd[b_a]
-                    dd = true;
-                    break
-                end
-            end
-            if not dd then
-                return nil
-            end
-        end
-        return cd
-    end
-    local function bc(ad, bd)
-        local cd = {}
-        if ad.default then
-            for dd, __a in pairs(ad.default) do
-                if type(__a) ~= "table" then
-                    cd[dd] = __a
-                end
-            end
-            if ad.default[bd] then
-                for dd, __a in pairs(ad.default[bd]) do
-                    if type(__a) ~= "table" then
-                        cd[dd] = __a
-                    end
-                end
-            end
-        end
-        return cd
-    end
-    local function cc(ad, bd, cd, dd, __a)
-        if bd.default and bd.default.names and bd.default.names[dd] then
-            for a_a, b_a in pairs(bd.default.names[dd]) do
-                if type(b_a) ~= "table" then
-                    ad[a_a] = b_a
-                end
-            end
-        end
-        if bd.default and bd.default[cd] and bd.default[cd].names and bd.default[cd].names[dd] then
-            for a_a, b_a in pairs(bd.default[cd].names[dd]) do
-                if type(b_a) ~= "table" then
-                    ad[a_a] = b_a
-                end
-            end
-        end
-        if __a and __a.names and __a.names[dd] then
-            for a_a, b_a in pairs(__a.names[dd]) do
-                if type(b_a) ~= "table" then
-                    ad[a_a] = b_a
-                end
-            end
-        end
-    end
-    local function dc(ad, bd, cd, dd)
-        local __a = {}
-        local a_a = ac(ad, bd)
-        if a_a then
-            for b_a, c_a in pairs(a_a) do
-                if type(c_a) ~= "table" then
-                    __a[b_a] = c_a
-                end
-            end
-        end
-        if next(__a) == nil then
-            __a = bc(ad, cd)
-        end
-        cc(__a, ad, cd, dd, a_a)
-        return __a
-    end
-    function _c:applyTheme(ad)
-        local bd = self:getTheme()
-        if (bd ~= nil) then
-            for cd, dd in pairs(bd) do
-                local __a = self._properties[cd]
-                if (__a) then
-                    if ((__a.type) == "color") then
-                        if (type(dd) == "string") then
-                            if (colors[dd]) then
-                                dd = colors[dd]
-                            end
-                        end
-                    end
-                    self.set(cd, dd)
-                end
-            end
-        end
-        if (ad ~= false) then
-            if (self:isType("Container")) then
-                local cd = self.get("children")
-                for dd, __a in ipairs(cd) do
-                    if (__a and __a.applyTheme) then
-                        __a:applyTheme()
-                    end
-                end
-            end
-        end
-        return self
-    end
-    function _c:getTheme()
-        local ad = self:____getElementPath()
-        local bd = self.get("type")
-        local cd = self.get("name")
-        return dc(cb[db], ad, bd, cd)
-    end
-    local _d = {}
-    function _d.setTheme(ad)
-        cb.default = ad
-    end
-    function _d.getTheme()
-        return cb.default
-    end
-    function _d.loadTheme(ad)
-        local bd = fs.open(ad, "r")
-        if bd then
-            local cd = bd.readAll()
-            bd.close()
-            cb.default = textutils.unserializeJSON(cd)
-            if not cb.default then
-                ab.error("Failed to load theme from " .. ad)
-            end
-        else
-            ab.error("Could not open theme file: " .. ad)
-        end
-    end
-    return {
-        BaseElement = _c,
-        API = _d
-    }
-end
-project["plugins/xml.lua"] = function(...)
-    local ab = require("errorManager")
-    local bb = require("log")
-    local cb = {
-        new = function(ad)
-            return {
-                tag = ad,
-                value = nil,
-                attributes = {},
-                children = {},
-                addChild = function(bd, cd)
-                    table.insert(bd.children, cd)
-                end,
-                addAttribute = function(bd, cd, dd)
-                    bd.attributes[cd] = dd
-                end
-            }
-        end
-    }
-    local db = function(ad, bd)
-        local cd, dd = string.gsub(bd, "(%w+)=([\"'])(.-)%2", function(b_a, c_a, d_a)
-            ad:addAttribute(b_a, "\"" .. d_a .. "\"")
-        end)
-        local __a, a_a = string.gsub(bd, "(%w+)={(.-)}", function(b_a, c_a)
-            ad:addAttribute(b_a, c_a)
-        end)
-    end
-    local _c = {
-        parseText = function(ad)
-            local bd = {}
-            local cd = cb.new()
-            table.insert(bd, cd)
-            local dd, __a, a_a, b_a, c_a;
-            local d_a, _aa = 1, 1
-            while true do
-                dd, _aa, __a, a_a, b_a, c_a = string.find(ad, "<(%/?)([%w_:]+)(.-)(%/?)>", d_a)
-                if not dd then
-                    break
-                end
-                local aaa = string.sub(ad, d_a, dd - 1)
-                if not string.find(aaa, "^%s*$") then
-                    local baa = (cd.value or "") .. aaa
-                    bd[#bd].value = baa
-                end
-                if c_a == "/" then
-                    local baa = cb.new(a_a)
-                    db(baa, b_a)
-                    cd:addChild(baa)
-                elseif __a == "" then
-                    local baa = cb.new(a_a)
-                    db(baa, b_a)
-                    table.insert(bd, baa)
-                    cd = baa
-                else
-                    local baa = table.remove(bd)
-                    cd = bd[#bd]
-                    if #bd < 1 then
-                        ab.error("XMLParser: nothing to close with " .. a_a)
-                    end
-                    if baa.tag ~= a_a then
-                        ab.error("XMLParser: trying to close " .. baa.tag .. " with " .. a_a)
-                    end
-                    cd:addChild(baa)
-                end
-                d_a = _aa + 1
-            end
-            if #bd > 1 then
-                error("XMLParser: unclosed " .. bd[#bd].tag)
-            end
-            return cd.children
-        end
-    }
-    local function ac(ad)
-        local bd = {}
-        local cd = 1
-        while true do
-            local dd, __a, a_a = ad:find("%${([^}]+)}", cd)
-            if not dd then
-                break
-            end
-            table.insert(bd, {
-                start = dd,
-                ending = __a,
-                expression = a_a,
-                raw = ad:sub(dd, __a)
-            })
-            cd = __a + 1
-        end
-        return bd
-    end
-    local function bc(ad, bd)
-        if type(ad) ~= "string" then
-            return ad
-        end
-        if ad:sub(1, 1) == "\"" and ad:sub(-1) == "\"" then
-            ad = ad:sub(2, -2)
-        end
-        local cd = ac(ad)
-        for dd, __a in ipairs(cd) do
-            local a_a = __a.expression;
-            local b_a = __a.start - 1
-            local c_a = __a.ending + 1;
-            if bd[a_a] then
-                ad = ad:sub(1, b_a) .. tostring(bd[a_a]) .. ad:sub(c_a)
-            else
-                ab.error("XMLParser: variable '" .. a_a .. "' not found in scope")
-            end
-        end
-        if ad:match("^%s*<!%[CDATA%[.*%]%]>%s*$") then
-            local dd = ad:match("<!%[CDATA%[(.*)%]%]>")
-            local __a = _ENV;
-            for a_a, b_a in pairs(bd) do
-                __a[a_a] = b_a
-            end
-            return load("return " .. dd, nil, "bt", __a)()
-        end
-        if ad == "true" then
-            return true
-        elseif ad == "false" then
-            return false
-        elseif colors[ad] then
-            return colors[ad]
-        elseif tonumber(ad) then
-            return tonumber(ad)
-        else
-            return ad
-        end
-    end
-    local function cc(ad, bd)
-        local cd = {}
-        for dd, __a in pairs(ad.children) do
-            if __a.tag == "item" or __a.tag == "entry" then
-                local a_a = {}
-                for b_a, c_a in pairs(__a.attributes) do
-                    a_a[b_a] = bc(c_a, bd)
-                end
-                for b_a, c_a in pairs(__a.children) do
-                    if c_a.value then
-                        a_a[c_a.tag] = bc(c_a.value, bd)
-                    elseif #c_a.children > 0 then
-                        a_a[c_a.tag] = cc(c_a)
-                    end
-                end
-                table.insert(cd, a_a)
-            else
-                if __a.value then
-                    cd[__a.tag] = bc(__a.value, bd)
-                elseif #__a.children > 0 then
-                    cd[__a.tag] = cc(__a)
-                end
-            end
-        end
-        return cd
-    end
-    local dc = {}
-    function dc.setup(ad)
-        ad.defineProperty(ad, "customXML", {
-            default = {
-                attributes = {},
-                children = {}
-            },
-            type = "table"
-        })
-    end
-    function dc:fromXML(ad, bd)
-        if (ad.attributes) then
-            for cd, dd in pairs(ad.attributes) do
-                if (self._properties[cd]) then
-                    self.set(cd, bc(dd, bd))
-                elseif self[cd] then
-                    if (cd:sub(1, 2) == "on") then
-                        local __a = dd:gsub("\"", "")
-                        if (bd[__a]) then
-                            if (type(bd[__a]) ~= "function") then
-                                ab.error("XMLParser: variable '" .. __a .. "' is not a function for element '" ..
-                                             self:getType() .. "' " .. cd)
-                            end
-                            self[cd](self, bd[__a])
-                        else
-                            ab.error("XMLParser: variable '" .. __a .. "' not found in scope")
-                        end
-                    else
-                        ab.error("XMLParser: property '" .. cd .. "' not found in element '" .. self:getType() .. "'")
-                    end
-                else
-                    local __a = self.get("customXML")
-                    __a.attributes[cd] = bc(dd, bd)
-                end
-            end
-        end
-        if (ad.children) then
-            for cd, dd in pairs(ad.children) do
-                if (self._properties[dd.tag]) then
-                    if (self._properties[dd.tag].type == "table") then
-                        self.set(dd.tag, cc(dd, bd))
-                    else
-                        self.set(dd.tag, bc(dd.value, bd))
-                    end
-                else
-                    local __a = {}
-                    if (dd.children) then
-                        for a_a, b_a in pairs(dd.children) do
-                            if (b_a.tag == "param") then
-                                table.insert(__a, bc(b_a.value, bd))
-                            elseif (b_a.tag == "table") then
-                                table.insert(__a, cc(b_a, bd))
-                            end
-                        end
-                    end
-                    if (self[dd.tag]) then
-                        if (#__a > 0) then
-                            self[dd.tag](self, table.unpack(__a))
-                        elseif (dd.value) then
-                            self[dd.tag](self, bc(dd.value, bd))
-                        else
-                            self[dd.tag](self)
-                        end
-                    else
-                        local a_a = self.get("customXML")
-                        dd.value = bc(dd.value, bd)
-                        a_a.children[dd.tag] = dd
-                    end
-                end
-            end
-        end
-        return self
-    end
-    local _d = {}
-    function _d:loadXML(ad, bd)
-        bd = bd or {}
-        local cd = _c.parseText(ad)
-        self:fromXML(cd, bd)
-        if (cd) then
-            for dd, __a in ipairs(cd) do
-                local a_a = __a.tag:sub(1, 1):upper() .. __a.tag:sub(2)
-                if self["add" .. a_a] then
-                    local b_a = self["add" .. a_a](self)
-                    b_a:fromXML(__a, bd)
-                end
-            end
-        end
-        return self
-    end
-    function _d:fromXML(ad, bd)
-        dc.fromXML(self, ad, bd)
-        if (ad.children) then
-            for cd, dd in ipairs(ad.children) do
-                local __a = dd.tag:sub(1, 1):upper() .. dd.tag:sub(2)
-                if self["add" .. __a] then
-                    local a_a = self["add" .. __a](self)
-                    a_a:fromXML(dd, bd)
-                end
-            end
-        end
-        return self
-    end
-    return {
-        API = _c,
-        Container = _d,
-        BaseElement = dc
-    }
-end
-project["plugins/animation.lua"] = function(...)
-    local aa = {}
-    local ba = {
-        linear = function(ab)
-            return ab
-        end,
-        easeInQuad = function(ab)
-            return ab * ab
-        end,
-        easeOutQuad = function(ab)
-            return 1 - (1 - ab) * (1 - ab)
-        end,
-        easeInOutQuad = function(ab)
-            if ab < 0.5 then
-                return 2 * ab * ab
-            end
-            return 1 - (-2 * ab + 2) ^ 2 / 2
-        end
-    }
-    local ca = {}
-    ca.__index = ca
-    function ca.new(ab, bb, cb, db, _c)
-        local ac = setmetatable({}, ca)
-        ac.element = ab
-        ac.type = bb;
-        ac.args = cb;
-        ac.duration = db or 1;
-        ac.startTime = 0;
-        ac.isPaused = false
-        ac.handlers = aa[bb]
-        ac.easing = _c;
-        return ac
-    end
-    function ca:start()
-        self.startTime = os.epoch("local") / 1000;
-        if self.handlers.start then
-            self.handlers.start(self)
-        end
-        return self
-    end
-    function ca:update(ab)
-        local bb = math.min(1, ab / self.duration)
-        local cb = ba[self.easing](bb)
-        return self.handlers.update(self, cb)
-    end
-    function ca:complete()
-        if self.handlers.complete then
-            self.handlers.complete(self)
-        end
-    end
-    local da = {}
-    da.__index = da
-    function da.registerAnimation(ab, bb)
-        aa[ab] = bb
-        da[ab] = function(cb, ...)
-            local db = {...}
-            local _c = "linear"
-            if (type(db[#db]) == "string") then
-                _c = table.remove(db, #db)
-            end
-            local ac = table.remove(db, #db)
-            return cb:addAnimation(ab, db, ac, _c)
-        end
-    end
-    function da.registerEasing(ab, bb)
-        ba[ab] = bb
-    end
-    function da.new(ab)
-        local bb = {}
-        bb.element = ab
-        bb.sequences = {{}}
-        bb.sequenceCallbacks = {}
-        bb.currentSequence = 1;
-        bb.timer = nil
-        setmetatable(bb, da)
-        return bb
-    end
-    function da:sequence()
-        table.insert(self.sequences, {})
-        self.currentSequence = #self.sequences;
-        self.sequenceCallbacks[self.currentSequence] = {
-            start = nil,
-            update = nil,
-            complete = nil
-        }
-        return self
-    end
-    function da:onStart(ab)
-        if not self.sequenceCallbacks[self.currentSequence] then
-            self.sequenceCallbacks[self.currentSequence] = {}
-        end
-        self.sequenceCallbacks[self.currentSequence].start = ab;
-        return self
-    end
-    function da:onUpdate(ab)
-        if not self.sequenceCallbacks[self.currentSequence] then
-            self.sequenceCallbacks[self.currentSequence] = {}
-        end
-        self.sequenceCallbacks[self.currentSequence].update = ab;
-        return self
-    end
-    function da:onComplete(ab)
-        if not self.sequenceCallbacks[self.currentSequence] then
-            self.sequenceCallbacks[self.currentSequence] = {}
-        end
-        self.sequenceCallbacks[self.currentSequence].complete = ab;
-        return self
-    end
-    function da:addAnimation(ab, bb, cb, db)
-        local _c = ca.new(self.element, ab, bb, cb, db)
-        table.insert(self.sequences[self.currentSequence], _c)
-        return self
-    end
-    function da:start()
-        self.currentSequence = 1;
-        self.timer = nil
-        if (self.sequenceCallbacks[self.currentSequence]) then
-            if (self.sequenceCallbacks[self.currentSequence].start) then
-                self.sequenceCallbacks[self.currentSequence].start(self.element)
-            end
-        end
-        if #self.sequences[self.currentSequence] > 0 then
-            self.timer = os.startTimer(0.05)
-            for ab, bb in ipairs(self.sequences[self.currentSequence]) do
-                bb:start()
-            end
-        end
-        return self
-    end
-    function da:event(ab, bb)
-        if ab == "timer" and bb == self.timer then
-            local cb = os.epoch("local") / 1000;
-            local db = true;
-            local _c = {}
-            local ac = self.sequenceCallbacks[self.currentSequence]
-            for bc, cc in ipairs(self.sequences[self.currentSequence]) do
-                local dc = cb - cc.startTime;
-                local _d = dc / cc.duration;
-                local ad = cc:update(dc)
-                if ac and ac.update then
-                    ac.update(self.element, _d)
-                end
-                if not ad then
-                    table.insert(_c, cc)
-                    db = false
-                else
-                    cc:complete()
-                end
-            end
-            if db then
-                if ac and ac.complete then
-                    ac.complete(self.element)
-                end
-                if self.currentSequence < #self.sequences then
-                    self.currentSequence = self.currentSequence + 1;
-                    _c = {}
-                    local bc = self.sequenceCallbacks[self.currentSequence]
-                    if bc and bc.start then
-                        bc.start(self.element)
-                    end
-                    for cc, dc in ipairs(self.sequences[self.currentSequence]) do
-                        dc:start()
-                        table.insert(_c, dc)
-                    end
-                end
-            end
-            if #_c > 0 then
-                self.timer = os.startTimer(0.05)
-            end
-            return true
-        end
-    end
-    da.registerAnimation("move", {
-        start = function(ab)
-            ab.startX = ab.element.get("x")
-            ab.startY = ab.element.get("y")
-        end,
-        update = function(ab, bb)
-            local cb = ab.startX + (ab.args[1] - ab.startX) * bb;
-            local db = ab.startY + (ab.args[2] - ab.startY) * bb
-            ab.element.set("x", math.floor(cb))
-            ab.element.set("y", math.floor(db))
-            return bb >= 1
-        end,
-        complete = function(ab)
-            ab.element.set("x", ab.args[1])
-            ab.element.set("y", ab.args[2])
-        end
-    })
-    da.registerAnimation("resize", {
-        start = function(ab)
-            ab.startW = ab.element.get("width")
-            ab.startH = ab.element.get("height")
-        end,
-        update = function(ab, bb)
-            local cb = ab.startW + (ab.args[1] - ab.startW) * bb;
-            local db = ab.startH + (ab.args[2] - ab.startH) * bb
-            ab.element.set("width", math.floor(cb))
-            ab.element.set("height", math.floor(db))
-            return bb >= 1
-        end,
-        complete = function(ab)
-            ab.element.set("width", ab.args[1])
-            ab.element.set("height", ab.args[2])
-        end
-    })
-    da.registerAnimation("moveOffset", {
-        start = function(ab)
-            ab.startX = ab.element.get("offsetX")
-            ab.startY = ab.element.get("offsetY")
-        end,
-        update = function(ab, bb)
-            local cb = ab.startX + (ab.args[1] - ab.startX) * bb;
-            local db = ab.startY + (ab.args[2] - ab.startY) * bb
-            ab.element.set("offsetX", math.floor(cb))
-            ab.element.set("offsetY", math.floor(db))
-            return bb >= 1
-        end,
-        complete = function(ab)
-            ab.element.set("offsetX", ab.args[1])
-            ab.element.set("offsetY", ab.args[2])
-        end
-    })
-    da.registerAnimation("number", {
-        start = function(ab)
-            ab.startValue = ab.element.get(ab.args[1])
-            ab.targetValue = ab.args[2]
-        end,
-        update = function(ab, bb)
-            local cb = ab.startValue + (ab.targetValue - ab.startValue) * bb
-            ab.element.set(ab.args[1], math.floor(cb))
-            return bb >= 1
-        end,
-        complete = function(ab)
-            ab.element.set(ab.args[1], ab.targetValue)
-        end
-    })
-    da.registerAnimation("entries", {
-        start = function(ab)
-            ab.startColor = ab.element.get(ab.args[1])
-            ab.colorList = ab.args[2]
-        end,
-        update = function(ab, bb)
-            local cb = ab.colorList;
-            local db = math.floor(#cb * bb) + 1;
-            if db > #cb then
-                db = #cb
-            end
-            ab.element.set(ab.args[1], cb[db])
-        end,
-        complete = function(ab)
-            ab.element.set(ab.args[1], ab.colorList[#ab.colorList])
-        end
-    })
-    da.registerAnimation("morphText", {
-        start = function(ab)
-            local bb = ab.element.get(ab.args[1])
-            local cb = ab.args[2]
-            local db = math.max(#bb, #cb)
-            local _c = string.rep(" ", math.floor(db - #bb) / 2)
-            ab.startText = _c .. bb .. _c
-            ab.targetText = cb .. string.rep(" ", db - #cb)
-            ab.length = db
-        end,
-        update = function(ab, bb)
-            local cb = ""
-            for i = 1, ab.length do
-                local db = ab.startText:sub(i, i)
-                local _c = ab.targetText:sub(i, i)
-                if bb < 0.5 then
-                    cb = cb .. (math.random() > bb * 2 and db or " ")
-                else
-                    cb = cb .. (math.random() > (bb - 0.5) * 2 and " " or _c)
-                end
-            end
-            ab.element.set(ab.args[1], cb)
-            return bb >= 1
-        end,
-        complete = function(ab)
-            ab.element.set(ab.args[1], ab.targetText:gsub("%s+$", ""))
-        end
-    })
-    da.registerAnimation("typewrite", {
-        start = function(ab)
-            ab.targetText = ab.args[2]
-            ab.element.set(ab.args[1], "")
-        end,
-        update = function(ab, bb)
-            local cb = math.floor(#ab.targetText * bb)
-            ab.element.set(ab.args[1], ab.targetText:sub(1, cb))
-            return bb >= 1
-        end
-    })
-    da.registerAnimation("fadeText", {
-        start = function(ab)
-            ab.chars = {}
-            for i = 1, #ab.args[2] do
-                ab.chars[i] = {
-                    char = ab.args[2]:sub(i, i),
-                    visible = false
-                }
-            end
-        end,
-        update = function(ab, bb)
-            local cb = ""
-            for db, _c in ipairs(ab.chars) do
-                if math.random() < bb then
-                    _c.visible = true
-                end
-                cb = cb .. (_c.visible and _c.char or " ")
-            end
-            ab.element.set(ab.args[1], cb)
-            return bb >= 1
-        end
-    })
-    da.registerAnimation("scrollText", {
-        start = function(ab)
-            ab.width = ab.element.get("width")
-            ab.targetText = ab.args[2]
-            ab.element.set(ab.args[1], "")
-        end,
-        update = function(ab, bb)
-            local cb = math.floor(ab.width * (1 - bb))
-            local db = string.rep(" ", cb)
-            ab.element.set(ab.args[1], db .. ab.targetText)
-            return bb >= 1
-        end
-    })
-    local _b = {
-        hooks = {}
-    }
-    function _b.hooks.handleEvent(ab, bb, ...)
-        if bb == "timer" then
-            local cb = ab.get("animation")
-            if cb then
-                cb:event(bb, ...)
-            end
-        end
-    end
-    function _b.setup(ab)
-        ab.defineProperty(ab, "animation", {
-            default = nil,
-            type = "table"
-        })
-        ab.defineEvent(ab, "timer")
-    end
-    function _b:animate()
-        local ab = da.new(self)
-        self.set("animation", ab)
-        return ab
-    end
-    return {
-        VisualElement = _b
-    }
-end
-project["plugins/benchmark.lua"] = function(...)
-    local ca = require("log")
-    local da = setmetatable({}, {
-        __mode = "k"
-    })
-    local function _b()
-        return {
-            methods = {}
-        }
-    end
-    local function ab(_c, ac)
-        local bc = _c[ac]
-        if not da[_c] then
-            da[_c] = _b()
-        end
-        if not da[_c].methods[ac] then
-            da[_c].methods[ac] = {
-                calls = 0,
-                totalTime = 0,
-                minTime = math.huge,
-                maxTime = 0,
-                lastTime = 0,
-                startTime = 0,
-                path = {},
-                methodName = ac,
-                originalMethod = bc
-            }
-        end
-        _c[ac] = function(cc, ...)
-            cc:startProfile(ac)
-            local dc = bc(cc, ...)
-            cc:endProfile(ac)
-            return dc
-        end
-    end
-    local bb = {}
-    function bb:startProfile(_c)
-        local ac = da[self]
-        if not ac then
-            ac = _b()
-            da[self] = ac
-        end
-        if not ac.methods[_c] then
-            ac.methods[_c] = {
-                calls = 0,
-                totalTime = 0,
-                minTime = math.huge,
-                maxTime = 0,
-                lastTime = 0,
-                startTime = 0,
-                path = {},
-                methodName = _c
-            }
-        end
-        local bc = ac.methods[_c]
-        bc.startTime = os.clock() * 1000;
-        bc.path = {}
-        local cc = self;
-        while cc do
-            table.insert(bc.path, 1, cc.get("name") or cc.get("id"))
-            cc = cc.parent
-        end
-        return self
-    end
-    function bb:endProfile(_c)
-        local ac = da[self]
-        if not ac or not ac.methods[_c] then
-            return self
-        end
-        local bc = ac.methods[_c]
-        local cc = os.clock() * 1000
-        local dc = cc - bc.startTime;
-        bc.calls = bc.calls + 1;
-        bc.totalTime = bc.totalTime + dc
-        bc.minTime = math.min(bc.minTime, dc)
-        bc.maxTime = math.max(bc.maxTime, dc)
-        bc.lastTime = dc;
-        return self
-    end
-    function bb:benchmark(_c)
-        if not self[_c] then
-            ca.error("Method " .. _c .. " does not exist")
-            return self
-        end
-        da[self] = _b()
-        da[self].methodName = _c;
-        da[self].isRunning = true;
-        ab(self, _c)
-        return self
-    end
-    function bb:logBenchmark(_c)
-        local ac = da[self]
-        if not ac or not ac.methods[_c] then
-            return self
-        end
-        local bc = ac.methods[_c]
-        if bc then
-            local cc = bc.calls > 0 and (bc.totalTime / bc.calls) or 0
-            ca.info(string.format("Benchmark results for %s.%s: " .. "Path: %s " .. "Calls: %d " ..
-                                      "Average time: %.2fms " .. "Min time: %.2fms " .. "Max time: %.2fms " ..
-                                      "Last time: %.2fms " .. "Total time: %.2fms", table.concat(bc.path, "."),
-                bc.methodName, table.concat(bc.path, "/"), bc.calls, cc, bc.minTime ~= math.huge and bc.minTime or 0,
-                bc.maxTime, bc.lastTime, bc.totalTime))
-        end
-        return self
-    end
-    function bb:stopBenchmark(_c)
-        local ac = da[self]
-        if not ac or not ac.methods[_c] then
-            return self
-        end
-        local bc = ac.methods[_c]
-        if bc and bc.originalMethod then
-            self[_c] = bc.originalMethod
-        end
-        ac.methods[_c] = nil;
-        if not next(ac.methods) then
-            da[self] = nil
-        end
-        return self
-    end
-    function bb:getBenchmarkStats(_c)
-        local ac = da[self]
-        if not ac or not ac.methods[_c] then
-            return nil
-        end
-        local bc = ac.methods[_c]
-        return {
-            averageTime = bc.totalTime / bc.calls,
-            totalTime = bc.totalTime,
-            calls = bc.calls,
-            minTime = bc.minTime,
-            maxTime = bc.maxTime,
-            lastTime = bc.lastTime
-        }
-    end
-    local cb = {}
-    function cb:benchmarkContainer(_c)
-        self:benchmark(_c)
-        for ac, bc in pairs(self.get("children")) do
-            bc:benchmark(_c)
-            if bc:isType("Container") then
-                bc:benchmarkContainer(_c)
-            end
-        end
-        return self
-    end
-    function cb:logContainerBenchmarks(_c, ac)
-        ac = ac or 0;
-        local bc = string.rep("  ", ac)
-        local cc = 0;
-        local dc = {}
-        for ad, bd in pairs(self.get("children")) do
-            local cd = da[bd]
-            if cd and cd.methods[_c] then
-                local dd = cd.methods[_c]
-                cc = cc + dd.totalTime
-                table.insert(dc, {
-                    element = bd,
-                    type = bd.get("type"),
-                    calls = dd.calls,
-                    totalTime = dd.totalTime,
-                    avgTime = dd.totalTime / dd.calls
-                })
-            end
-        end
-        local _d = da[self]
-        if _d and _d.methods[_c] then
-            local ad = _d.methods[_c]
-            local bd = ad.totalTime - cc;
-            local cd = bd / ad.calls
-            ca.info(string.format("%sBenchmark %s (%s): " .. "%.2fms/call (Self: %.2fms/call) " ..
-                                      "[Total: %dms, Calls: %d]", bc, self.get("type"), _c, ad.totalTime / ad.calls, cd,
-                ad.totalTime, ad.calls))
-            if #dc > 0 then
-                for dd, __a in ipairs(dc) do
-                    if __a.element:isType("Container") then
-                        __a.element:logContainerBenchmarks(_c, ac + 1)
-                    else
-                        ca.info(string.format("%s> %s: %.2fms/call [Total: %dms, Calls: %d]", bc .. " ", __a.type,
-                            __a.avgTime, __a.totalTime, __a.calls))
-                    end
-                end
-            end
-        end
-        return self
-    end
-    function cb:stopContainerBenchmark(_c)
-        for ac, bc in pairs(self.get("children")) do
-            if bc:isType("Container") then
-                bc:stopContainerBenchmark(_c)
-            else
-                bc:stopBenchmark(_c)
-            end
-        end
-        self:stopBenchmark(_c)
-        return self
-    end
-    local db = {}
-    function db.start(_c, ac)
-        ac = ac or {}
-        local bc = _b()
-        bc.name = _c
-        bc.startTime = os.clock() * 1000;
-        bc.custom = true;
-        bc.calls = 0;
-        bc.totalTime = 0;
-        bc.minTime = math.huge;
-        bc.maxTime = 0
-        bc.lastTime = 0;
-        da[_c] = bc
-    end
-    function db.stop(_c)
-        local ac = da[_c]
-        if not ac or not ac.custom then
-            return
-        end
-        local bc = os.clock() * 1000;
-        local cc = bc - ac.startTime;
-        ac.calls = ac.calls + 1;
-        ac.totalTime = ac.totalTime + cc;
-        ac.minTime = math.min(ac.minTime, cc)
-        ac.maxTime = math.max(ac.maxTime, cc)
-        ac.lastTime = cc
-        ca.info(string.format("Custom Benchmark '%s': " .. "Calls: %d " .. "Average time: %.2fms " ..
-                                  "Min time: %.2fms " .. "Max time: %.2fms " .. "Last time: %.2fms " ..
-                                  "Total time: %.2fms", _c, ac.calls, ac.totalTime / ac.calls, ac.minTime, ac.maxTime,
-            ac.lastTime, ac.totalTime))
-    end
-    function db.getStats(_c)
-        local ac = da[_c]
-        if not ac then
-            return nil
-        end
-        return {
-            averageTime = ac.totalTime / ac.calls,
-            totalTime = ac.totalTime,
-            calls = ac.calls,
-            minTime = ac.minTime,
-            maxTime = ac.maxTime,
-            lastTime = ac.lastTime
-        }
-    end
-    function db.clear(_c)
-        da[_c] = nil
-    end
-    function db.clearAll()
-        for _c, ac in pairs(da) do
-            if ac.custom then
-                da[_c] = nil
-            end
-        end
-    end
-    return {
-        BaseElement = bb,
-        Container = cb,
-        API = db
-    }
-end
-project["plugins/state.lua"] = function(...)
-    local _a = require("propertySystem")
-    local aa = require("errorManager")
-    local ba = {}
-    function ba.setup(da)
-        da.defineProperty(da, "states", {
-            default = {},
-            type = "table"
-        })
-        da.defineProperty(da, "stateObserver", {
-            default = {},
-            type = "table"
-        })
-    end
-    function ba:initializeState(da, _b, ab, bb)
-        local cb = self.get("states")
-        if cb[da] then
-            aa.error("State '" .. da .. "' already exists")
-            return self
-        end
-        local db = bb or "states/" .. self.get("name") .. ".state"
-        local _c = {}
-        if ab and fs.exists(db) then
-            local ac = fs.open(db, "r")
-            _c = textutils.unserialize(ac.readAll()) or {}
-            ac.close()
-        end
-        cb[da] = {
-            value = ab and _c[da] or _b,
-            persist = ab
-        }
-        return self
-    end
-    local ca = {}
-    function ca:setState(da, _b)
-        local ab = self:getBaseFrame()
-        local bb = ab.get("states")
-        local cb = ab.get("stateObserver")
-        if not bb[da] then
-            aa.error("State '" .. da .. "' not initialized")
-        end
-        if bb[da].persist then
-            local db = "states/" .. ab.get("name") .. ".state"
-            local _c = {}
-            if fs.exists(db) then
-                local cc = fs.open(db, "r")
-                _c = textutils.unserialize(cc.readAll()) or {}
-                cc.close()
-            end
-            _c[da] = _b;
-            local ac = fs.getDir(db)
-            if not fs.exists(ac) then
-                fs.makeDir(ac)
-            end
-            local bc = fs.open(db, "w")
-            bc.write(textutils.serialize(_c))
-            bc.close()
-        end
-        bb[da].value = _b
-        if cb[da] then
-            for db, _c in ipairs(cb[da]) do
-                _c(da, _b)
-            end
-        end
-        for db, _c in pairs(bb) do
-            if _c.computed then
-                _c.value = _c.computeFn(self)
-                if cb[db] then
-                    for ac, bc in ipairs(cb[db]) do
-                        bc(db, _c.value)
-                    end
-                end
-            end
-        end
-        return self
-    end
-    function ca:getState(da)
-        local _b = self:getBaseFrame()
-        local ab = _b.get("states")
-        if not ab[da] then
-            aa.error("State '" .. da .. "' not initialized")
-        end
-        if ab[da].computed then
-            return ab[da].computeFn(self)
-        end
-        return ab[da].value
-    end
-    function ca:onStateChange(da, _b)
-        local ab = self:getBaseFrame()
-        local bb = ab.get("states")[da]
-        if not bb then
-            aa.error("Cannot observe state '" .. da .. "': State not initialized")
-            return self
-        end
-        local cb = ab.get("stateObserver")
-        if not cb[da] then
-            cb[da] = {}
-        end
-        table.insert(cb[da], _b)
-        return self
-    end
-    function ca:removeStateChange(da, _b)
-        local ab = self:getBaseFrame()
-        local bb = ab.get("stateObserver")
-        if bb[da] then
-            for cb, db in ipairs(bb[da]) do
-                if db == _b then
-                    table.remove(bb[da], cb)
-                    break
-                end
-            end
-        end
-        return self
-    end
-    function ca:computed(da, _b)
-        local ab = self:getBaseFrame()
-        local bb = ab.get("states")
-        if bb[da] then
-            aa.error("Computed state '" .. da .. "' already exists")
-            return self
-        end
-        bb[da] = {
-            computeFn = _b,
-            value = _b(self),
-            computed = true
-        }
-        return self
-    end
-    function ca:bind(da, _b)
-        _b = _b or da;
-        local ab = self:getBaseFrame()
-        local bb = false
-        if self.get(da) ~= nil then
-            self.set(da, ab:getState(_b))
-        end
-        self:onChange(da, function(cb, db)
-            if bb then
-                return
-            end
-            bb = true;
-            cb:setState(_b, db)
-            bb = false
-        end)
-        self:onStateChange(_b, function(cb, db)
-            if bb then
-                return
-            end
-            bb = true;
-            if self.get(da) ~= nil then
-                self.set(da, db)
-            end
-            bb = false
-        end)
-        return self
-    end
-    return {
-        BaseElement = ca,
-        BaseFrame = ba
-    }
-end
-project["main.lua"] = function(...)
-    local ad = require("elementManager")
-    local bd = require("errorManager")
-    local cd = require("propertySystem")
-    local dd = require("libraries/expect")
-    local __a = {}
-    __a.traceback = true;
-    __a._events = {}
-    __a._schedule = {}
-    __a._eventQueue = {}
-    __a._plugins = {}
-    __a.isRunning = false;
-    __a.LOGGER = require("log")
-    if (minified) then
-        __a.path = fs.getDir(shell.getRunningProgram())
-    else
-        __a.path = fs.getDir(select(2, ...))
-    end
-    local a_a = nil;
-    local b_a = nil;
-    local c_a = {}
-    local d_a = type;
-    local _aa = {}
-    local aaa = 10;
-    local baa = 0;
-    local caa = false
-    local function daa()
-        if (caa) then
-            return
-        end
-        baa = os.startTimer(0.2)
-        caa = true
-    end
-    local function _ba(aca)
-        for _ = 1, aca do
-            local bca = _aa[1]
-            if (bca) then
-                bca:create()
-            end
-            table.remove(_aa, 1)
-        end
-    end
-    local function aba(aca, bca)
-        if (aca == "timer") then
-            if (bca == baa) then
-                _ba(aaa)
-                caa = false;
-                baa = 0;
-                if (#_aa > 0) then
-                    daa()
-                end
-                return true
-            end
-        end
-    end
-    function __a.create(aca, bca, cca, dca)
-        if (d_a(bca) == "string") then
-            bca = {
-                name = bca
-            }
-        end
-        if (bca == nil) then
-            bca = {
-                name = aca
-            }
-        end
-        local _da = ad.getElement(aca)
-        if (cca) then
-            local ada = cd.blueprint(_da, bca, __a, dca)
-            table.insert(_aa, ada)
-            daa()
-            return ada
-        else
-            local ada = _da.new()
-            ada:init(bca, __a)
-            return ada
-        end
-    end
-    function __a.createFrame()
-        local aca = __a.create("BaseFrame")
-        aca:postInit()
-        if (a_a == nil) then
-            a_a = tostring(term.current())
-            __a.setActiveFrame(aca, true)
-        end
-        return aca
-    end
-    function __a.getElementManager()
-        return ad
-    end
-    function __a.getErrorManager()
-        return bd
-    end
-    function __a.getMainFrame()
-        local aca = tostring(term.current())
-        if (c_a[aca] == nil) then
-            a_a = aca;
-            __a.createFrame()
-        end
-        return c_a[aca]
-    end
-    function __a.setActiveFrame(aca, bca)
-        local cca = aca:getTerm()
-        if (bca == nil) then
-            bca = true
-        end
-        if (cca ~= nil) then
-            c_a[tostring(cca)] = bca and aca or nil;
-            aca:updateRender()
-        end
-    end
-    function __a.getActiveFrame(aca)
-        if (aca == nil) then
-            aca = term.current()
-        end
-        return c_a[tostring(aca)]
-    end
-    function __a.setFocus(aca)
-        if (b_a == aca) then
-            return
-        end
-        if (b_a ~= nil) then
-            b_a:dispatchEvent("blur")
-        end
-        b_a = aca
-        if (b_a ~= nil) then
-            b_a:dispatchEvent("focus")
-        end
-    end
-    function __a.getFocus()
-        return b_a
-    end
-    function __a.schedule(aca)
-        dd(1, aca, "function")
-        local bca = coroutine.create(aca)
-        local cca, dca = coroutine.resume(bca)
-        if (cca) then
-            table.insert(__a._schedule, {
-                coroutine = bca,
-                filter = dca
-            })
-        else
-            bd.header = "Basalt Schedule Error"
-            bd.error(dca)
-        end
-        return bca
-    end
-    function __a.removeSchedule(aca)
-        for bca, cca in ipairs(__a._schedule) do
-            if (cca.coroutine == aca) then
-                table.remove(__a._schedule, bca)
-                return true
-            end
-        end
-        return false
-    end
-    local bba = {
-        mouse_click = true,
-        mouse_up = true,
-        mouse_scroll = true,
-        mouse_drag = true
-    }
-    local cba = {
-        key = true,
-        key_up = true,
-        char = true
-    }
-    local function dba(aca, ...)
-        if (aca == "terminate") then
-            __a.stop()
-            return
-        end
-        if aba(aca, ...) then
-            return
-        end
-        local bca = {...}
-        local function cca()
-            if (bba[aca]) then
-                if c_a[a_a] then
-                    c_a[a_a]:dispatchEvent(aca, table.unpack(bca))
-                end
-            elseif (cba[aca]) then
-                if (b_a ~= nil) then
-                    b_a:dispatchEvent(aca, table.unpack(bca))
-                end
-            else
-                for bda, cda in pairs(c_a) do
-                    cda:dispatchEvent(aca, table.unpack(bca))
-                end
-            end
-        end
-        for bda, cda in pairs(__a._eventQueue) do
-            if coroutine.status(cda.coroutine) == "suspended" then
-                if cda.filter == aca or cda.filter == nil then
-                    cda.filter = nil
-                    local dda, __b = coroutine.resume(cda.coroutine, aca, ...)
-                    if not dda then
-                        bd.header = "Basalt Event Error"
-                        bd.error(__b)
-                    end
-                    cda.filter = __b
-                end
-            end
-            if coroutine.status(cda.coroutine) == "dead" then
-                table.remove(__a._eventQueue, bda)
-            end
-        end
-        local dca = {
-            coroutine = coroutine.create(cca),
-            filter = aca
-        }
-        local _da, ada = coroutine.resume(dca.coroutine, aca, ...)
-        if (not _da) then
-            bd.header = "Basalt Event Error"
-            bd.error(ada)
-        end
-        if (ada ~= nil) then
-            dca.filter = ada
-        end
-        table.insert(__a._eventQueue, dca)
-        for bda, cda in ipairs(__a._schedule) do
-            if coroutine.status(cda.coroutine) == "suspended" then
-                if aca == cda.filter or cda.filter == nil then
-                    cda.filter = nil
-                    local dda, __b = coroutine.resume(cda.coroutine, aca, ...)
-                    if (not dda) then
-                        bd.header = "Basalt Schedule Error"
-                        bd.error(__b)
-                    end
-                    cda.filter = __b
-                end
-            end
-            if (coroutine.status(cda.coroutine) == "dead") then
-                __a.removeSchedule(cda.coroutine)
-            end
-        end
-        if __a._events[aca] then
-            for bda, cda in ipairs(__a._events[aca]) do
-                cda(...)
-            end
-        end
-    end
-    local function _ca()
-        for aca, bca in pairs(c_a) do
-            bca:render()
-            bca:postRender()
-        end
-    end
-    function __a.render()
-        _ca()
-    end
-    function __a.update(...)
-        local aca = function(...)
-            __a.isRunning = true;
-            dba(...)
-            _ca()
-        end
-        local bca, cca = pcall(aca, ...)
-        if not (bca) then
-            bd.header = "Basalt Runtime Error"
-            bd.error(cca)
-        end
-        __a.isRunning = false
-    end
-    function __a.stop()
-        __a.isRunning = false;
-        term.clear()
-        term.setCursorPos(1, 1)
-    end
-    function __a.run(aca)
-        if (__a.isRunning) then
-            bd.error("Basalt is already running")
-        end
-        if (aca == nil) then
-            __a.isRunning = true
-        else
-            __a.isRunning = aca
-        end
-        local function bca()
-            _ca()
-            while __a.isRunning do
-                dba(os.pullEventRaw())
-                if (__a.isRunning) then
-                    _ca()
-                end
-            end
-        end
-        while __a.isRunning do
-            local cca, dca = pcall(bca)
-            if not (cca) then
-                bd.header = "Basalt Runtime Error"
-                bd.error(dca)
-            end
-        end
-    end
-    function __a.getElementClass(aca)
-        return ad.getElement(aca)
-    end
-    function __a.getAPI(aca)
-        return ad.getAPI(aca)
-    end
-    return __a
-end
-project["render.lua"] = function(...)
-    local _a = require("libraries/colorHex")
-    local aa = require("log")
-    local ba = {}
-    ba.__index = ba;
-    local ca = string.sub
-    function ba.new(da)
-        local _b = setmetatable({}, ba)
-        _b.terminal = da;
-        _b.width, _b.height = da.getSize()
-        _b.buffer = {
-            text = {},
-            fg = {},
-            bg = {},
-            dirtyRects = {}
-        }
-        for y = 1, _b.height do
-            _b.buffer.text[y] = string.rep(" ", _b.width)
-            _b.buffer.fg[y] = string.rep("0", _b.width)
-            _b.buffer.bg[y] = string.rep("f", _b.width)
-        end
-        return _b
-    end
-    function ba:addDirtyRect(da, _b, ab, bb)
-        table.insert(self.buffer.dirtyRects, {
-            x = da,
-            y = _b,
-            width = ab,
-            height = bb
-        })
-        return self
-    end
-    function ba:blit(da, _b, ab, bb, cb)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        if (#ab ~= #bb or #ab ~= #cb) then
-            error("Text, fg, and bg must be the same length")
-        end
-        self.buffer.text[_b] = ca(self.buffer.text[_b]:sub(1, da - 1) .. ab .. self.buffer.text[_b]:sub(da + #ab), 1,
-            self.width)
-        self.buffer.fg[_b] = ca(self.buffer.fg[_b]:sub(1, da - 1) .. bb .. self.buffer.fg[_b]:sub(da + #bb), 1,
-            self.width)
-        self.buffer.bg[_b] = ca(self.buffer.bg[_b]:sub(1, da - 1) .. cb .. self.buffer.bg[_b]:sub(da + #cb), 1,
-            self.width)
-        self:addDirtyRect(da, _b, #ab, 1)
-        return self
-    end
-    function ba:multiBlit(da, _b, ab, bb, cb, db, _c)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        if (#cb ~= #db or #cb ~= #_c) then
-            error("Text, fg, and bg must be the same length")
-        end
-        cb = cb:rep(ab)
-        db = db:rep(ab)
-        _c = _c:rep(ab)
-        for dy = 0, bb - 1 do
-            local ac = _b + dy
-            if ac >= 1 and ac <= self.height then
-                self.buffer.text[ac] = ca(self.buffer.text[ac]:sub(1, da - 1) .. cb ..
-                                              self.buffer.text[ac]:sub(da + #cb), 1, self.width)
-                self.buffer.fg[ac] = ca(self.buffer.fg[ac]:sub(1, da - 1) .. db .. self.buffer.fg[ac]:sub(da + #db), 1,
-                    self.width)
-                self.buffer.bg[ac] = ca(self.buffer.bg[ac]:sub(1, da - 1) .. _c .. self.buffer.bg[ac]:sub(da + #_c), 1,
-                    self.width)
-            end
-        end
-        self:addDirtyRect(da, _b, ab, bb)
-        return self
-    end
-    function ba:textFg(da, _b, ab, bb)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        bb = _a[bb] or "0"
-        bb = bb:rep(#ab)
-        self.buffer.text[_b] = ca(self.buffer.text[_b]:sub(1, da - 1) .. ab .. self.buffer.text[_b]:sub(da + #ab), 1,
-            self.width)
-        self.buffer.fg[_b] = ca(self.buffer.fg[_b]:sub(1, da - 1) .. bb .. self.buffer.fg[_b]:sub(da + #bb), 1,
-            self.width)
-        self:addDirtyRect(da, _b, #ab, 1)
-        return self
-    end
-    function ba:textBg(da, _b, ab, bb)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        bb = _a[bb] or "f"
-        self.buffer.text[_b] = ca(self.buffer.text[_b]:sub(1, da - 1) .. ab .. self.buffer.text[_b]:sub(da + #ab), 1,
-            self.width)
-        self.buffer.bg[_b] = ca(self.buffer.bg[_b]:sub(1, da - 1) .. bb:rep(#ab) .. self.buffer.bg[_b]:sub(da + #ab), 1,
-            self.width)
-        self:addDirtyRect(da, _b, #ab, 1)
-        return self
-    end
-    function ba:text(da, _b, ab)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        self.buffer.text[_b] = ca(self.buffer.text[_b]:sub(1, da - 1) .. ab .. self.buffer.text[_b]:sub(da + #ab), 1,
-            self.width)
-        self:addDirtyRect(da, _b, #ab, 1)
-        return self
-    end
-    function ba:fg(da, _b, ab)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        self.buffer.fg[_b] = ca(self.buffer.fg[_b]:sub(1, da - 1) .. ab .. self.buffer.fg[_b]:sub(da + #ab), 1,
-            self.width)
-        self:addDirtyRect(da, _b, #ab, 1)
-        return self
-    end
-    function ba:bg(da, _b, ab)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        self.buffer.bg[_b] = ca(self.buffer.bg[_b]:sub(1, da - 1) .. ab .. self.buffer.bg[_b]:sub(da + #ab), 1,
-            self.width)
-        self:addDirtyRect(da, _b, #ab, 1)
-        return self
-    end
-    function ba:text(da, _b, ab)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        self.buffer.text[_b] = ca(self.buffer.text[_b]:sub(1, da - 1) .. ab .. self.buffer.text[_b]:sub(da + #ab), 1,
-            self.width)
-        self:addDirtyRect(da, _b, #ab, 1)
-        return self
-    end
-    function ba:fg(da, _b, ab)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        self.buffer.fg[_b] = ca(self.buffer.fg[_b]:sub(1, da - 1) .. ab .. self.buffer.fg[_b]:sub(da + #ab), 1,
-            self.width)
-        self:addDirtyRect(da, _b, #ab, 1)
-        return self
-    end
-    function ba:bg(da, _b, ab)
-        if _b < 1 or _b > self.height then
-            return self
-        end
-        self.buffer.bg[_b] = ca(self.buffer.bg[_b]:sub(1, da - 1) .. ab .. self.buffer.bg[_b]:sub(da + #ab), 1,
-            self.width)
-        self:addDirtyRect(da, _b, #ab, 1)
-        return self
-    end
-    function ba:clear(da)
-        local _b = _a[da] or "f"
-        for y = 1, self.height do
-            self.buffer.text[y] = string.rep(" ", self.width)
-            self.buffer.fg[y] = string.rep("0", self.width)
-            self.buffer.bg[y] = string.rep(_b, self.width)
-            self:addDirtyRect(1, y, self.width, 1)
-        end
-        return self
-    end
-    function ba:render()
-        local da = {}
-        for _b, ab in ipairs(self.buffer.dirtyRects) do
-            local bb = false;
-            for cb, db in ipairs(da) do
-                if self:rectOverlaps(ab, db) then
-                    self:mergeRects(db, ab)
-                    bb = true;
-                    break
-                end
-            end
-            if not bb then
-                table.insert(da, ab)
-            end
-        end
-        for _b, ab in ipairs(da) do
-            for y = ab.y, ab.y + ab.height - 1 do
-                if y >= 1 and y <= self.height then
-                    self.terminal.setCursorPos(ab.x, y)
-                    self.terminal.blit(self.buffer.text[y]:sub(ab.x, ab.x + ab.width - 1),
-                        self.buffer.fg[y]:sub(ab.x, ab.x + ab.width - 1),
-                        self.buffer.bg[y]:sub(ab.x, ab.x + ab.width - 1))
-                end
-            end
-        end
-        self.buffer.dirtyRects = {}
-        if self.blink then
-            self.terminal.setTextColor(self.cursorColor or colors.white)
-            self.terminal.setCursorPos(self.xCursor, self.yCursor)
-            self.terminal.setCursorBlink(true)
-        else
-            self.terminal.setCursorBlink(false)
-        end
-        return self
-    end
-    function ba:rectOverlaps(da, _b)
-        return
-            not (da.x + da.width <= _b.x or _b.x + _b.width <= da.x or da.y + da.height <= _b.y or _b.y + _b.height <=
-                da.y)
-    end
-    function ba:mergeRects(da, _b)
-        local ab = math.min(da.x, _b.x)
-        local bb = math.min(da.y, _b.y)
-        local cb = math.max(da.x + da.width, _b.x + _b.width)
-        local db = math.max(da.y + da.height, _b.y + _b.height)
-        da.x = ab;
-        da.y = bb;
-        da.width = cb - ab;
-        da.height = db - bb;
-        return self
-    end
-    function ba:setCursor(da, _b, ab, bb)
-        if bb ~= nil then
-            self.terminal.setTextColor(bb)
-        end
-        self.terminal.setCursorPos(da, _b)
-        self.terminal.setCursorBlink(ab)
-        self.xCursor = da;
-        self.yCursor = _b;
-        self.blink = ab;
-        self.cursorColor = bb
-        return self
-    end
-    function ba:clearArea(da, _b, ab, bb, cb)
-        local db = _a[cb] or "f"
-        for dy = 0, bb - 1 do
-            local _c = _b + dy;
-            if _c >= 1 and _c <= self.height then
-                local ac = string.rep(" ", ab)
-                local bc = string.rep(db, ab)
-                self:blit(da, _c, ac, "0", db)
-            end
-        end
-        return self
-    end
-    function ba:getSize()
-        return self.width, self.height
-    end
-    function ba:setSize(da, _b)
-        self.width = da;
-        self.height = _b
-        for y = 1, self.height do
-            self.buffer.text[y] = string.rep(" ", self.width)
-            self.buffer.fg[y] = string.rep("0", self.width)
-            self.buffer.bg[y] = string.rep("f", self.width)
-        end
-        return self
-    end
-    return ba
-end
-project["libraries/expect.lua"] = function(...)
-    local c = require("errorManager")
-    local function d(_a, aa, ba)
-        local ca = type(aa)
-        if ba == "element" then
-            if ca == "table" and aa.get("type") ~= nil then
-                return true
-            end
-        end
-        if ba == "color" then
-            if ca == "number" then
-                return true
-            end
-            if ca == "string" and colors[aa] then
-                return true
-            end
-        end
-        if ca ~= ba then
-            c.header = "Basalt Type Error"
-            c.error(string.format("Bad argument #%d: expected %s, got %s", _a, ba, ca))
-        end
-        return true
-    end
-    return d
-end
-project["libraries/colorHex.lua"] = function(...)
-    local b = {}
-    for i = 0, 15 do
-        b[2 ^ i] = ("%x"):format(i)
-        b[("%x"):format(i)] = 2 ^ i
-    end
-    return b
-end
-project["libraries/utils.lua"] = function(...)
-    local d, _a = math.floor, string.len;
-    local aa = {}
-    function aa.getCenteredPosition(ba, ca, da)
-        local _b = _a(ba)
-        local ab = d((ca - _b + 1) / 2 + 0.5)
-        local bb = d(da / 2 + 0.5)
-        return ab, bb
-    end
-    function aa.deepCopy(ba)
-        if type(ba) ~= "table" then
-            return ba
-        end
-        local ca = {}
-        for da, _b in pairs(ba) do
-            ca[aa.deepCopy(da)] = aa.deepCopy(_b)
-        end
-        return ca
-    end
-    function aa.copy(ba)
-        local ca = {}
-        for da, _b in pairs(ba) do
-            ca[da] = _b
-        end
-        return ca
-    end
-    function aa.reverse(ba)
-        local ca = {}
-        for i = #ba, 1, -1 do
-            table.insert(ca, ba[i])
-        end
-        return ca
-    end
-    function aa.uuid()
-        return string.format('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', math.random(0, 0xffff), math.random(0, 0xffff),
-            math.random(0, 0xffff), math.random(0, 0x0fff) + 0x4000, math.random(0, 0x3fff) + 0x8000,
-            math.random(0, 0xffff), math.random(0, 0xffff), math.random(0, 0xffff))
-    end
-    function aa.split(ba, ca)
-        local da = {}
-        for _b in (ba .. ca):gmatch("(.-)" .. ca) do
-            table.insert(da, _b)
-        end
-        return da
-    end
-    function aa.removeTags(ba)
-        return ba:gsub("{[^}]+}", "")
-    end
-    function aa.wrapText(ba, ca)
-        if ba == nil then
-            return {}
-        end
-        ba = aa.removeTags(ba)
-        local da = {}
-        local _b = aa.split(ba, "\n\n")
-        for ab, bb in ipairs(_b) do
-            if #bb == 0 then
-                table.insert(da, "")
-                if ab < #_b then
-                    table.insert(da, "")
-                end
-            else
-                local cb = aa.split(bb, "\n")
-                for db, _c in ipairs(cb) do
-                    local ac = aa.split(_c, " ")
-                    local bc = ""
-                    for cc, dc in ipairs(ac) do
-                        if #bc == 0 then
-                            bc = dc
-                        elseif #bc + #dc + 1 <= ca then
-                            bc = bc .. " " .. dc
-                        else
-                            table.insert(da, bc)
-                            bc = dc
-                        end
-                    end
-                    if #bc > 0 then
-                        table.insert(da, bc)
-                    end
-                end
-                if ab < #_b then
-                    table.insert(da, "")
-                end
-            end
-        end
-        return da
-    end
-    return aa
-end
-project["elements/Scrollbar.lua"] = function(...)
-    local aa = require("elements/VisualElement")
-    local ba = require("libraries/colorHex")
-    local ca = setmetatable({}, aa)
-    ca.__index = ca
-    ca.defineProperty(ca, "value", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "min", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "max", {
-        default = 100,
-        type = "number",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "step", {
-        default = 10,
-        type = "number"
-    })
-    ca.defineProperty(ca, "dragMultiplier", {
-        default = 1,
-        type = "number"
-    })
-    ca.defineProperty(ca, "symbol", {
-        default = " ",
-        type = "string",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "symbolColor", {
-        default = colors.gray,
-        type = "color",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "symbolBackgroundColor", {
-        default = colors.black,
-        type = "color",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "backgroundSymbol", {
-        default = "\127",
-        type = "string",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "attachedElement", {
-        default = nil,
-        type = "table"
-    })
-    ca.defineProperty(ca, "attachedProperty", {
-        default = nil,
-        type = "string"
-    })
-    ca.defineProperty(ca, "minValue", {
-        default = 0,
-        type = "number"
-    })
-    ca.defineProperty(ca, "maxValue", {
-        default = 100,
-        type = "number"
-    })
-    ca.defineProperty(ca, "orientation", {
-        default = "vertical",
-        type = "string",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "handleSize", {
-        default = 2,
-        type = "number",
-        canTriggerRender = true
-    })
-    ca.defineEvent(ca, "mouse_click")
-    ca.defineEvent(ca, "mouse_release")
-    ca.defineEvent(ca, "mouse_drag")
-    ca.defineEvent(ca, "mouse_scroll")
-    function ca.new()
-        local ab = setmetatable({}, ca):__init()
-        ab.class = ca;
-        ab.set("width", 1)
-        ab.set("height", 10)
-        return ab
-    end
-    function ca:init(ab, bb)
-        aa.init(self, ab, bb)
-        self.set("type", "ScrollBar")
-        return self
-    end
-    function ca:attach(ab, bb)
-        self.set("attachedElement", ab)
-        self.set("attachedProperty", bb.property)
-        self.set("minValue", bb.min or 0)
-        self.set("maxValue", bb.max or 100)
-        ab:observe(bb.property, function(cb, db)
-            if db then
-                local _c = self.get("minValue")
-                local ac = self.get("maxValue")
-                if _c == ac then
-                    return
-                end
-                self.set("value", math.floor((db - _c) / (ac - _c) * 100 + 0.5))
-            end
-        end)
-        return self
-    end
-    function ca:updateAttachedElement()
-        local ab = self.get("attachedElement")
-        if not ab then
-            return
-        end
-        local bb = self.get("value")
-        local cb = self.get("minValue")
-        local db = self.get("maxValue")
-        if type(cb) == "function" then
-            cb = cb()
-        end
-        if type(db) == "function" then
-            db = db()
-        end
-        local _c = cb + (bb / 100) * (db - cb)
-        ab.set(self.get("attachedProperty"), math.floor(_c + 0.5))
-        return self
-    end
-    local function da(ab)
-        return ab.get("orientation") == "vertical" and ab.get("height") or ab.get("width")
-    end
-    local function _b(ab, bb, cb)
-        local db, _c = ab:getRelativePosition(bb, cb)
-        return ab.get("orientation") == "vertical" and _c or db
-    end
-    function ca:mouse_click(ab, bb, cb)
-        if aa.mouse_click(self, ab, bb, cb) then
-            local db = da(self)
-            local _c = self.get("value")
-            local ac = self.get("handleSize")
-            local bc = math.floor((_c / 100) * (db - ac)) + 1;
-            local cc = _b(self, bb, cb)
-            if cc >= bc and cc < bc + ac then
-                self.dragOffset = cc - bc
-            else
-                local dc = ((cc - 1) / (db - ac)) * 100
-                self.set("value", math.min(100, math.max(0, dc)))
-                self:updateAttachedElement()
-            end
-            return true
-        end
-    end
-    function ca:mouse_drag(ab, bb, cb)
-        if (aa.mouse_drag(self, ab, bb, cb)) then
-            local db = da(self)
-            local _c = self.get("handleSize")
-            local ac = self.get("dragMultiplier")
-            local bc = _b(self, bb, cb)
-            bc = math.max(1, math.min(db, bc))
-            local cc = bc - (self.dragOffset or 0)
-            local dc = (cc - 1) / (db - _c) * 100 * ac
-            self.set("value", math.min(100, math.max(0, dc)))
-            self:updateAttachedElement()
-            return true
-        end
-    end
-    function ca:mouse_scroll(ab, bb, cb)
-        if not self:isInBounds(bb, cb) then
-            return false
-        end
-        ab = ab > 0 and -1 or 1;
-        local db = self.get("step")
-        local _c = self.get("value")
-        local ac = _c - ab * db
-        self.set("value", math.min(100, math.max(0, ac)))
-        self:updateAttachedElement()
-        return true
-    end
-    function ca:render()
-        aa.render(self)
-        local ab = da(self)
-        local bb = self.get("value")
-        local cb = self.get("handleSize")
-        local db = self.get("symbol")
-        local _c = self.get("symbolColor")
-        local ac = self.get("symbolBackgroundColor")
-        local bc = self.get("backgroundSymbol")
-        local cc = self.get("orientation") == "vertical"
-        local dc = math.floor((bb / 100) * (ab - cb)) + 1
-        for i = 1, ab do
-            if cc then
-                self:blit(1, i, bc, ba[self.get("foreground")], ba[self.get("background")])
-            else
-                self:blit(i, 1, bc, ba[self.get("foreground")], ba[self.get("background")])
-            end
-        end
-        for i = dc, dc + cb - 1 do
-            if cc then
-                self:blit(1, i, db, ba[_c], ba[ac])
-            else
-                self:blit(i, 1, db, ba[_c], ba[ac])
-            end
-        end
-    end
-    return ca
-end
-project["elements/Display.lua"] = function(...)
-    local ba = require("elementManager")
-    local ca = ba.getElement("VisualElement")
-    local da = require("libraries/utils").getCenteredPosition;
-    local _b = require("libraries/utils").deepcopy
-    local ab = require("libraries/colorHex")
-    local bb = setmetatable({}, ca)
-    bb.__index = bb;
-    function bb.new()
-        local cb = setmetatable({}, bb):__init()
-        cb.class = bb;
-        cb.set("width", 25)
-        cb.set("height", 8)
-        cb.set("z", 5)
-        return cb
-    end
-    function bb:init(cb, db)
-        ca.init(self, cb, db)
-        self.set("type", "Display")
-        self._window = window.create(db.getActiveFrame():getTerm(), 1, 1, self.get("width"), self.get("height"), false)
-        local _c = self._window.reposition;
-        local ac = self._window.blit
-        local bc = self._window.write
-        self._window.reposition = function(cc, dc, _d, ad)
-            self.set("x", cc)
-            self.set("y", dc)
-            self.set("width", _d)
-            self.set("height", ad)
-            _c(1, 1, _d, ad)
-        end
-        self._window.getPosition = function(cc)
-            return cc.get("x"), cc.get("y")
-        end
-        self._window.setVisible = function(cc)
-            self.set("visible", cc)
-        end
-        self._window.isVisible = function(cc)
-            return cc.get("visible")
-        end
-        self._window.blit = function(cc, dc, _d, ad, bd)
-            ac(cc, dc, _d, ad, bd)
-            self:updateRender()
-        end
-        self._window.write = function(cc, dc, _d)
-            bc(cc, dc, _d)
-            self:updateRender()
-        end
-        self:observe("width", function(cc, dc)
-            local _d = cc._window;
-            if _d then
-                _d.reposition(1, 1, dc, cc.get("height"))
-            end
-        end)
-        self:observe("height", function(cc, dc)
-            local _d = cc._window;
-            if _d then
-                _d.reposition(1, 1, cc.get("width"), dc)
-            end
-        end)
-    end
-    function bb:getWindow()
-        return self._window
-    end
-    function bb:write(cb, db, _c, ac, bc)
-        local cc = self._window
-        if cc then
-            if ac then
-                cc.setTextColor(ac)
-            end
-            if bc then
-                cc.setBackgroundColor(bc)
-            end
-            cc.setCursorPos(cb, db)
-            cc.write(_c)
-        end
-        self:updateRender()
-        return self
-    end
-    function bb:render()
-        ca.render(self)
-        local cb = self._window;
-        local db, _c = cb.getSize()
-        if cb then
-            for y = 1, _c do
-                local ac, bc, cc = cb.getLine(y)
-                self:blit(1, y, ac, bc, cc)
-            end
-        end
-    end
-    return bb
-end
-project["elements/Dropdown.lua"] = function(...)
-    local _a = require("elements/VisualElement")
-    local aa = require("elements/List")
-    local ba = require("libraries/colorHex")
-    local ca = setmetatable({}, aa)
-    ca.__index = ca
-    ca.defineProperty(ca, "isOpen", {
-        default = false,
-        type = "boolean",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "dropdownHeight", {
-        default = 5,
-        type = "number"
-    })
-    ca.defineProperty(ca, "selectedText", {
-        default = "",
-        type = "string"
-    })
-    ca.defineProperty(ca, "dropSymbol", {
-        default = "\31",
-        type = "string"
-    })
-    function ca.new()
-        local da = setmetatable({}, ca):__init()
-        da.class = ca;
-        da.set("width", 16)
-        da.set("height", 1)
-        da.set("z", 8)
-        return da
-    end
-    function ca:init(da, _b)
-        aa.init(self, da, _b)
-        self.set("type", "Dropdown")
-        return self
-    end
-    function ca:mouse_click(da, _b, ab)
-        if not _a.mouse_click(self, da, _b, ab) then
-            return false
-        end
-        local bb, cb = self:getRelativePosition(_b, ab)
-        if cb == 1 then
-            self.set("isOpen", not self.get("isOpen"))
-            if not self.get("isOpen") then
-                self.set("height", 1)
-            else
-                self.set("height", 1 + math.min(self.get("dropdownHeight"), #self.get("items")))
-            end
-            return true
-        elseif self.get("isOpen") and cb > 1 and self.get("selectable") then
-            local db = (cb - 1) + self.get("offset")
-            local _c = self.get("items")
-            if db <= #_c then
-                local ac = _c[db]
-                if type(ac) == "string" then
-                    ac = {
-                        text = ac
-                    }
-                    _c[db] = ac
-                end
-                if not self.get("multiSelection") then
-                    for bc, cc in ipairs(_c) do
-                        if type(cc) == "table" then
-                            cc.selected = false
-                        end
-                    end
-                end
-                ac.selected = not ac.selected
-                if ac.callback then
-                    ac.callback(self)
-                end
-                self:fireEvent("select", db, ac)
-                self.set("isOpen", false)
-                self.set("height", 1)
-                self:updateRender()
-                return true
-            end
-        end
-        return false
-    end
-    function ca:render()
-        _a.render(self)
-        local da = self.get("selectedText")
-        local _b = self:getSelectedItems()
-        if #_b > 0 then
-            local ab = _b[1]
-            da = ab.text or ""
-            da = da:sub(1, self.get("width") - 2)
-        end
-        self:blit(1, 1, da .. string.rep(" ", self.get("width") - #da - 1) .. (self.get("isOpen") and "\31" or "\17"),
-            string.rep(ba[self.get("foreground")], self.get("width")),
-            string.rep(ba[self.get("background")], self.get("width")))
-        if self.get("isOpen") then
-            local ab = self.get("items")
-            local bb = self.get("height") - 1;
-            local cb = self.get("offset")
-            local db = self.get("width")
-            for i = 1, bb do
-                local _c = i + cb
-                local ac = ab[_c]
-                if ac then
-                    if type(ac) == "string" then
-                        ac = {
-                            text = ac
-                        }
-                        ab[_c] = ac
-                    end
-                    if ac.separator then
-                        local bc = (ac.text or "-"):sub(1, 1)
-                        local cc = string.rep(bc, db)
-                        local dc = ac.foreground or self.get("foreground")
-                        local _d = ac.background or self.get("background")
-                        self:textBg(1, i + 1, string.rep(" ", db), _d)
-                        self:textFg(1, i + 1, cc, dc)
-                    else
-                        local bc = ac.text;
-                        local cc = ac.selected;
-                        bc = bc:sub(1, db)
-                        local dc = cc and (ac.selectedBackground or self.get("selectedBackground")) or
-                                       (ac.background or self.get("background"))
-                        local _d = cc and (ac.selectedForeground or self.get("selectedForeground")) or
-                                       (ac.foreground or self.get("foreground"))
-                        self:textBg(1, i + 1, string.rep(" ", db), dc)
-                        self:textFg(1, i + 1, bc, _d)
-                    end
-                end
-            end
-        end
-    end
-    return ca
-end
-project["elements/LineChart.lua"] = function(...)
-    local ba = require("elementManager")
-    local ca = ba.getElement("VisualElement")
-    local da = ba.getElement("Graph")
-    local _b = require("libraries/colorHex")
-    local ab = setmetatable({}, da)
-    ab.__index = ab;
-    function ab.new()
-        local cb = setmetatable({}, ab):__init()
-        cb.class = ab;
-        return cb
-    end
-    function ab:init(cb, db)
-        da.init(self, cb, db)
-        self.set("type", "LineChart")
-        return self
-    end
-    local function bb(cb, db, _c, ac, bc, cc, dc, _d)
-        local ad = ac - db;
-        local bd = bc - _c
-        local cd = math.max(math.abs(ad), math.abs(bd))
-        for i = 0, cd do
-            local dd = cd == 0 and 0 or i / cd
-            local __a = math.floor(db + ad * dd)
-            local a_a = math.floor(_c + bd * dd)
-            if __a >= 1 and __a <= cb.get("width") and a_a >= 1 and a_a <= cb.get("height") then
-                cb:blit(__a, a_a, cc, _b[dc], _b[_d])
-            end
-        end
-    end
-    function ab:render()
-        ca.render(self)
-        local cb = self.get("width")
-        local db = self.get("height")
-        local _c = self.get("minValue")
-        local ac = self.get("maxValue")
-        local bc = self.get("series")
-        for cc, dc in pairs(bc) do
-            if (dc.visible) then
-                local _d, ad;
-                local bd = #dc.data
-                local cd = (cb - 1) / math.max((bd - 1), 1)
-                for dd, __a in ipairs(dc.data) do
-                    local a_a = math.floor(((dd - 1) * cd) + 1)
-                    local b_a = (__a - _c) / (ac - _c)
-                    local c_a = math.floor(db - (b_a * (db - 1)))
-                    c_a = math.max(1, math.min(c_a, db))
-                    if _d then
-                        bb(self, _d, ad, a_a, c_a, dc.symbol, dc.bgColor, dc.fgColor)
-                    end
-                    _d, ad = a_a, c_a
-                end
-            end
-        end
-    end
-    return ab
-end
-project["elements/Switch.lua"] = function(...)
-    local d = require("elementManager")
-    local _a = d.getElement("VisualElement")
-    local aa = setmetatable({}, _a)
-    aa.__index = aa
-    aa.defineProperty(aa, "checked", {
-        default = false,
-        type = "boolean",
-        canTriggerRender = true
-    })
-    aa.defineEvent(aa, "mouse_click")
-    aa.defineEvent(aa, "mouse_up")
-    function aa.new()
-        local ba = setmetatable({}, aa):__init()
-        ba.class = aa;
-        ba.set("width", 2)
-        ba.set("height", 1)
-        ba.set("z", 5)
-        return ba
-    end
-    function aa:init(ba, ca)
-        _a.init(self, ba, ca)
-        self.set("type", "Switch")
-    end
-    function aa:render()
-        _a.render(self)
-    end
-    return aa
-end
-project["elements/Menu.lua"] = function(...)
-    local _a = require("elements/VisualElement")
-    local aa = require("elements/List")
-    local ba = require("libraries/colorHex")
-    local ca = setmetatable({}, aa)
-    ca.__index = ca
-    ca.defineProperty(ca, "separatorColor", {
-        default = colors.gray,
-        type = "color"
-    })
-    function ca.new()
-        local da = setmetatable({}, ca):__init()
-        da.class = ca;
-        da.set("width", 30)
-        da.set("height", 1)
-        da.set("background", colors.gray)
-        return da
-    end
-    function ca:init(da, _b)
-        aa.init(self, da, _b)
-        self.set("type", "Menu")
-        return self
-    end
-    function ca:setItems(da)
-        local _b = {}
-        local ab = 0
-        for bb, cb in ipairs(da) do
-            if cb.separator then
-                table.insert(_b, {
-                    text = cb.text or "|",
-                    selectable = false
-                })
-                ab = ab + 1
-            else
-                local db = " " .. cb.text .. " "
-                cb.text = db
-                table.insert(_b, cb)
-                ab = ab + #db
-            end
-        end
-        self.set("width", ab)
-        return aa.setItems(self, _b)
-    end
-    function ca:render()
-        _a.render(self)
-        local da = 1
-        for _b, ab in ipairs(self.get("items")) do
-            if type(ab) == "string" then
-                ab = {
-                    text = " " .. ab .. " "
-                }
-                self.get("items")[_b] = ab
-            end
-            local bb = ab.selected
-            local cb = ab.selectable == false and self.get("separatorColor") or
-                           (bb and (ab.selectedForeground or self.get("selectedForeground")) or
-                               (ab.foreground or self.get("foreground")))
-            local db = bb and (ab.selectedBackground or self.get("selectedBackground")) or
-                           (ab.background or self.get("background"))
-            self:blit(da, 1, ab.text, string.rep(ba[cb], #ab.text), string.rep(ba[db], #ab.text))
-            da = da + #ab.text
-        end
-    end
-    function ca:mouse_click(da, _b, ab)
-        if not _a.mouse_click(self, da, _b, ab) then
-            return false
-        end
-        if (self.get("selectable") == false) then
-            return false
-        end
-        local bb = select(1, self:getRelativePosition(_b, ab))
-        local cb = 1
-        for db, _c in ipairs(self.get("items")) do
-            if bb >= cb and bb < cb + #_c.text then
-                if _c.selectable ~= false then
-                    if type(_c) == "string" then
-                        _c = {
-                            text = _c
-                        }
-                        self.get("items")[db] = _c
-                    end
-                    if not self.get("multiSelection") then
-                        for ac, bc in ipairs(self.get("items")) do
-                            if type(bc) == "table" then
-                                bc.selected = false
-                            end
-                        end
-                    end
-                    _c.selected = not _c.selected
-                    if _c.callback then
-                        _c.callback(self)
-                    end
-                    self:fireEvent("select", db, _c)
-                end
-                return true
-            end
-            cb = cb + #_c.text
-        end
-        return false
-    end
-    return ca
-end
-project["elements/Slider.lua"] = function(...)
-    local d = require("elements/VisualElement")
-    local _a = require("libraries/colorHex")
-    local aa = setmetatable({}, d)
-    aa.__index = aa
-    aa.defineProperty(aa, "step", {
-        default = 1,
-        type = "number",
-        canTriggerRender = true
-    })
-    aa.defineProperty(aa, "max", {
-        default = 100,
-        type = "number"
-    })
-    aa.defineProperty(aa, "horizontal", {
-        default = true,
-        type = "boolean",
-        canTriggerRender = true,
-        setter = function(ba, ca)
-            if ca then
-                ba.set("backgroundEnabled", false)
-            else
-                ba.set("backgroundEnabled", true)
-            end
-        end
-    })
-    aa.defineProperty(aa, "barColor", {
-        default = colors.gray,
-        type = "color",
-        canTriggerRender = true
-    })
-    aa.defineProperty(aa, "sliderColor", {
-        default = colors.blue,
-        type = "color",
-        canTriggerRender = true
-    })
-    aa.defineEvent(aa, "mouse_click")
-    aa.defineEvent(aa, "mouse_drag")
-    aa.defineEvent(aa, "mouse_up")
-    aa.defineEvent(aa, "mouse_scroll")
-    function aa.new()
-        local ba = setmetatable({}, aa):__init()
-        ba.class = aa;
-        ba.set("width", 8)
-        ba.set("height", 1)
-        ba.set("backgroundEnabled", false)
-        return ba
-    end
-    function aa:init(ba, ca)
-        d.init(self, ba, ca)
-        self.set("type", "Slider")
-    end
-    function aa:getValue()
-        local ba = self.get("step")
-        local ca = self.get("max")
-        local da = self.get("horizontal") and self.get("width") or self.get("height")
-        return math.floor((ba - 1) * (ca / (da - 1)))
-    end
-    function aa:mouse_click(ba, ca, da)
-        if self:isInBounds(ca, da) then
-            local _b, ab = self:getRelativePosition(ca, da)
-            local bb = self.get("horizontal") and _b or ab;
-            local cb = self.get("horizontal") and self.get("width") or self.get("height")
-            self.set("step", math.min(cb, math.max(1, bb)))
-            self:updateRender()
-            return true
-        end
-        return false
-    end
-    aa.mouse_drag = aa.mouse_click
-    function aa:mouse_scroll(ba, ca, da)
-        if self:isInBounds(ca, da) then
-            local _b = self.get("step")
-            local ab = self.get("horizontal") and self.get("width") or self.get("height")
-            self.set("step", math.min(ab, math.max(1, _b + ba)))
-            self:updateRender()
-            return true
-        end
-        return false
-    end
-    function aa:render()
-        d.render(self)
-        local ba = self.get("width")
-        local ca = self.get("height")
-        local da = self.get("horizontal")
-        local _b = self.get("step")
-        local ab = da and "\140" or " "
-        local bb = string.rep(ab, da and ba or ca)
-        if da then
-            self:textFg(1, 1, bb, self.get("barColor"))
-            self:textBg(_b, 1, " ", self.get("sliderColor"))
-        else
-            local cb = self.get("background")
-            for y = 1, ca do
-                self:textBg(1, y, " ", cb)
-            end
-            self:textBg(1, _b, " ", self.get("sliderColor"))
-        end
-    end
-    return aa
-end
-project["elements/Frame.lua"] = function(...)
-    local _a = require("elementManager")
-    local aa = _a.getElement("VisualElement")
-    local ba = _a.getElement("Container")
-    local ca = setmetatable({}, ba)
-    ca.__index = ca
-    ca.defineProperty(ca, "draggable", {
-        default = false,
-        type = "boolean",
-        setter = function(da, _b)
-            if _b then
-                da:listenEvent("mouse_click", true)
-                da:listenEvent("mouse_up", true)
-                da:listenEvent("mouse_drag", true)
-            end
-            return _b
-        end
-    })
-    ca.defineProperty(ca, "draggingMap", {
-        default = {{
-            x = 1,
-            y = 1,
-            width = "width",
-            height = 1
-        }},
-        type = "table"
-    })
-    function ca.new()
-        local da = setmetatable({}, ca):__init()
-        da.class = ca;
-        da.set("width", 12)
-        da.set("height", 6)
-        da.set("background", colors.gray)
-        da.set("z", 10)
-        return da
-    end
-    function ca:init(da, _b)
-        ba.init(self, da, _b)
-        self.set("type", "Frame")
-        return self
-    end
-    function ca:mouse_click(da, _b, ab)
-        if aa.mouse_click(self, da, _b, ab) then
-            if self.get("draggable") then
-                local bb, cb = self:getRelativePosition(_b, ab)
-                local db = self.get("draggingMap")
-                for _c, ac in ipairs(db) do
-                    local bc = ac.width or 1;
-                    local cc = ac.height or 1;
-                    if type(bc) == "string" and bc == "width" then
-                        bc = self.get("width")
-                    elseif type(bc) == "function" then
-                        bc = bc(self)
-                    end
-                    if type(cc) == "string" and cc == "height" then
-                        cc = self.get("height")
-                    elseif type(cc) == "function" then
-                        cc = cc(self)
-                    end
-                    local dc = ac.y or 1
-                    if bb >= ac.x and bb <= ac.x + bc - 1 and cb >= dc and cb <= dc + cc - 1 then
-                        self.dragStartX = _b - self.get("x")
-                        self.dragStartY = ab - self.get("y")
-                        self.dragging = true
-                        return true
-                    end
-                end
-            end
-            return ba.mouse_click(self, da, _b, ab)
-        end
-        return false
-    end
-    function ca:mouse_up(da, _b, ab)
-        self.dragging = false;
-        self.dragStartX = nil;
-        self.dragStartY = nil;
-        return ba.mouse_up(self, da, _b, ab)
-    end
-    function ca:mouse_drag(da, _b, ab)
-        if self.get("clicked") and self.dragging then
-            local bb = _b - self.dragStartX;
-            local cb = ab - self.dragStartY;
-            self.set("x", bb)
-            self.set("y", cb)
-            return true
-        end
-        if not self.dragging then
-            return ba.mouse_drag(self, da, _b, ab)
-        end
-        return false
-    end
-    return ca
-end
-project["elements/Flexbox.lua"] = function(...)
-    local da = require("elementManager")
-    local _b = da.getElement("Container")
-    local ab = setmetatable({}, _b)
-    ab.__index = ab
-    ab.defineProperty(ab, "flexDirection", {
-        default = "row",
-        type = "string"
-    })
-    ab.defineProperty(ab, "flexSpacing", {
-        default = 1,
-        type = "number"
-    })
-    ab.defineProperty(ab, "flexJustifyContent", {
-        default = "flex-start",
-        type = "string",
-        setter = function(bc, cc)
-            if not cc:match("^flex%-") then
-                cc = "flex-" .. cc
-            end
-            return cc
-        end
-    })
-    ab.defineProperty(ab, "flexAlignItems", {
-        default = "flex-start",
-        type = "string",
-        setter = function(bc, cc)
-            if not cc:match("^flex%-") and cc ~= "stretch" then
-                cc = "flex-" .. cc
-            end
-            return cc
-        end
-    })
-    ab.defineProperty(ab, "flexCrossPadding", {
-        default = 0,
-        type = "number"
-    })
-    ab.defineProperty(ab, "flexWrap", {
-        default = false,
-        type = "boolean"
-    })
-    ab.defineProperty(ab, "flexUpdateLayout", {
-        default = false,
-        type = "boolean"
-    })
-    local bb = {
-        getHeight = function(bc)
-            return 0
-        end,
-        getWidth = function(bc)
-            return 0
-        end,
-        getZ = function(bc)
-            return 1
-        end,
-        getPosition = function(bc)
-            return 0, 0
-        end,
-        getSize = function(bc)
-            return 0, 0
-        end,
-        isType = function(bc)
-            return false
-        end,
-        getType = function(bc)
-            return "lineBreak"
-        end,
-        getName = function(bc)
-            return "lineBreak"
-        end,
-        setPosition = function(bc)
-        end,
-        setParent = function(bc)
-        end,
-        setSize = function(bc)
-        end,
-        getFlexGrow = function(bc)
-            return 0
-        end,
-        getFlexShrink = function(bc)
-            return 0
-        end,
-        getFlexBasis = function(bc)
-            return 0
-        end,
-        init = function(bc)
-        end,
-        getVisible = function(bc)
-            return true
-        end
-    }
-    local function cb(bc, cc, dc, _d)
-        local ad = {}
-        local bd = {}
-        local cd = 0
-        for __a, a_a in pairs(bc.get("children")) do
-            if a_a.get("visible") then
-                table.insert(bd, a_a)
-                if a_a ~= bb then
-                    cd = cd + 1
-                end
-            end
-        end
-        if cd == 0 then
-            return ad
-        end
-        if not _d then
-            ad[1] = {
-                offset = 1
-            }
-            for __a, a_a in ipairs(bd) do
-                if a_a == bb then
-                    local b_a = #ad + 1;
-                    if ad[b_a] == nil then
-                        ad[b_a] = {
-                            offset = 1
-                        }
-                    end
-                else
-                    table.insert(ad[#ad], a_a)
-                end
-            end
-        else
-            local __a = cc == "row" and bc.get("width") or bc.get("height")
-            local a_a = {{}}
-            local b_a = 1
-            for c_a, d_a in ipairs(bd) do
-                if d_a == bb then
-                    b_a = b_a + 1;
-                    a_a[b_a] = {}
-                else
-                    table.insert(a_a[b_a], d_a)
-                end
-            end
-            for c_a, d_a in ipairs(a_a) do
-                if #d_a == 0 then
-                    ad[#ad + 1] = {
-                        offset = 1
-                    }
-                else
-                    local _aa = {}
-                    local aaa = {}
-                    local baa = 0
-                    for caa, daa in ipairs(d_a) do
-                        local _ba = 0
-                        local aba = cc == "row" and daa.get("width") or daa.get("height")
-                        local bba = false
-                        if cc == "row" then
-                            local _ca, aca = pcall(function()
-                                return daa.get("intrinsicWidth")
-                            end)
-                            if _ca and aca then
-                                _ba = aca;
-                                bba = true
-                            end
-                        else
-                            local _ca, aca = pcall(function()
-                                return daa.get("intrinsicHeight")
-                            end)
-                            if _ca and aca then
-                                _ba = aca;
-                                bba = true
-                            end
-                        end
-                        local cba = bba and _ba or aba;
-                        local dba = cba;
-                        if #aaa > 0 then
-                            dba = dba + dc
-                        end
-                        if baa + dba <= __a or #aaa == 0 then
-                            table.insert(aaa, daa)
-                            baa = baa + dba
-                        else
-                            table.insert(_aa, aaa)
-                            aaa = {daa}
-                            baa = cba
-                        end
-                    end
-                    if #aaa > 0 then
-                        table.insert(_aa, aaa)
-                    end
-                    for caa, daa in ipairs(_aa) do
-                        ad[#ad + 1] = {
-                            offset = 1
-                        }
-                        for _ba, aba in ipairs(daa) do
-                            table.insert(ad[#ad], aba)
-                        end
-                    end
-                end
-            end
-        end
-        local dd = {}
-        for __a, a_a in ipairs(ad) do
-            if #a_a > 0 then
-                table.insert(dd, a_a)
-            end
-        end
-        return dd
-    end
-    local function db(bc, cc, dc, _d)
-        local ad = {}
-        for dca, _da in ipairs(cc) do
-            if _da ~= bb then
-                table.insert(ad, _da)
-            end
-        end
-        if #ad == 0 then
-            return
-        end
-        local bd = bc.get("width")
-        local cd = bc.get("height")
-        local dd = bc.get("flexAlignItems")
-        local __a = bc.get("flexCrossPadding")
-        local a_a = bc.get("flexWrap")
-        if bd <= 0 then
-            return
-        end
-        local b_a = cd - (__a * 2)
-        if b_a < 1 then
-            b_a = cd;
-            __a = 0
-        end
-        local c_a = math.max;
-        local d_a = math.min
-        local _aa = math.floor;
-        local aaa = math.ceil;
-        local baa = 0;
-        local caa = 0;
-        local daa = {}
-        local _ba = {}
-        local aba = {}
-        for dca, _da in ipairs(ad) do
-            local ada = _da.get("flexGrow") or 0
-            local bda = _da.get("flexShrink") or 0;
-            local cda = _da.get("width")
-            _ba[_da] = ada;
-            aba[_da] = bda;
-            daa[_da] = cda;
-            if ada > 0 then
-                caa = caa + ada
-            else
-                baa = baa + cda
-            end
-        end
-        local bba = #ad;
-        local cba = (bba > 1) and ((bba - 1) * dc) or 0;
-        local dba = bd - baa - cba
-        if dba > 0 and caa > 0 then
-            for dca, _da in ipairs(ad) do
-                local ada = _ba[_da]
-                if ada > 0 then
-                    local bda = daa[_da]
-                    local cda = _aa((ada / caa) * dba)
-                    _da.set("width", c_a(cda, 1))
-                end
-            end
-        elseif dba < 0 then
-            local dca = 0;
-            local _da = {}
-            for ada, bda in ipairs(ad) do
-                local cda = aba[bda]
-                if cda > 0 then
-                    dca = dca + cda
-                    table.insert(_da, bda)
-                end
-            end
-            if dca > 0 and #_da > 0 then
-                local ada = -dba;
-                for bda, cda in ipairs(_da) do
-                    local dda = cda.get("width")
-                    local __b = aba[cda]
-                    local a_b = __b / dca;
-                    local b_b = aaa(ada * a_b)
-                    cda.set("width", c_a(1, dda - b_b))
-                end
-            end
-            baa = 0
-            for ada, bda in ipairs(ad) do
-                baa = baa + bda.get("width")
-            end
-            if caa > 0 then
-                local ada = {}
-                local bda = 0
-                for cda, dda in ipairs(ad) do
-                    if _ba[dda] > 0 then
-                        table.insert(ada, dda)
-                        bda = bda + dda.get("width")
-                    end
-                end
-                if #ada > 0 and bda > 0 then
-                    local cda = c_a(_aa(bd * 0.2), #ada)
-                    local dda = d_a(cda, bd - cba)
-                    for __b, a_b in ipairs(ada) do
-                        local b_b = _ba[a_b]
-                        local c_b = b_b / caa
-                        local d_b = c_a(1, _aa(dda * c_b))
-                        a_b.set("width", d_b)
-                    end
-                end
-            end
-        end
-        local _ca = 1
-        for dca, _da in ipairs(ad) do
-            _da.set("x", _ca)
-            if not a_a then
-                if dd == "stretch" then
-                    _da.set("height", b_a)
-                    _da.set("y", 1 + __a)
-                else
-                    local bda = _da.get("height")
-                    local cda = 1;
-                    if dd == "flex-end" then
-                        cda = cd - bda + 1
-                    elseif dd == "flex-center" or dd == "center" then
-                        cda = _aa((cd - bda) / 2) + 1
-                    end
-                    _da.set("y", c_a(1, cda))
-                end
-            end
-            local ada = _da.get("y") + _da.get("height") - 1;
-            if ada > cd and (_da.get("flexShrink") or 0) > 0 then
-                _da.set("height", c_a(1, cd - _da.get("y") + 1))
-            end
-            _ca = _ca + _da.get("width") + dc
-        end
-        local aca = ad[#ad]
-        local bca = 0;
-        if aca then
-            bca = aca.get("x") + aca.get("width") - 1
-        end
-        local cca = bd - bca
-        if cca > 0 then
-            if _d == "flex-end" then
-                for dca, _da in ipairs(ad) do
-                    _da.set("x", _da.get("x") + cca)
-                end
-            elseif _d == "flex-center" or _d == "center" then
-                local dca = _aa(cca / 2)
-                for _da, ada in ipairs(ad) do
-                    ada.set("x", ada.get("x") + dca)
-                end
-            end
-        end
-    end
-    local function _c(bc, cc, dc, _d)
-        local ad = {}
-        for dca, _da in ipairs(cc) do
-            if _da ~= bb then
-                table.insert(ad, _da)
-            end
-        end
-        if #ad == 0 then
-            return
-        end
-        local bd = bc.get("width")
-        local cd = bc.get("height")
-        local dd = bc.get("flexAlignItems")
-        local __a = bc.get("flexCrossPadding")
-        local a_a = bc.get("flexWrap")
-        if cd <= 0 then
-            return
-        end
-        local b_a = bd - (__a * 2)
-        if b_a < 1 then
-            b_a = bd;
-            __a = 0
-        end
-        local c_a = math.max;
-        local d_a = math.min
-        local _aa = math.floor;
-        local aaa = math.ceil;
-        local baa = 0;
-        local caa = 0;
-        local daa = {}
-        local _ba = {}
-        local aba = {}
-        for dca, _da in ipairs(ad) do
-            local ada = _da.get("flexGrow") or 0
-            local bda = _da.get("flexShrink") or 0;
-            local cda = _da.get("height")
-            _ba[_da] = ada;
-            aba[_da] = bda;
-            daa[_da] = cda;
-            if ada > 0 then
-                caa = caa + ada
-            else
-                baa = baa + cda
-            end
-        end
-        local bba = #ad;
-        local cba = (bba > 1) and ((bba - 1) * dc) or 0;
-        local dba = cd - baa - cba
-        if dba > 0 and caa > 0 then
-            for dca, _da in ipairs(ad) do
-                local ada = _ba[_da]
-                if ada > 0 then
-                    local bda = daa[_da]
-                    local cda = _aa((ada / caa) * dba)
-                    _da.set("height", c_a(cda, 1))
-                end
-            end
-        elseif dba < 0 then
-            local dca = 0;
-            local _da = {}
-            for ada, bda in ipairs(ad) do
-                local cda = aba[bda]
-                if cda > 0 then
-                    dca = dca + cda
-                    table.insert(_da, bda)
-                end
-            end
-            if dca > 0 and #_da > 0 then
-                local ada = -dba
-                for bda, cda in ipairs(_da) do
-                    local dda = cda.get("height")
-                    local __b = aba[cda]
-                    local a_b = __b / dca;
-                    local b_b = aaa(ada * a_b)
-                    cda.set("height", c_a(1, dda - b_b))
-                end
-            end
-            baa = 0
-            for ada, bda in ipairs(ad) do
-                baa = baa + bda.get("height")
-            end
-            if caa > 0 then
-                local ada = {}
-                local bda = 0
-                for cda, dda in ipairs(ad) do
-                    if _ba[dda] > 0 then
-                        table.insert(ada, dda)
-                        bda = bda + dda.get("height")
-                    end
-                end
-                if #ada > 0 and bda > 0 then
-                    local cda = c_a(_aa(cd * 0.2), #ada)
-                    local dda = d_a(cda, cd - cba)
-                    for __b, a_b in ipairs(ada) do
-                        local b_b = _ba[a_b]
-                        local c_b = b_b / caa
-                        local d_b = c_a(1, _aa(dda * c_b))
-                        a_b.set("height", d_b)
-                    end
-                end
-            end
-        end
-        local _ca = 1
-        for dca, _da in ipairs(ad) do
-            _da.set("y", _ca)
-            if not a_a then
-                if dd == "stretch" then
-                    _da.set("width", b_a)
-                    _da.set("x", 1 + __a)
-                else
-                    local bda = _da.get("width")
-                    local cda = 1;
-                    if dd == "flex-end" then
-                        cda = bd - bda + 1
-                    elseif dd == "flex-center" or dd == "center" then
-                        cda = _aa((bd - bda) / 2) + 1
-                    end
-                    _da.set("x", c_a(1, cda))
-                end
-            end
-            local ada = _da.get("x") + _da.get("width") - 1;
-            if ada > bd and (_da.get("flexShrink") or 0) > 0 then
-                _da.set("width", c_a(1, bd - _da.get("x") + 1))
-            end
-            _ca = _ca + _da.get("height") + dc
-        end
-        local aca = ad[#ad]
-        local bca = 0;
-        if aca then
-            bca = aca.get("y") + aca.get("height") - 1
-        end
-        local cca = cd - bca
-        if cca > 0 then
-            if _d == "flex-end" then
-                for dca, _da in ipairs(ad) do
-                    _da.set("y", _da.get("y") + cca)
-                end
-            elseif _d == "flex-center" or _d == "center" then
-                local dca = _aa(cca / 2)
-                for _da, ada in ipairs(ad) do
-                    ada.set("y", ada.get("y") + dca)
-                end
-            end
-        end
-    end
-    local function ac(bc, cc, dc, _d, ad)
-        if bc.get("width") <= 0 or bc.get("height") <= 0 then
-            return
-        end
-        cc = (cc == "row" or cc == "column") and cc or "row"
-        local bd, cd = bc.get("width"), bc.get("height")
-        local dd = bd ~= bc._lastLayoutWidth or cd ~= bc._lastLayoutHeight;
-        bc._lastLayoutWidth = bd;
-        bc._lastLayoutHeight = cd
-        if ad and dd and (bd > bc._lastLayoutWidth or cd > bc._lastLayoutHeight) then
-            for b_a, c_a in pairs(bc.get("children")) do
-                if c_a ~= bb and c_a:getVisible() and c_a.get("flexGrow") and c_a.get("flexGrow") > 0 then
-                    if cc == "row" then
-                        local d_a, _aa = pcall(function()
-                            return c_a.get("intrinsicWidth")
-                        end)
-                        if d_a and _aa then
-                            c_a.set("width", _aa)
-                        end
-                    else
-                        local d_a, _aa = pcall(function()
-                            return c_a.get("intrinsicHeight")
-                        end)
-                        if d_a and _aa then
-                            c_a.set("height", _aa)
-                        end
-                    end
-                end
-            end
-        end
-        local __a = cb(bc, cc, dc, ad)
-        if #__a == 0 then
-            return
-        end
-        local a_a = cc == "row" and db or _c
-        if cc == "row" and ad then
-            local b_a = 1
-            for c_a, d_a in ipairs(__a) do
-                if #d_a > 0 then
-                    for aaa, baa in ipairs(d_a) do
-                        if baa ~= bb then
-                            baa.set("y", b_a)
-                        end
-                    end
-                    a_a(bc, d_a, dc, _d)
-                    local _aa = 0;
-                    for aaa, baa in ipairs(d_a) do
-                        if baa ~= bb then
-                            _aa = math.max(_aa, baa.get("height"))
-                        end
-                    end
-                    if c_a < #__a then
-                        b_a = b_a + _aa + dc
-                    else
-                        b_a = b_a + _aa
-                    end
-                end
-            end
-        elseif cc == "column" and ad then
-            local b_a = 1
-            for c_a, d_a in ipairs(__a) do
-                if #d_a > 0 then
-                    for aaa, baa in ipairs(d_a) do
-                        if baa ~= bb then
-                            baa.set("x", b_a)
-                        end
-                    end
-                    a_a(bc, d_a, dc, _d)
-                    local _aa = 0;
-                    for aaa, baa in ipairs(d_a) do
-                        if baa ~= bb then
-                            _aa = math.max(_aa, baa.get("width"))
-                        end
-                    end
-                    if c_a < #__a then
-                        b_a = b_a + _aa + dc
-                    else
-                        b_a = b_a + _aa
-                    end
-                end
-            end
-        else
-            for b_a, c_a in ipairs(__a) do
-                a_a(bc, c_a, dc, _d)
-            end
-        end
-        bc:sortChildren()
-        bc.set("childrenEventsSorted", false)
-        bc.set("flexUpdateLayout", false)
-    end
-    function ab.new()
-        local bc = setmetatable({}, ab):__init()
-        bc.class = ab;
-        bc.set("width", 12)
-        bc.set("height", 6)
-        bc.set("background", colors.blue)
-        bc.set("z", 10)
-        bc._lastLayoutWidth = 0;
-        bc._lastLayoutHeight = 0
-        bc:observe("width", function()
-            bc.set("flexUpdateLayout", true)
-        end)
-        bc:observe("height", function()
-            bc.set("flexUpdateLayout", true)
-        end)
-        bc:observe("flexDirection", function()
-            bc.set("flexUpdateLayout", true)
-        end)
-        bc:observe("flexSpacing", function()
-            bc.set("flexUpdateLayout", true)
-        end)
-        bc:observe("flexWrap", function()
-            bc.set("flexUpdateLayout", true)
-        end)
-        bc:observe("flexJustifyContent", function()
-            bc.set("flexUpdateLayout", true)
-        end)
-        bc:observe("flexAlignItems", function()
-            bc.set("flexUpdateLayout", true)
-        end)
-        bc:observe("flexCrossPadding", function()
-            bc.set("flexUpdateLayout", true)
-        end)
-        return bc
-    end
-    function ab:init(bc, cc)
-        _b.init(self, bc, cc)
-        self.set("type", "Flexbox")
-        return self
-    end
-    function ab:addChild(bc)
-        _b.addChild(self, bc)
-        if (bc ~= bb) then
-            bc:instanceProperty("flexGrow", {
-                default = 0,
-                type = "number"
-            })
-            bc:instanceProperty("flexShrink", {
-                default = 0,
-                type = "number"
-            })
-            bc:instanceProperty("flexBasis", {
-                default = 0,
-                type = "number"
-            })
-            bc:instanceProperty("intrinsicWidth", {
-                default = bc.get("width"),
-                type = "number"
-            })
-            bc:instanceProperty("intrinsicHeight", {
-                default = bc.get("height"),
-                type = "number"
-            })
-            bc:observe("flexGrow", function()
-                self.set("flexUpdateLayout", true)
-            end)
-            bc:observe("flexShrink", function()
-                self.set("flexUpdateLayout", true)
-            end)
-            bc:observe("width", function(cc, dc, _d)
-                if bc.get("flexGrow") == 0 then
-                    bc.set("intrinsicWidth", dc)
-                end
-                self.set("flexUpdateLayout", true)
-            end)
-            bc:observe("height", function(cc, dc, _d)
-                if bc.get("flexGrow") == 0 then
-                    bc.set("intrinsicHeight", dc)
-                end
-                self.set("flexUpdateLayout", true)
-            end)
-        end
-        self.set("flexUpdateLayout", true)
-        return self
-    end
-    function ab:removeChild(bc)
-        _b.removeChild(self, bc)
-        if (bc ~= bb) then
-            bc.setFlexGrow = nil;
-            bc.setFlexShrink = nil;
-            bc.setFlexBasis = nil;
-            bc.getFlexGrow = nil;
-            bc.getFlexShrink = nil;
-            bc.getFlexBasis = nil;
-            bc.set("flexGrow", nil)
-            bc.set("flexShrink", nil)
-            bc.set("flexBasis", nil)
-        end
-        self.set("flexUpdateLayout", true)
-        return self
-    end
-    function ab:addLineBreak()
-        self:addChild(bb)
-        return self
-    end
-    function ab:render()
-        if (self.get("flexUpdateLayout")) then
-            ac(self, self.get("flexDirection"), self.get("flexSpacing"), self.get("flexJustifyContent"),
-                self.get("flexWrap"))
-        end
-        _b.render(self)
-    end
-    return ab
-end
-project["elements/Timer.lua"] = function(...)
-    local d = require("elementManager")
-    local _a = d.getElement("BaseElement")
-    local aa = setmetatable({}, _a)
-    aa.__index = aa
-    aa.defineProperty(aa, "interval", {
-        default = 1,
-        type = "number"
-    })
-    aa.defineProperty(aa, "action", {
-        default = function()
-        end,
-        type = "function"
-    })
-    aa.defineProperty(aa, "running", {
-        default = false,
-        type = "boolean"
-    })
-    aa.defineProperty(aa, "amount", {
-        default = -1,
-        type = "number"
-    })
-    aa.defineEvent(aa, "timer")
-    function aa.new()
-        local ba = setmetatable({}, aa):__init()
-        ba.class = aa;
-        return ba
-    end
-    function aa:init(ba, ca)
-        _a.init(self, ba, ca)
-        self.set("type", "Timer")
-    end
-    function aa:start()
-        if not self.running then
-            self.running = true;
-            local ba = self.get("interval")
-            self.timerId = os.startTimer(ba)
-        end
-        return self
-    end
-    function aa:stop()
-        if self.running then
-            self.running = false
-            os.cancelTimer(self.timerId)
-        end
-        return self
-    end
-    function aa:dispatchEvent(ba, ...)
-        _a.dispatchEvent(self, ba, ...)
-        if ba == "timer" then
-            local ca = select(1, ...)
-            if ca == self.timerId then
-                self.action()
-                local da = self.get("amount")
-                if da > 0 then
-                    self.set("amount", da - 1)
-                end
-                if da ~= 0 then
-                    self.timerId = os.startTimer(self.get("interval"))
-                end
-            end
-        end
-    end
-    return aa
-end
-project["elements/VisualElement.lua"] = function(...)
-    local ba = require("elementManager")
-    local ca = ba.getElement("BaseElement")
-    local da = require("libraries/colorHex")
-    local _b = setmetatable({}, ca)
-    _b.__index = _b
-    _b.defineProperty(_b, "x", {
-        default = 1,
-        type = "number",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "y", {
-        default = 1,
-        type = "number",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "z", {
-        default = 1,
-        type = "number",
-        canTriggerRender = true,
-        setter = function(cb, db)
-            if cb.parent then
-                cb.parent:sortChildren()
-            end
-            return db
-        end
-    })
-    _b.defineProperty(_b, "width", {
-        default = 1,
-        type = "number",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "height", {
-        default = 1,
-        type = "number",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "background", {
-        default = colors.black,
-        type = "color",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "foreground", {
-        default = colors.white,
-        type = "color",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "clicked", {
-        default = false,
-        type = "boolean"
-    })
-    _b.defineProperty(_b, "hover", {
-        default = false,
-        type = "boolean"
-    })
-    _b.defineProperty(_b, "backgroundEnabled", {
-        default = true,
-        type = "boolean",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "focused", {
-        default = false,
-        type = "boolean",
-        setter = function(cb, db, _c)
-            local ac = cb.get("focused")
-            if db == ac then
-                return db
-            end
-            if db then
-                cb:focus()
-            else
-                cb:blur()
-            end
-            if not _c and cb.parent then
-                if db then
-                    cb.parent:setFocusedChild(cb)
-                else
-                    cb.parent:setFocusedChild(nil)
-                end
-            end
-            return db
-        end
-    })
-    _b.defineProperty(_b, "visible", {
-        default = true,
-        type = "boolean",
-        canTriggerRender = true,
-        setter = function(cb, db)
-            if (cb.parent ~= nil) then
-                cb.parent.set("childrenSorted", false)
-                cb.parent.set("childrenEventsSorted", false)
-            end
-            if (db == false) then
-                cb.set("clicked", false)
-            end
-            return db
-        end
-    })
-    _b.defineProperty(_b, "ignoreOffset", {
-        default = false,
-        type = "boolean"
-    })
-    _b.combineProperties(_b, "position", "x", "y")
-    _b.combineProperties(_b, "size", "width", "height")
-    _b.combineProperties(_b, "color", "foreground", "background")
-    _b.defineEvent(_b, "focus")
-    _b.defineEvent(_b, "blur")
-    _b.registerEventCallback(_b, "Click", "mouse_click", "mouse_up")
-    _b.registerEventCallback(_b, "ClickUp", "mouse_up", "mouse_click")
-    _b.registerEventCallback(_b, "Drag", "mouse_drag", "mouse_click", "mouse_up")
-    _b.registerEventCallback(_b, "Scroll", "mouse_scroll")
-    _b.registerEventCallback(_b, "Enter", "mouse_enter", "mouse_move")
-    _b.registerEventCallback(_b, "Leave", "mouse_leave", "mouse_move")
-    _b.registerEventCallback(_b, "Focus", "focus", "blur")
-    _b.registerEventCallback(_b, "Blur", "blur", "focus")
-    _b.registerEventCallback(_b, "Key", "key", "key_up")
-    _b.registerEventCallback(_b, "Char", "char")
-    _b.registerEventCallback(_b, "KeyUp", "key_up", "key")
-    local ab, bb = math.max, math.min;
-    function _b.new()
-        local cb = setmetatable({}, _b):__init()
-        cb.class = _b;
-        return cb
-    end
-    function _b:init(cb, db)
-        ca.init(self, cb, db)
-        self.set("type", "VisualElement")
-    end
-    function _b:multiBlit(cb, db, _c, ac, bc, cc, dc)
-        local _d, ad = self:calculatePosition()
-        cb = cb + _d - 1
-        db = db + ad - 1;
-        self.parent:multiBlit(cb, db, _c, ac, bc, cc, dc)
-    end
-    function _b:textFg(cb, db, _c, ac)
-        local bc, cc = self:calculatePosition()
-        cb = cb + bc - 1
-        db = db + cc - 1;
-        self.parent:textFg(cb, db, _c, ac)
-    end
-    function _b:textBg(cb, db, _c, ac)
-        local bc, cc = self:calculatePosition()
-        cb = cb + bc - 1
-        db = db + cc - 1;
-        self.parent:textBg(cb, db, _c, ac)
-    end
-    function _b:drawText(cb, db, _c)
-        local ac, bc = self:calculatePosition()
-        cb = cb + ac - 1
-        db = db + bc - 1;
-        self.parent:drawText(cb, db, _c)
-    end
-    function _b:drawFg(cb, db, _c)
-        local ac, bc = self:calculatePosition()
-        cb = cb + ac - 1
-        db = db + bc - 1;
-        self.parent:drawFg(cb, db, _c)
-    end
-    function _b:drawBg(cb, db, _c)
-        local ac, bc = self:calculatePosition()
-        cb = cb + ac - 1
-        db = db + bc - 1;
-        self.parent:drawBg(cb, db, _c)
-    end
-    function _b:blit(cb, db, _c, ac, bc)
-        local cc, dc = self:calculatePosition()
-        cb = cb + cc - 1
-        db = db + dc - 1;
-        self.parent:blit(cb, db, _c, ac, bc)
-    end
-    function _b:isInBounds(cb, db)
-        local _c, ac = self.get("x"), self.get("y")
-        local bc, cc = self.get("width"), self.get("height")
-        if (self.get("ignoreOffset")) then
-            if (self.parent) then
-                cb = cb - self.parent.get("offsetX")
-                db = db - self.parent.get("offsetY")
-            end
-        end
-        return cb >= _c and cb <= _c + bc - 1 and db >= ac and db <= ac + cc - 1
-    end
-    function _b:mouse_click(cb, db, _c)
-        if self:isInBounds(db, _c) then
-            self.set("clicked", true)
-            self:fireEvent("mouse_click", cb, self:getRelativePosition(db, _c))
-            return true
-        end
-        return false
-    end
-    function _b:mouse_up(cb, db, _c)
-        if self:isInBounds(db, _c) then
-            self.set("clicked", false)
-            self:fireEvent("mouse_up", cb, self:getRelativePosition(db, _c))
-            return true
-        end
-        return false
-    end
-    function _b:mouse_release(cb, db, _c)
-        self:fireEvent("mouse_release", cb, self:getRelativePosition(db, _c))
-        self.set("clicked", false)
-    end
-    function _b:mouse_move(cb, db, _c)
-        if (db == nil) or (_c == nil) then
-            return
-        end
-        local ac = self.get("hover")
-        if (self:isInBounds(db, _c)) then
-            if (not ac) then
-                self.set("hover", true)
-                self:fireEvent("mouse_enter", self:getRelativePosition(db, _c))
-            end
-            return true
-        else
-            if (ac) then
-                self.set("hover", false)
-                self:fireEvent("mouse_leave", self:getRelativePosition(db, _c))
-            end
-        end
-        return false
-    end
-    function _b:mouse_scroll(cb, db, _c)
-        if (self:isInBounds(db, _c)) then
-            self:fireEvent("mouse_scroll", cb, self:getRelativePosition(db, _c))
-            return true
-        end
-        return false
-    end
-    function _b:mouse_drag(cb, db, _c)
-        if (self.get("clicked")) then
-            self:fireEvent("mouse_drag", cb, self:getRelativePosition(db, _c))
-            return true
-        end
-        return false
-    end
-    function _b:focus()
-        self:fireEvent("focus")
-    end
-    function _b:blur()
-        self:fireEvent("blur")
-        self:setCursor(1, 1, false)
-    end
-    function _b:key(cb, db)
-        if (self.get("focused")) then
-            self:fireEvent("key", cb, db)
-        end
-    end
-    function _b:key_up(cb)
-        if (self.get("focused")) then
-            self:fireEvent("key_up", cb)
-        end
-    end
-    function _b:char(cb)
-        if (self.get("focused")) then
-            self:fireEvent("char", cb)
-        end
-    end
-    function _b:calculatePosition()
-        local cb, db = self.get("x"), self.get("y")
-        if not self.get("ignoreOffset") then
-            if self.parent ~= nil then
-                local _c, ac = self.parent.get("offsetX"), self.parent.get("offsetY")
-                cb = cb - _c;
-                db = db - ac
-            end
-        end
-        return cb, db
-    end
-    function _b:getAbsolutePosition(cb, db)
-        local _c, ac = self.get("x"), self.get("y")
-        if (cb ~= nil) then
-            _c = _c + cb - 1
-        end
-        if (db ~= nil) then
-            ac = ac + db - 1
-        end
-        local bc = self.parent
-        while bc do
-            local cc, dc = bc.get("x"), bc.get("y")
-            _c = _c + cc - 1;
-            ac = ac + dc - 1;
-            bc = bc.parent
-        end
-        return _c, ac
-    end
-    function _b:getRelativePosition(cb, db)
-        if (cb == nil) or (db == nil) then
-            cb, db = self.get("x"), self.get("y")
-        end
-        local _c, ac = 1, 1;
-        if self.parent then
-            _c, ac = self.parent:getRelativePosition()
-        end
-        local bc, cc = self.get("x"), self.get("y")
-        return cb - (bc - 1) - (_c - 1), db - (cc - 1) - (ac - 1)
-    end
-    function _b:setCursor(cb, db, _c, ac)
-        if self.parent then
-            local bc, cc = self:calculatePosition()
-            if (cb + bc - 1 < 1) or (cb + bc - 1 > self.parent.get("width")) or (db + cc - 1 < 1) or
-                (db + cc - 1 > self.parent.get("height")) then
-                return self.parent:setCursor(cb + bc - 1, db + cc - 1, false)
-            end
-            return self.parent:setCursor(cb + bc - 1, db + cc - 1, _c, ac)
-        end
-        return self
-    end
-    function _b:prioritize()
-        if (self.parent) then
-            local cb = self.parent;
-            cb:removeChild(self)
-            cb:addChild(self)
-            self:updateRender()
-        end
-        return self
-    end
-    function _b:render()
-        if (not self.get("backgroundEnabled")) then
-            return
-        end
-        local cb, db = self.get("width"), self.get("height")
-        self:multiBlit(1, 1, cb, db, " ", da[self.get("foreground")], da[self.get("background")])
-    end
-    function _b:postRender()
-    end
-    return _b
-end
-project["elements/Graph.lua"] = function(...)
-    local _a = require("elementManager")
-    local aa = _a.getElement("VisualElement")
-    local ba = require("libraries/colorHex")
-    local ca = setmetatable({}, aa)
-    ca.__index = ca
-    ca.defineProperty(ca, "minValue", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "maxValue", {
-        default = 100,
-        type = "number",
-        canTriggerRender = true
-    })
-    ca.defineProperty(ca, "series", {
-        default = {},
-        type = "table",
-        canTriggerRender = true
-    })
-    function ca.new()
-        local da = setmetatable({}, ca):__init()
-        da.class = ca;
-        return da
-    end
-    function ca:init(da, _b)
-        aa.init(self, da, _b)
-        self.set("type", "Graph")
-        self.set("width", 20)
-        self.set("height", 10)
-        return self
-    end
-    function ca:addSeries(da, _b, ab, bb, cb)
-        local db = self.get("series")
-        table.insert(db, {
-            name = da,
-            symbol = _b or " ",
-            bgColor = ab or colors.white,
-            fgColor = bb or colors.black,
-            pointCount = cb or self.get("width"),
-            data = {},
-            visible = true
-        })
-        self:updateRender()
-        return self
-    end
-    function ca:removeSeries(da)
-        local _b = self.get("series")
-        for ab, bb in ipairs(_b) do
-            if bb.name == da then
-                table.remove(_b, ab)
-                break
-            end
-        end
-        self:updateRender()
-        return self
-    end
-    function ca:getSeries(da)
-        local _b = self.get("series")
-        for ab, bb in ipairs(_b) do
-            if bb.name == da then
-                return bb
-            end
-        end
-        return nil
-    end
-    function ca:changeSeriesVisibility(da, _b)
-        local ab = self.get("series")
-        for bb, cb in ipairs(ab) do
-            if cb.name == da then
-                cb.visible = _b;
-                break
-            end
-        end
-        self:updateRender()
-        return self
-    end
-    function ca:addPoint(da, _b)
-        local ab = self.get("series")
-        for bb, cb in ipairs(ab) do
-            if cb.name == da then
-                table.insert(cb.data, _b)
-                while #cb.data > cb.pointCount do
-                    table.remove(cb.data, 1)
-                end
-                break
-            end
-        end
-        self:updateRender()
-        return self
-    end
-    function ca:focusSeries(da)
-        local _b = self.get("series")
-        for ab, bb in ipairs(_b) do
-            if bb.name == da then
-                table.remove(_b, ab)
-                table.insert(_b, bb)
-                break
-            end
-        end
-        self:updateRender()
-        return self
-    end
-    function ca:setSeriesPointCount(da, _b)
-        local ab = self.get("series")
-        for bb, cb in ipairs(ab) do
-            if cb.name == da then
-                cb.pointCount = _b;
-                while #cb.data > _b do
-                    table.remove(cb.data, 1)
-                end
-                break
-            end
-        end
-        self:updateRender()
-        return self
-    end
-    function ca:clear(da)
-        local _b = self.get("series")
-        if da then
-            for ab, bb in ipairs(_b) do
-                if bb.name == da then
-                    bb.data = {}
-                    break
-                end
-            end
-        else
-            for ab, bb in ipairs(_b) do
-                bb.data = {}
-            end
-        end
-        return self
-    end
-    function ca:render()
-        aa.render(self)
-        local da = self.get("width")
-        local _b = self.get("height")
-        local ab = self.get("minValue")
-        local bb = self.get("maxValue")
-        local cb = self.get("series")
-        for db, _c in pairs(cb) do
-            if (_c.visible) then
-                local ac = #_c.data
-                local bc = (da - 1) / math.max((ac - 1), 1)
-                for cc, dc in ipairs(_c.data) do
-                    local _d = math.floor(((cc - 1) * bc) + 1)
-                    local ad = (dc - ab) / (bb - ab)
-                    local bd = math.floor(_b - (ad * (_b - 1)))
-                    bd = math.max(1, math.min(bd, _b))
-                    self:blit(_d, bd, _c.symbol, ba[_c.bgColor], ba[_c.fgColor])
-                end
-            end
-        end
-    end
-    return ca
-end
-project["elements/BigFont.lua"] = function(...)
-    local _b = require("libraries/colorHex")
-    local ab =
-        {{"\32\32\32\137\156\148\158\159\148\135\135\144\159\139\32\136\157\32\159\139\32\32\143\32\32\143\32\32\32\32\32\32\32\32\147\148\150\131\148\32\32\32\151\140\148\151\140\147",
-          "\32\32\32\149\132\149\136\156\149\144\32\133\139\159\129\143\159\133\143\159\133\138\32\133\138\32\133\32\32\32\32\32\32\150\150\129\137\156\129\32\32\32\133\131\129\133\131\132",
-          "\32\32\32\130\131\32\130\131\32\32\129\32\32\32\32\130\131\32\130\131\32\32\32\32\143\143\143\32\32\32\32\32\32\130\129\32\130\135\32\32\32\32\131\32\32\131\32\131",
-          "\139\144\32\32\143\148\135\130\144\149\32\149\150\151\149\158\140\129\32\32\32\135\130\144\135\130\144\32\149\32\32\139\32\159\148\32\32\32\32\159\32\144\32\148\32\147\131\132",
-          "\159\135\129\131\143\149\143\138\144\138\32\133\130\149\149\137\155\149\159\143\144\147\130\132\32\149\32\147\130\132\131\159\129\139\151\129\148\32\32\139\131\135\133\32\144\130\151\32",
-          "\32\32\32\32\32\32\130\135\32\130\32\129\32\129\129\131\131\32\130\131\129\140\141\132\32\129\32\32\129\32\32\32\32\32\32\32\131\131\129\32\32\32\32\32\32\32\32\32",
-          "\32\32\32\32\149\32\159\154\133\133\133\144\152\141\132\133\151\129\136\153\32\32\154\32\159\134\129\130\137\144\159\32\144\32\148\32\32\32\32\32\32\32\32\32\32\32\151\129",
-          "\32\32\32\32\133\32\32\32\32\145\145\132\141\140\132\151\129\144\150\146\129\32\32\32\138\144\32\32\159\133\136\131\132\131\151\129\32\144\32\131\131\129\32\144\32\151\129\32",
-          "\32\32\32\32\129\32\32\32\32\130\130\32\32\129\32\129\32\129\130\129\129\32\32\32\32\130\129\130\129\32\32\32\32\32\32\32\32\133\32\32\32\32\32\129\32\129\32\32",
-          "\150\156\148\136\149\32\134\131\148\134\131\148\159\134\149\136\140\129\152\131\32\135\131\149\150\131\148\150\131\148\32\148\32\32\148\32\32\152\129\143\143\144\130\155\32\134\131\148",
-          "\157\129\149\32\149\32\152\131\144\144\131\148\141\140\149\144\32\149\151\131\148\32\150\32\150\131\148\130\156\133\32\144\32\32\144\32\130\155\32\143\143\144\32\152\129\32\134\32",
-          "\130\131\32\131\131\129\131\131\129\130\131\32\32\32\129\130\131\32\130\131\32\32\129\32\130\131\32\130\129\32\32\129\32\32\133\32\32\32\129\32\32\32\130\32\32\32\129\32",
-          "\150\140\150\137\140\148\136\140\132\150\131\132\151\131\148\136\147\129\136\147\129\150\156\145\138\143\149\130\151\32\32\32\149\138\152\129\149\32\32\157\152\149\157\144\149\150\131\148",
-          "\149\143\142\149\32\149\149\32\149\149\32\144\149\32\149\149\32\32\149\32\32\149\32\149\149\32\149\32\149\32\144\32\149\149\130\148\149\32\32\149\32\149\149\130\149\149\32\149",
-          "\130\131\129\129\32\129\131\131\32\130\131\32\131\131\32\131\131\129\129\32\32\130\131\32\129\32\129\130\131\32\130\131\32\129\32\129\131\131\129\129\32\129\129\32\129\130\131\32",
-          "\136\140\132\150\131\148\136\140\132\153\140\129\131\151\129\149\32\149\149\32\149\149\32\149\137\152\129\137\152\129\131\156\133\149\131\32\150\32\32\130\148\32\152\137\144\32\32\32",
-          "\149\32\32\149\159\133\149\32\149\144\32\149\32\149\32\149\32\149\150\151\129\138\155\149\150\130\148\32\149\32\152\129\32\149\32\32\32\150\32\32\149\32\32\32\32\32\32\32",
-          "\129\32\32\130\129\129\129\32\129\130\131\32\32\129\32\130\131\32\32\129\32\129\32\129\129\32\129\32\129\32\131\131\129\130\131\32\32\32\129\130\131\32\32\32\32\140\140\132",
-          "\32\154\32\159\143\32\149\143\32\159\143\32\159\144\149\159\143\32\159\137\145\159\143\144\149\143\32\32\145\32\32\32\145\149\32\144\32\149\32\143\159\32\143\143\32\159\143\32",
-          "\32\32\32\152\140\149\151\32\149\149\32\145\149\130\149\157\140\133\32\149\32\154\143\149\151\32\149\32\149\32\144\32\149\149\153\32\32\149\32\149\133\149\149\32\149\149\32\149",
-          "\32\32\32\130\131\129\131\131\32\130\131\32\130\131\129\130\131\129\32\129\32\140\140\129\129\32\129\32\129\32\137\140\129\130\32\129\32\130\32\129\32\129\129\32\129\130\131\32",
-          "\144\143\32\159\144\144\144\143\32\159\143\144\159\138\32\144\32\144\144\32\144\144\32\144\144\32\144\144\32\144\143\143\144\32\150\129\32\149\32\130\150\32\134\137\134\134\131\148",
-          "\136\143\133\154\141\149\151\32\129\137\140\144\32\149\32\149\32\149\154\159\133\149\148\149\157\153\32\154\143\149\159\134\32\130\148\32\32\149\32\32\151\129\32\32\32\32\134\32",
-          "\133\32\32\32\32\133\129\32\32\131\131\32\32\130\32\130\131\129\32\129\32\130\131\129\129\32\129\140\140\129\131\131\129\32\130\129\32\129\32\130\129\32\32\32\32\32\129\32",
-          "\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32",
-          "\32\32\32\32\32\32\32\32\32\32\32\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\32\32\32\32\32\32\32\32\32\32\32",
-          "\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32",
-          "\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32",
-          "\32\32\32\32\32\32\32\32\32\32\32\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\32\32\32\32\32\32\32\32\32\32\32",
-          "\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32",
-          "\32\32\32\32\145\32\159\139\32\151\131\132\155\143\132\134\135\145\32\149\32\158\140\129\130\130\32\152\147\155\157\134\32\32\144\144\32\32\32\32\32\32\152\131\155\131\131\129",
-          "\32\32\32\32\149\32\149\32\145\148\131\32\149\32\149\140\157\132\32\148\32\137\155\149\32\32\32\149\154\149\137\142\32\153\153\32\131\131\149\131\131\129\149\135\145\32\32\32",
-          "\32\32\32\32\129\32\130\135\32\131\131\129\134\131\132\32\129\32\32\129\32\131\131\32\32\32\32\130\131\129\32\32\32\32\129\129\32\32\32\32\32\32\130\131\129\32\32\32",
-          "\150\150\32\32\148\32\134\32\32\132\32\32\134\32\32\144\32\144\150\151\149\32\32\32\32\32\32\145\32\32\152\140\144\144\144\32\133\151\129\133\151\129\132\151\129\32\145\32",
-          "\130\129\32\131\151\129\141\32\32\142\32\32\32\32\32\149\32\149\130\149\149\32\143\32\32\32\32\142\132\32\154\143\133\157\153\132\151\150\148\151\158\132\151\150\148\144\130\148",
-          "\32\32\32\140\140\132\32\32\32\32\32\32\32\32\32\151\131\32\32\129\129\32\32\32\32\134\32\32\32\32\32\32\32\129\129\32\129\32\129\129\130\129\129\32\129\130\131\32",
-          "\156\143\32\159\141\129\153\140\132\153\137\32\157\141\32\159\142\32\150\151\129\150\131\132\140\143\144\143\141\145\137\140\148\141\141\144\157\142\32\159\140\32\151\134\32\157\141\32",
-          "\157\140\149\157\140\149\157\140\149\157\140\149\157\140\149\157\140\149\151\151\32\154\143\132\157\140\32\157\140\32\157\140\32\157\140\32\32\149\32\32\149\32\32\149\32\32\149\32",
-          "\129\32\129\129\32\129\129\32\129\129\32\129\129\32\129\129\32\129\129\131\129\32\134\32\131\131\129\131\131\129\131\131\129\131\131\129\130\131\32\130\131\32\130\131\32\130\131\32",
-          "\151\131\148\152\137\145\155\140\144\152\142\145\153\140\132\153\137\32\154\142\144\155\159\132\150\156\148\147\32\144\144\130\145\136\137\32\146\130\144\144\130\145\130\136\32\151\140\132",
-          "\151\32\149\151\155\149\149\32\149\149\32\149\149\32\149\149\32\149\149\32\149\152\137\144\157\129\149\149\32\149\149\32\149\149\32\149\149\32\149\130\150\32\32\157\129\149\32\149",
-          "\131\131\32\129\32\129\130\131\32\130\131\32\130\131\32\130\131\32\130\131\32\32\32\32\130\131\32\130\131\32\130\131\32\130\131\32\130\131\32\32\129\32\130\131\32\133\131\32",
-          "\156\143\32\159\141\129\153\140\132\153\137\32\157\141\32\159\142\32\159\159\144\152\140\144\156\143\32\159\141\129\153\140\132\157\141\32\130\145\32\32\147\32\136\153\32\130\146\32",
-          "\152\140\149\152\140\149\152\140\149\152\140\149\152\140\149\152\140\149\149\157\134\154\143\132\157\140\133\157\140\133\157\140\133\157\140\133\32\149\32\32\149\32\32\149\32\32\149\32",
-          "\130\131\129\130\131\129\130\131\129\130\131\129\130\131\129\130\131\129\130\130\131\32\134\32\130\131\129\130\131\129\130\131\129\130\131\129\32\129\32\32\129\32\32\129\32\32\129\32",
-          "\159\134\144\137\137\32\156\143\32\159\141\129\153\140\132\153\137\32\157\141\32\32\132\32\159\143\32\147\32\144\144\130\145\136\137\32\146\130\144\144\130\145\130\138\32\146\130\144",
-          "\149\32\149\149\32\149\149\32\149\149\32\149\149\32\149\149\32\149\149\32\149\131\147\129\138\134\149\149\32\149\149\32\149\149\32\149\149\32\149\154\143\149\32\157\129\154\143\149",
-          "\130\131\32\129\32\129\130\131\32\130\131\32\130\131\32\130\131\32\130\131\32\32\32\32\130\131\32\130\131\129\130\131\129\130\131\129\130\131\129\140\140\129\130\131\32\140\140\129"},
-         {"000110000110110000110010101000000010000000100101", "000000110110000000000010101000000010000000100101",
-          "000000000000000000000000000000000000000000000000", "100010110100000010000110110000010100000100000110",
-          "000000110000000010110110000110000000000000110000", "000000000000000000000000000000000000000000000000",
-          "000000110110000010000000100000100000000000000010", "000000000110110100010000000010000000000000000100",
-          "000000000000000000000000000000000000000000000000", "010000000000100110000000000000000000000110010000",
-          "000000000000000000000000000010000000010110000000", "000000000000000000000000000000000000000000000000",
-          "011110110000000100100010110000000100000000000000", "000000000000000000000000000000000000000000000000",
-          "000000000000000000000000000000000000000000000000", "110000110110000000000000000000010100100010000000",
-          "000010000000000000110110000000000100010010000000", "000000000000000000000000000000000000000000000000",
-          "010110010110100110110110010000000100000110110110", "000000000000000000000110000000000110000000000000",
-          "000000000000000000000000000000000000000000000000", "010100010110110000000000000000110000000010000000",
-          "110110000000000000110000110110100000000010000000", "000000000000000000000000000000000000000000000000",
-          "000100011111000100011111000100011111000100011111", "000000000000100100100100011011011011111111111111",
-          "000000000000000000000000000000000000000000000000", "000100011111000100011111000100011111000100011111",
-          "000000000000100100100100011011011011111111111111", "100100100100100100100100100100100100100100100100",
-          "000000110100110110000010000011110000000000011000", "000000000100000000000010000011000110000000001000",
-          "000000000000000000000000000000000000000000000000", "010000100100000000000000000100000000010010110000",
-          "000000000000000000000000000000110110110110110000", "000000000000000000000000000000000000000000000000",
-          "110110110110110110000000110110110110110110110110", "000000000000000000000110000000000000000000000000",
-          "000000000000000000000000000000000000000000000000", "000000000000110110000110010000000000000000010010",
-          "000010000000000000000000000000000000000000000000", "000000000000000000000000000000000000000000000000",
-          "110110110110110110110000110110110110000000000000", "000000000000000000000110000000000000000000000000",
-          "000000000000000000000000000000000000000000000000", "110110110110110110110000110000000000000000010000",
-          "000000000000000000000000100000000000000110000110", "000000000000000000000000000000000000000000000000"}}
-    local bb = {}
-    local cb = {}
-    do
-        local dc = 0;
-        local _d = #ab[1]
-        local ad = #ab[1][1]
-        for i = 1, _d, 3 do
-            for j = 1, ad, 3 do
-                local bd = string.char(dc)
-                local cd = {}
-                cd[1] = ab[1][i]:sub(j, j + 2)
-                cd[2] = ab[1][i + 1]:sub(j, j + 2)
-                cd[3] = ab[1][i + 2]:sub(j, j + 2)
-                local dd = {}
-                dd[1] = ab[2][i]:sub(j, j + 2)
-                dd[2] = ab[2][i + 1]:sub(j, j + 2)
-                dd[3] = ab[2][i + 2]:sub(j, j + 2)
-                cb[bd] = {cd, dd}
-                dc = dc + 1
-            end
-        end
-        bb[1] = cb
-    end
-    local function db(dc, _d)
-        local ad = {
-            ["0"] = "1",
-            ["1"] = "0"
-        }
-        if dc <= #bb then
-            return true
-        end
-        for f = #bb + 1, dc do
-            local bd = {}
-            local cd = bb[f - 1]
-            for char = 0, 255 do
-                local dd = string.char(char)
-                local __a = {}
-                local a_a = {}
-                local b_a = cd[dd][1]
-                local c_a = cd[dd][2]
-                for i = 1, #b_a do
-                    local d_a, _aa, aaa, baa, caa, daa = {}, {}, {}, {}, {}, {}
-                    for j = 1, #b_a[1] do
-                        local _ba = cb[b_a[i]:sub(j, j)][1]
-                        table.insert(d_a, _ba[1])
-                        table.insert(_aa, _ba[2])
-                        table.insert(aaa, _ba[3])
-                        local aba = cb[b_a[i]:sub(j, j)][2]
-                        if c_a[i]:sub(j, j) == "1" then
-                            table.insert(baa, (aba[1]:gsub("[01]", ad)))
-                            table.insert(caa, (aba[2]:gsub("[01]", ad)))
-                            table.insert(daa, (aba[3]:gsub("[01]", ad)))
-                        else
-                            table.insert(baa, aba[1])
-                            table.insert(caa, aba[2])
-                            table.insert(daa, aba[3])
-                        end
-                    end
-                    table.insert(__a, table.concat(d_a))
-                    table.insert(__a, table.concat(_aa))
-                    table.insert(__a, table.concat(aaa))
-                    table.insert(a_a, table.concat(baa))
-                    table.insert(a_a, table.concat(caa))
-                    table.insert(a_a, table.concat(daa))
-                end
-                bd[dd] = {__a, a_a}
-                if _d then
-                    _d = "Font" .. f .. "Yeld" .. char
-                    os.queueEvent(_d)
-                    os.pullEvent(_d)
-                end
-            end
-            bb[f] = bd
-        end
-        return true
-    end
-    local function _c(dc, _d, ad, bd, cd)
-        if not type(_d) == "string" then
-            error("Not a String", 3)
-        end
-        local dd = type(ad) == "string" and ad:sub(1, 1) or _b[ad] or error("Wrong Front Color", 3)
-        local __a = type(bd) == "string" and bd:sub(1, 1) or _b[bd] or error("Wrong Back Color", 3)
-        if (bb[dc] == nil) then
-            db(3, false)
-        end
-        local a_a = bb[dc] or error("Wrong font size selected", 3)
-        if _d == "" then
-            return {{""}, {""}, {""}}
-        end
-        local b_a = {}
-        for daa in _d:gmatch('.') do
-            table.insert(b_a, daa)
-        end
-        local c_a = {}
-        local d_a = #a_a[b_a[1]][1]
-        for nLine = 1, d_a do
-            local daa = {}
-            for i = 1, #b_a do
-                daa[i] = a_a[b_a[i]] and a_a[b_a[i]][1][nLine] or ""
-            end
-            c_a[nLine] = table.concat(daa)
-        end
-        local _aa = {}
-        local aaa = {}
-        local baa = {
-            ["0"] = dd,
-            ["1"] = __a
-        }
-        local caa = {
-            ["0"] = __a,
-            ["1"] = dd
-        }
-        for nLine = 1, d_a do
-            local daa = {}
-            local _ba = {}
-            for i = 1, #b_a do
-                local aba = a_a[b_a[i]] and a_a[b_a[i]][2][nLine] or ""
-                daa[i] = aba:gsub("[01]", cd and {
-                    ["0"] = ad:sub(i, i),
-                    ["1"] = bd:sub(i, i)
-                } or baa)
-                _ba[i] = aba:gsub("[01]", cd and {
-                    ["0"] = bd:sub(i, i),
-                    ["1"] = ad:sub(i, i)
-                } or caa)
-            end
-            _aa[nLine] = table.concat(daa)
-            aaa[nLine] = table.concat(_ba)
-        end
-        return {c_a, _aa, aaa}
-    end
-    local ac = require("elementManager")
-    local bc = ac.getElement("VisualElement")
-    local cc = setmetatable({}, bc)
-    cc.__index = cc
-    cc.defineProperty(cc, "text", {
-        default = "BigFont",
-        type = "string",
-        canTriggerRender = true,
-        setter = function(dc, _d)
-            dc.bigfontText = _c(dc.get("fontSize"), _d, dc.get("foreground"), dc.get("background"))
-            return _d
-        end
-    })
-    cc.defineProperty(cc, "fontSize", {
-        default = 1,
-        type = "number",
-        canTriggerRender = true,
-        setter = function(dc, _d)
-            dc.bigfontText = _c(_d, dc.get("text"), dc.get("foreground"), dc.get("background"))
-            return _d
-        end
-    })
-    function cc.new()
-        local dc = setmetatable({}, cc):__init()
-        dc.class = cc;
-        dc.set("width", 16)
-        dc.set("height", 3)
-        dc.set("z", 5)
-        return dc
-    end
-    function cc:init(dc, _d)
-        bc.init(self, dc, _d)
-        self.set("type", "BigFont")
-        self:observe("background", function(ad, bd)
-            ad.bigfontText = _c(ad.get("fontSize"), ad.get("text"), ad.get("foreground"), bd)
-        end)
-        self:observe("foreground", function(ad, bd)
-            ad.bigfontText = _c(ad.get("fontSize"), ad.get("text"), bd, ad.get("background"))
-        end)
-    end
-    function cc:render()
-        bc.render(self)
-        if (self.bigfontText) then
-            local dc, _d = self.get("x"), self.get("y")
-            for i = 1, #self.bigfontText[1] do
-                local ad = self.bigfontText[1][i]:sub(1, self.get("width"))
-                local bd = self.bigfontText[2][i]:sub(1, self.get("width"))
-                local cd = self.bigfontText[3][i]:sub(1, self.get("width"))
-                self:blit(dc, _d + i - 1, ad, bd, cd)
-            end
-        end
-    end
-    return cc
-end
-project["elements/BaseFrame.lua"] = function(...)
-    local ba = require("elementManager")
-    local ca = ba.getElement("Container")
-    local da = require("errorManager")
-    local _b = require("render")
-    local ab = setmetatable({}, ca)
-    ab.__index = ab
-    local function bb(cb)
-        local db, _c = pcall(function()
-            return peripheral.getType(cb)
-        end)
-        if db then
-            return true
-        end
-        return false
-    end
-    ab.defineProperty(ab, "term", {
-        default = nil,
-        type = "table",
-        setter = function(cb, db)
-            cb._peripheralName = nil;
-            if cb.basalt.getActiveFrame(cb._values.term) == cb then
-                cb.basalt.setActiveFrame(cb, false)
-            end
-            if db == nil or db.setCursorPos == nil then
-                return db
-            end
-            if (bb(db)) then
-                cb._peripheralName = peripheral.getName(db)
-            end
-            cb._values.term = db
-            if cb.basalt.getActiveFrame(db) == nil then
-                cb.basalt.setActiveFrame(cb)
-            end
-            cb._render = _b.new(db)
-            cb._renderUpdate = true;
-            local _c, ac = db.getSize()
-            cb.set("width", _c)
-            cb.set("height", ac)
-            return db
-        end
-    })
-    function ab.new()
-        local cb = setmetatable({}, ab):__init()
-        cb.class = ab;
-        return cb
-    end
-    function ab:init(cb, db)
-        ca.init(self, cb, db)
-        self.set("term", term.current())
-        self.set("type", "BaseFrame")
-        return self
-    end
-    function ab:multiBlit(cb, db, _c, ac, bc, cc, dc)
-        if (cb < 1) then
-            _c = _c + cb - 1;
-            cb = 1
-        end
-        if (db < 1) then
-            ac = ac + db - 1;
-            db = 1
-        end
-        self._render:multiBlit(cb, db, _c, ac, bc, cc, dc)
-    end
-    function ab:textFg(cb, db, _c, ac)
-        if cb < 1 then
-            _c = string.sub(_c, 1 - cb)
-            cb = 1
-        end
-        self._render:textFg(cb, db, _c, ac)
-    end
-    function ab:textBg(cb, db, _c, ac)
-        if cb < 1 then
-            _c = string.sub(_c, 1 - cb)
-            cb = 1
-        end
-        self._render:textBg(cb, db, _c, ac)
-    end
-    function ab:drawText(cb, db, _c)
-        if cb < 1 then
-            _c = string.sub(_c, 1 - cb)
-            cb = 1
-        end
-        self._render:text(cb, db, _c)
-    end
-    function ab:drawFg(cb, db, _c)
-        if cb < 1 then
-            _c = string.sub(_c, 1 - cb)
-            cb = 1
-        end
-        self._render:fg(cb, db, _c)
-    end
-    function ab:drawBg(cb, db, _c)
-        if cb < 1 then
-            _c = string.sub(_c, 1 - cb)
-            cb = 1
-        end
-        self._render:bg(cb, db, _c)
-    end
-    function ab:blit(cb, db, _c, ac, bc)
-        if cb < 1 then
-            _c = string.sub(_c, 1 - cb)
-            ac = string.sub(ac, 1 - cb)
-            bc = string.sub(bc, 1 - cb)
-            cb = 1
-        end
-        self._render:blit(cb, db, _c, ac, bc)
-    end
-    function ab:setCursor(cb, db, _c, ac)
-        local bc = self.get("term")
-        self._render:setCursor(cb, db, _c, ac)
-    end
-    function ab:monitor_touch(cb, db, _c)
-        local ac = self.get("term")
-        if ac == nil then
-            return
-        end
-        if (bb(ac)) then
-            if self._peripheralName == cb then
-                self:mouse_click(1, db, _c)
-                self.basalt.schedule(function()
-                    sleep(0.1)
-                    self:mouse_up(1, db, _c)
-                end)
-            end
-        end
-    end
-    function ab:mouse_click(cb, db, _c)
-        ca.mouse_click(self, cb, db, _c)
-        self.basalt.setFocus(self)
-    end
-    function ab:mouse_up(cb, db, _c)
-        ca.mouse_up(self, cb, db, _c)
-        ca.mouse_release(self, cb, db, _c)
-    end
-    function ab:term_resize()
-        local cb, db = self.get("term").getSize()
-        if (cb == self.get("width") and db == self.get("height")) then
-            return
-        end
-        self.set("width", cb)
-        self.set("height", db)
-        self._render:setSize(cb, db)
-        self._renderUpdate = true
-    end
-    function ab:key(cb)
-        self:fireEvent("key", cb)
-        ca.key(self, cb)
-    end
-    function ab:key_up(cb)
-        self:fireEvent("key_up", cb)
-        ca.key_up(self, cb)
-    end
-    function ab:char(cb)
-        self:fireEvent("char", cb)
-        ca.char(self, cb)
-    end
-    function ab:dispatchEvent(cb, ...)
-        local db = self.get("term")
-        if db == nil then
-            return
-        end
-        if (bb(db)) then
-            if cb == "mouse_click" then
-                return
-            end
-        end
-        ca.dispatchEvent(self, cb, ...)
-    end
-    function ab:render()
-        if (self._renderUpdate) then
-            if self._render ~= nil then
-                ca.render(self)
-                self._render:render()
-                self._renderUpdate = false
-            end
-        end
-    end
-    return ab
-end
-project["elements/Checkbox.lua"] = function(...)
-    local c = require("elements/VisualElement")
-    local d = setmetatable({}, c)
-    d.__index = d
-    d.defineProperty(d, "checked", {
-        default = false,
-        type = "boolean",
-        canTriggerRender = true
-    })
-    d.defineProperty(d, "text", {
-        default = " ",
-        type = "string",
-        canTriggerRender = true,
-        setter = function(_a, aa)
-            local ba = _a.get("checkedText")
-            local ca = math.max(#aa, #ba)
-            if (_a.get("autoSize")) then
-                _a.set("width", ca)
-            end
-            return aa
-        end
-    })
-    d.defineProperty(d, "checkedText", {
-        default = "x",
-        type = "string",
-        canTriggerRender = true,
-        setter = function(_a, aa)
-            local ba = _a.get("text")
-            local ca = math.max(#aa, #ba)
-            if (_a.get("autoSize")) then
-                _a.set("width", ca)
-            end
-            return aa
-        end
-    })
-    d.defineProperty(d, "autoSize", {
-        default = true,
-        type = "boolean"
-    })
-    d.defineEvent(d, "mouse_click")
-    d.defineEvent(d, "mouse_up")
-    function d.new()
-        local _a = setmetatable({}, d):__init()
-        _a.class = d
-        _a.set("backgroundEnabled", false)
-        return _a
-    end
-    function d:init(_a, aa)
-        c.init(self, _a, aa)
-        self.set("type", "Checkbox")
-    end
-    function d:mouse_click(_a, aa, ba)
-        if c.mouse_click(self, _a, aa, ba) then
-            self.set("checked", not self.get("checked"))
-            return true
-        end
-        return false
-    end
-    function d:render()
-        c.render(self)
-        local _a = self.get("checked")
-        local aa = self.get("text")
-        local ba = self.get("checkedText")
-        local ca = string.sub(_a and ba or aa, 1, self.get("width"))
-        self:textFg(1, 1, ca, self.get("foreground"))
-    end
-    return d
-end
-project["elements/Container.lua"] = function(...)
-    local da = require("elementManager")
-    local _b = require("errorManager")
-    local ab = da.getElement("VisualElement")
-    local bb = require("libraries/expect")
-    local cb = require("libraries/utils").split
-    local db = setmetatable({}, ab)
-    db.__index = db
-    db.defineProperty(db, "children", {
-        default = {},
-        type = "table"
-    })
-    db.defineProperty(db, "childrenSorted", {
-        default = true,
-        type = "boolean"
-    })
-    db.defineProperty(db, "childrenEventsSorted", {
-        default = true,
-        type = "boolean"
-    })
-    db.defineProperty(db, "childrenEvents", {
-        default = {},
-        type = "table"
-    })
-    db.defineProperty(db, "eventListenerCount", {
-        default = {},
-        type = "table"
-    })
-    db.defineProperty(db, "focusedChild", {
-        default = nil,
-        type = "table",
-        allowNil = true,
-        setter = function(bc, cc, dc)
-            local _d = bc._values.focusedChild
-            if cc == _d then
-                return cc
-            end
-            if _d then
-                if _d:isType("Container") then
-                    _d.set("focusedChild", nil, true)
-                end
-                _d.set("focused", false, true)
-            end
-            if cc and not dc then
-                cc.set("focused", true, true)
-                if bc.parent then
-                    bc.parent:setFocusedChild(bc)
-                end
-            end
-            return cc
-        end
-    })
-    db.defineProperty(db, "visibleChildren", {
-        default = {},
-        type = "table"
-    })
-    db.defineProperty(db, "visibleChildrenEvents", {
-        default = {},
-        type = "table"
-    })
-    db.defineProperty(db, "offsetX", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true,
-        setter = function(bc, cc)
-            bc.set("childrenSorted", false)
-            bc.set("childrenEventsSorted", false)
-            return cc
-        end
-    })
-    db.defineProperty(db, "offsetY", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true,
-        setter = function(bc, cc)
-            bc.set("childrenSorted", false)
-            bc.set("childrenEventsSorted", false)
-            return cc
-        end
-    })
-    db.combineProperties(db, "offset", "offsetX", "offsetY")
-    for bc, cc in pairs(da:getElementList()) do
-        local dc = bc:sub(1, 1):upper() .. bc:sub(2)
-        if dc ~= "BaseFrame" then
-            db["add" .. dc] = function(_d, ...)
-                bb(1, _d, "table")
-                local ad = _d.basalt.create(bc, ...)
-                _d:addChild(ad)
-                ad:postInit()
-                return ad
-            end
-            db["addDelayed" .. dc] = function(_d, ad)
-                bb(1, _d, "table")
-                local bd = _d.basalt.create(bc, ad, true, _d)
-                return bd
-            end
-        end
-    end
-    function db.new()
-        local bc = setmetatable({}, db):__init()
-        bc.class = db;
-        return bc
-    end
-    function db:init(bc, cc)
-        ab.init(self, bc, cc)
-        self.set("type", "Container")
-        self:observe("width", function()
-            self.set("childrenSorted", false)
-            self.set("childrenEventsSorted", false)
-        end)
-        self:observe("height", function()
-            self.set("childrenSorted", false)
-            self.set("childrenEventsSorted", false)
-        end)
-    end
-    function db:isChildVisible(bc)
-        if not bc:isType("VisualElement") then
-            return false
-        end
-        if (bc.get("visible") == false) then
-            return false
-        end
-        if (bc._destroyed) then
-            return false
-        end
-        local cc, dc = self.get("width"), self.get("height")
-        local _d, ad = self.get("offsetX"), self.get("offsetY")
-        local bd, cd = bc.get("x"), bc.get("y")
-        local dd, __a = bc.get("width"), bc.get("height")
-        local a_a;
-        local b_a;
-        if (bc.get("ignoreOffset")) then
-            a_a = bd;
-            b_a = cd
-        else
-            a_a = bd - _d;
-            b_a = cd - ad
-        end
-        return (a_a + dd > 0) and (a_a <= cc) and (b_a + __a > 0) and (b_a <= dc)
-    end
-    function db:addChild(bc)
-        if bc == self then
-            error("Cannot add container to itself")
-        end
-        if (bc ~= nil) then
-            table.insert(self._values.children, bc)
-            bc.parent = self;
-            bc:postInit()
-            self.set("childrenSorted", false)
-            self:registerChildrenEvents(bc)
-        end
-        return self
-    end
-    local function _c(bc, cc)
-        local dc = {}
-        for _d, ad in ipairs(cc) do
-            if bc:isChildVisible(ad) and ad.get("visible") then
-                table.insert(dc, ad)
-            end
-        end
-        for i = 2, #dc do
-            local _d = dc[i]
-            local ad = _d.get("z")
-            local bd = i - 1
-            while bd > 0 do
-                local cd = dc[bd].get("z")
-                if cd > ad then
-                    dc[bd + 1] = dc[bd]
-                    bd = bd - 1
-                else
-                    break
-                end
-            end
-            dc[bd + 1] = _d
-        end
-        return dc
-    end
-    function db:clear()
-        self.set("children", {})
-        self.set("childrenEvents", {})
-        self.set("visibleChildren", {})
-        self.set("visibleChildrenEvents", {})
-        self.set("childrenSorted", true)
-        self.set("childrenEventsSorted", true)
-        return self
-    end
-    function db:sortChildren()
-        self.set("visibleChildren", _c(self, self._values.children))
-        self.set("childrenSorted", true)
-        return self
-    end
-    function db:sortChildrenEvents(bc)
-        if self._values.childrenEvents[bc] then
-            self._values.visibleChildrenEvents[bc] = _c(self, self._values.childrenEvents[bc])
-        end
-        self.set("childrenEventsSorted", true)
-        return self
-    end
-    function db:registerChildrenEvents(bc)
-        if (bc._registeredEvents == nil) then
-            return
-        end
-        for cc in pairs(bc._registeredEvents) do
-            self:registerChildEvent(bc, cc)
-        end
-        return self
-    end
-    function db:registerChildEvent(bc, cc)
-        if not self._values.childrenEvents[cc] then
-            self._values.childrenEvents[cc] = {}
-            self._values.eventListenerCount[cc] = 0;
-            if self.parent then
-                self.parent:registerChildEvent(self, cc)
-            end
-        end
-        for dc, _d in ipairs(self._values.childrenEvents[cc]) do
-            if _d == bc then
-                return self
-            end
-        end
-        self.set("childrenEventsSorted", false)
-        table.insert(self._values.childrenEvents[cc], bc)
-        self._values.eventListenerCount[cc] = self._values.eventListenerCount[cc] + 1;
-        return self
-    end
-    function db:removeChildrenEvents(bc)
-        if bc ~= nil then
-            if (bc._registeredEvents == nil) then
-                return self
-            end
-            for cc in pairs(bc._registeredEvents) do
-                self:unregisterChildEvent(bc, cc)
-            end
-        end
-        return self
-    end
-    function db:unregisterChildEvent(bc, cc)
-        if self._values.childrenEvents[cc] then
-            for dc, _d in ipairs(self._values.childrenEvents[cc]) do
-                if _d.get("id") == bc.get("id") then
-                    table.remove(self._values.childrenEvents[cc], dc)
-                    self._values.eventListenerCount[cc] = self._values.eventListenerCount[cc] - 1
-                    if self._values.eventListenerCount[cc] <= 0 then
-                        self._values.childrenEvents[cc] = nil;
-                        self._values.eventListenerCount[cc] = nil;
-                        if self.parent then
-                            self.parent:unregisterChildEvent(self, cc)
-                        end
-                    end
-                    self.set("childrenEventsSorted", false)
-                    self:updateRender()
-                    break
-                end
-            end
-        end
-        return self
-    end
-    function db:removeChild(bc)
-        if bc == nil then
-            return self
-        end
-        for cc, dc in ipairs(self._values.children) do
-            if dc.get("id") == bc.get("id") then
-                table.remove(self._values.children, cc)
-                bc.parent = nil;
-                break
-            end
-        end
-        self:removeChildrenEvents(bc)
-        self:updateRender()
-        self.set("childrenSorted", false)
-        return self
-    end
-    function db:getChild(bc)
-        if type(bc) == "string" then
-            local cc = cb(bc, "/")
-            for dc, _d in pairs(self._values.children) do
-                if _d.get("name") == cc[1] then
-                    if #cc == 1 then
-                        return _d
-                    else
-                        if (_d:isType("Container")) then
-                            return _d:find(table.concat(cc, "/", 2))
-                        end
-                    end
-                end
-            end
-        end
-        return nil
-    end
-    local function ac(bc, cc, ...)
-        local dc = {...}
-        if cc then
-            if cc:find("mouse_") then
-                local _d, ad, bd = ...
-                local cd, dd = bc.get("offsetX"), bc.get("offsetY")
-                local __a, a_a = bc:getRelativePosition(ad + cd, bd + dd)
-                dc = {_d, __a, a_a}
-            end
-        end
-        return dc
-    end
-    function db:callChildrenEvent(bc, cc, ...)
-        local dc = bc and self.get("visibleChildrenEvents") or self.get("childrenEvents")
-        if dc[cc] then
-            local _d = dc[cc]
-            for i = #_d, 1, -1 do
-                local ad = _d[i]
-                if (ad:dispatchEvent(cc, ...)) then
-                    return true, ad
-                end
-            end
-        end
-        if (dc["*"]) then
-            local _d = dc["*"]
-            for i = #_d, 1, -1 do
-                local ad = _d[i]
-                if (ad:dispatchEvent(cc, ...)) then
-                    return true, ad
-                end
-            end
-        end
-        return false
-    end
-    function db:handleEvent(bc, ...)
-        ab.handleEvent(self, bc, ...)
-        local cc = ac(self, bc, ...)
-        return self:callChildrenEvent(false, bc, table.unpack(cc))
-    end
-    function db:mouse_click(bc, cc, dc)
-        if ab.mouse_click(self, bc, cc, dc) then
-            local _d = ac(self, "mouse_click", bc, cc, dc)
-            local ad, bd = self:callChildrenEvent(true, "mouse_click", table.unpack(_d))
-            if (ad) then
-                self.set("focusedChild", bd)
-                return true
-            end
-            self.set("focusedChild", nil)
-            return true
-        end
-        return false
-    end
-    function db:mouse_up(bc, cc, dc)
-        if ab.mouse_up(self, bc, cc, dc) then
-            local _d = ac(self, "mouse_up", bc, cc, dc)
-            local ad, bd = self:callChildrenEvent(true, "mouse_up", table.unpack(_d))
-            if (ad) then
-                return true
-            end
-        end
-        return false
-    end
-    function db:mouse_release(bc, cc, dc)
-        ab.mouse_release(self, bc, cc, dc)
-        local _d = ac(self, "mouse_release", bc, cc, dc)
-        self:callChildrenEvent(false, "mouse_release", table.unpack(_d))
-    end
-    function db:mouse_move(bc, cc, dc)
-        if ab.mouse_move(self, bc, cc, dc) then
-            local _d = ac(self, "mouse_move", bc, cc, dc)
-            local ad, bd = self:callChildrenEvent(true, "mouse_move", table.unpack(_d))
-            if (ad) then
-                return true
-            end
-        end
-        return false
-    end
-    function db:mouse_drag(bc, cc, dc)
-        if ab.mouse_drag(self, bc, cc, dc) then
-            local _d = ac(self, "mouse_drag", bc, cc, dc)
-            local ad, bd = self:callChildrenEvent(true, "mouse_drag", table.unpack(_d))
-            if (ad) then
-                return true
-            end
-        end
-        return false
-    end
-    function db:mouse_scroll(bc, cc, dc)
-        local _d = ac(self, "mouse_scroll", bc, cc, dc)
-        local ad, bd = self:callChildrenEvent(true, "mouse_scroll", table.unpack(_d))
-        if (ad) then
-            return true
-        end
-        if (ab.mouse_scroll(self, bc, cc, dc)) then
-            return true
-        end
-        return false
-    end
-    function db:key(bc)
-        if self.get("focusedChild") then
-            return self.get("focusedChild"):dispatchEvent("key", bc)
-        end
-        return true
-    end
-    function db:char(bc)
-        if self.get("focusedChild") then
-            return self.get("focusedChild"):dispatchEvent("char", bc)
-        end
-        return true
-    end
-    function db:key_up(bc)
-        if self.get("focusedChild") then
-            return self.get("focusedChild"):dispatchEvent("key_up", bc)
-        end
-        return true
-    end
-    function db:multiBlit(bc, cc, dc, _d, ad, bd, cd)
-        local dd, __a = self.get("width"), self.get("height")
-        dc = bc < 1 and math.min(dc + bc - 1, dd) or math.min(dc, math.max(0, dd - bc + 1))
-        _d = cc < 1 and math.min(_d + cc - 1, __a) or math.min(_d, math.max(0, __a - cc + 1))
-        if dc <= 0 or _d <= 0 then
-            return self
-        end
-        ab.multiBlit(self, math.max(1, bc), math.max(1, cc), dc, _d, ad, bd, cd)
-        return self
-    end
-    function db:textFg(bc, cc, dc, _d)
-        local ad, bd = self.get("width"), self.get("height")
-        if cc < 1 or cc > bd then
-            return self
-        end
-        local cd = bc < 1 and (2 - bc) or 1
-        local dd = math.min(#dc - cd + 1, ad - math.max(1, bc) + 1)
-        if dd <= 0 then
-            return self
-        end
-        ab.textFg(self, math.max(1, bc), math.max(1, cc), dc:sub(cd, cd + dd - 1), _d)
-        return self
-    end
-    function db:textBg(bc, cc, dc, _d)
-        local ad, bd = self.get("width"), self.get("height")
-        if cc < 1 or cc > bd then
-            return self
-        end
-        local cd = bc < 1 and (2 - bc) or 1
-        local dd = math.min(#dc - cd + 1, ad - math.max(1, bc) + 1)
-        if dd <= 0 then
-            return self
-        end
-        ab.textBg(self, math.max(1, bc), math.max(1, cc), dc:sub(cd, cd + dd - 1), _d)
-        return self
-    end
-    function db:drawText(bc, cc, dc)
-        local _d, ad = self.get("width"), self.get("height")
-        if cc < 1 or cc > ad then
-            return self
-        end
-        local bd = bc < 1 and (2 - bc) or 1
-        local cd = math.min(#dc - bd + 1, _d - math.max(1, bc) + 1)
-        if cd <= 0 then
-            return self
-        end
-        ab.drawText(self, math.max(1, bc), math.max(1, cc), dc:sub(bd, bd + cd - 1))
-        return self
-    end
-    function db:drawFg(bc, cc, dc)
-        local _d, ad = self.get("width"), self.get("height")
-        if cc < 1 or cc > ad then
-            return self
-        end
-        local bd = bc < 1 and (2 - bc) or 1
-        local cd = math.min(#dc - bd + 1, _d - math.max(1, bc) + 1)
-        if cd <= 0 then
-            return self
-        end
-        ab.drawFg(self, math.max(1, bc), math.max(1, cc), dc:sub(bd, bd + cd - 1))
-        return self
-    end
-    function db:drawBg(bc, cc, dc)
-        local _d, ad = self.get("width"), self.get("height")
-        if cc < 1 or cc > ad then
-            return self
-        end
-        local bd = bc < 1 and (2 - bc) or 1
-        local cd = math.min(#dc - bd + 1, _d - math.max(1, bc) + 1)
-        if cd <= 0 then
-            return self
-        end
-        ab.drawBg(self, math.max(1, bc), math.max(1, cc), dc:sub(bd, bd + cd - 1))
-        return self
-    end
-    function db:blit(bc, cc, dc, _d, ad)
-        local bd, cd = self.get("width"), self.get("height")
-        if cc < 1 or cc > cd then
-            return self
-        end
-        local dd = bc < 1 and (2 - bc) or 1
-        local __a = math.min(#dc - dd + 1, bd - math.max(1, bc) + 1)
-        local a_a = math.min(#_d - dd + 1, bd - math.max(1, bc) + 1)
-        local b_a = math.min(#ad - dd + 1, bd - math.max(1, bc) + 1)
-        if __a <= 0 then
-            return self
-        end
-        local c_a = dc:sub(dd, dd + __a - 1)
-        local d_a = _d:sub(dd, dd + a_a - 1)
-        local _aa = ad:sub(dd, dd + b_a - 1)
-        ab.blit(self, math.max(1, bc), math.max(1, cc), c_a, d_a, _aa)
-        return self
-    end
-    function db:render()
-        ab.render(self)
-        if not self.get("childrenSorted") then
-            self:sortChildren()
-        end
-        if not self.get("childrenEventsSorted") then
-            for bc in pairs(self._values.childrenEvents) do
-                self:sortChildrenEvents(bc)
-            end
-        end
-        for bc, cc in ipairs(self.get("visibleChildren")) do
-            if cc == self then
-                _b.error("CIRCULAR REFERENCE DETECTED!")
-                return
-            end
-            cc:render()
-            cc:postRender()
-        end
-    end
-    function db:destroy()
-        if not self:isType("BaseFrame") then
-            for bc, cc in ipairs(self.get("children")) do
-                cc:destroy()
-            end
-            self.set("childrenSorted", false)
-            ab.destroy(self)
-            return self
-        else
-            _b.header = "Basalt Error"
-            _b.error("Cannot destroy a BaseFrame.")
-        end
-    end
-    return db
-end
-project["elements/List.lua"] = function(...)
-    local c = require("elements/VisualElement")
-    local d = setmetatable({}, c)
-    d.__index = d
-    d.defineProperty(d, "items", {
-        default = {},
-        type = "table",
-        canTriggerRender = true
-    })
-    d.defineProperty(d, "selectable", {
-        default = true,
-        type = "boolean"
-    })
-    d.defineProperty(d, "multiSelection", {
-        default = false,
-        type = "boolean"
-    })
-    d.defineProperty(d, "offset", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    d.defineProperty(d, "selectedBackground", {
-        default = colors.blue,
-        type = "color"
-    })
-    d.defineProperty(d, "selectedForeground", {
-        default = colors.white,
-        type = "color"
-    })
-    d.defineEvent(d, "mouse_click")
-    d.defineEvent(d, "mouse_scroll")
-    function d.new()
-        local _a = setmetatable({}, d):__init()
-        _a.class = d
-        _a.set("width", 16)
-        _a.set("height", 8)
-        _a.set("z", 5)
-        _a.set("background", colors.gray)
-        return _a
-    end
-    function d:init(_a, aa)
-        c.init(self, _a, aa)
-        self.set("type", "List")
-        return self
-    end
-    function d:addItem(_a)
-        local aa = self.get("items")
-        table.insert(aa, _a)
-        self:updateRender()
-        return self
-    end
-    function d:removeItem(_a)
-        local aa = self.get("items")
-        table.remove(aa, _a)
-        self:updateRender()
-        return self
-    end
-    function d:clear()
-        self.set("items", {})
-        self:updateRender()
-        return self
-    end
-    function d:getSelectedItems()
-        local _a = {}
-        for aa, ba in ipairs(self.get("items")) do
-            if type(ba) == "table" and ba.selected then
-                local ca = ba;
-                ca.index = aa;
-                table.insert(_a, ca)
-            end
-        end
-        return _a
-    end
-    function d:getSelectedItem()
-        local _a = self.get("items")
-        for aa, ba in ipairs(_a) do
-            if type(ba) == "table" and ba.selected then
-                return ba
-            end
-        end
-        return nil
-    end
-    function d:mouse_click(_a, aa, ba)
-        if self:isInBounds(aa, ba) and self.get("selectable") then
-            local ca, da = self:getRelativePosition(aa, ba)
-            local _b = da + self.get("offset")
-            local ab = self.get("items")
-            if _b <= #ab then
-                local bb = ab[_b]
-                if type(bb) == "string" then
-                    bb = {
-                        text = bb
-                    }
-                    ab[_b] = bb
-                end
-                if not self.get("multiSelection") then
-                    for cb, db in ipairs(ab) do
-                        if type(db) == "table" then
-                            db.selected = false
-                        end
-                    end
-                end
-                bb.selected = not bb.selected;
-                if bb.callback then
-                    bb.callback(self)
-                end
-                self:fireEvent("mouse_click", _a, aa, ba)
-                self:fireEvent("select", _b, bb)
-                self:updateRender()
-            end
-            return true
-        end
-        return false
-    end
-    function d:mouse_scroll(_a, aa, ba)
-        if self:isInBounds(aa, ba) then
-            local ca = self.get("offset")
-            local da = math.max(0, #self.get("items") - self.get("height"))
-            ca = math.min(da, math.max(0, ca + _a))
-            self.set("offset", ca)
-            self:fireEvent("mouse_scroll", _a, aa, ba)
-            return true
-        end
-        return false
-    end
-    function d:selectItem(_a)
-        local aa = self.get("items")
-        if not self.get("multiSelection") then
-            for ca, da in ipairs(aa) do
-                if type(da) == "table" then
-                    da.selected = false
-                end
-            end
-        end
-        local ba = aa[_a]
-        if type(ba) == "string" then
-            ba = {
-                text = ba
-            }
-            aa[_a] = ba
-        end
-        ba.selected = true;
-        if ba.callback then
-            ba.callback(self)
-        end
-        self:fireEvent("select", _a, ba)
-        self:updateRender()
-        return self
-    end
-    function d:onSelect(_a)
-        self:registerCallback("select", _a)
-        return self
-    end
-    function d:scrollToBottom()
-        local _a = math.max(0, #self.get("items") - self.get("height"))
-        self.set("offset", _a)
-        return self
-    end
-    function d:scrollToTop()
-        self.set("offset", 0)
-        return self
-    end
-    function d:render()
-        c.render(self)
-        local _a = self.get("items")
-        local aa = self.get("height")
-        local ba = self.get("offset")
-        local ca = self.get("width")
-        for i = 1, aa do
-            local da = i + ba;
-            local _b = _a[da]
-            if _b then
-                if type(_b) == "string" then
-                    _b = {
-                        text = _b
-                    }
-                    _a[da] = _b
-                end
-                if _b.separator then
-                    local ab = (_b.text or "-"):sub(1, 1)
-                    local bb = string.rep(ab, ca)
-                    local cb = _b.foreground or self.get("foreground")
-                    local db = _b.background or self.get("background")
-                    self:textBg(1, i, string.rep(" ", ca), db)
-                    self:textFg(1, i, bb:sub(1, ca), cb)
-                else
-                    local ab = _b.text
-                    local bb = _b.selected
-                    local cb = bb and (_b.selectedBackground or self.get("selectedBackground")) or
-                                   (_b.background or self.get("background"))
-                    local db = bb and (_b.selectedForeground or self.get("selectedForeground")) or
-                                   (_b.foreground or self.get("foreground"))
-                    self:textBg(1, i, string.rep(" ", ca), cb)
-                    self:textFg(1, i, ab:sub(1, ca), db)
-                end
-            end
-        end
-    end
-    return d
-end
-project["elements/ProgressBar.lua"] = function(...)
-    local d = require("elements/VisualElement")
-    local _a = require("libraries/colorHex")
-    local aa = setmetatable({}, d)
-    aa.__index = aa
-    aa.defineProperty(aa, "progress", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    aa.defineProperty(aa, "showPercentage", {
-        default = false,
-        type = "boolean"
-    })
-    aa.defineProperty(aa, "progressColor", {
-        default = colors.black,
-        type = "color"
-    })
-    aa.defineProperty(aa, "direction", {
-        default = "right",
-        type = "string"
-    })
-    function aa.new()
-        local ba = setmetatable({}, aa):__init()
-        ba.class = aa;
-        ba.set("width", 25)
-        ba.set("height", 3)
-        return ba
-    end
-    function aa:init(ba, ca)
-        d.init(self, ba, ca)
-        self.set("type", "ProgressBar")
-    end
-    function aa:render()
-        d.render(self)
-        local ba = self.get("width")
-        local ca = self.get("height")
-        local da = math.min(100, math.max(0, self.get("progress")))
-        local _b = math.floor((ba * da) / 100)
-        local ab = math.floor((ca * da) / 100)
-        local bb = self.get("direction")
-        local cb = self.get("progressColor")
-        if bb == "right" then
-            self:multiBlit(1, 1, _b, ca, " ", _a[self.get("foreground")], _a[cb])
-        elseif bb == "left" then
-            self:multiBlit(ba - _b + 1, 1, _b, ca, " ", _a[self.get("foreground")], _a[cb])
-        elseif bb == "up" then
-            self:multiBlit(1, ca - ab + 1, ba, ab, " ", _a[self.get("foreground")], _a[cb])
-        elseif bb == "down" then
-            self:multiBlit(1, 1, ba, ab, " ", _a[self.get("foreground")], _a[cb])
-        end
-        if self.get("showPercentage") then
-            local db = tostring(da) .. "%"
-            local _c = math.floor((ba - #db) / 2) + 1
-            local ac = math.floor((ca - 1) / 2) + 1
-            self:textFg(_c, ac, db, self.get("foreground"))
-        end
-    end
-    return aa
-end
-project["elements/Program.lua"] = function(...)
-    local ca = require("elementManager")
-    local da = ca.getElement("VisualElement")
-    local _b = require("errorManager")
-    local ab = setmetatable({}, da)
-    ab.__index = ab
-    ab.defineProperty(ab, "program", {
-        default = nil,
-        type = "table"
-    })
-    ab.defineProperty(ab, "path", {
-        default = "",
-        type = "string"
-    })
-    ab.defineProperty(ab, "running", {
-        default = false,
-        type = "boolean"
-    })
-    ab.defineProperty(ab, "errorCallback", {
-        default = nil,
-        type = "function"
-    })
-    ab.defineProperty(ab, "doneCallback", {
-        default = nil,
-        type = "function"
-    })
-    ab.defineEvent(ab, "*")
-    local bb = {}
-    bb.__index = bb
-    local cb = dofile("rom/modules/main/cc/require.lua").make
-    function bb.new(_c, ac, bc)
-        local cc = setmetatable({}, bb)
-        cc.env = ac or {}
-        cc.args = {}
-        cc.addEnvironment = bc == nil and true or bc;
-        cc.program = _c;
-        return cc
-    end
-    function bb:setArgs(...)
-        self.args = {...}
-    end
-    local function db(_c)
-        local ac = {
-            shell = shell,
-            multishell = multishell
-        }
-        ac.require, ac.package = cb(ac, _c)
-        return ac
-    end
-    function bb:run(_c, ac, bc)
-        self.window = window.create(self.program:getBaseFrame():getTerm(), 1, 1, ac, bc, false)
-        local cc = shell.resolveProgram(_c) or fs.exists(_c) and _c or nil
-        if (cc ~= nil) then
-            if (fs.exists(cc)) then
-                local dc = fs.open(cc, "r")
-                local _d = dc.readAll()
-                dc.close()
-                local ad = setmetatable(db(fs.getDir(_c)), {
-                    __index = _ENV
-                })
-                ad.term = self.window;
-                ad.term.current = term.current
-                ad.term.redirect = term.redirect;
-                ad.term.native = function()
-                    return self.window
-                end
-                if (self.addEnvironment) then
-                    for __a, a_a in pairs(self.env) do
-                        ad[__a] = a_a
-                    end
-                else
-                    ad = self.env
-                end
-                self.coroutine = coroutine.create(function()
-                    local __a = load(_d, "@/" .. _c, nil, ad)
-                    if __a then
-                        local a_a = __a(table.unpack(self.args))
-                        return a_a
-                    end
-                end)
-                local bd = term.current()
-                term.redirect(self.window)
-                local cd, dd = coroutine.resume(self.coroutine)
-                term.redirect(bd)
-                if not cd then
-                    local __a = self.program.get("doneCallback")
-                    if __a then
-                        __a(self.program, cd, dd)
-                    end
-                    local a_a = self.program.get("errorCallback")
-                    if a_a then
-                        local b_a = debug.traceback(self.coroutine, dd)
-                        local c_a = a_a(self.program, dd, b_a:gsub(dd, ""))
-                        if (c_a == false) then
-                            self.filter = nil;
-                            return cd, dd
-                        end
-                    end
-                    _b.header = "Basalt Program Error " .. _c;
-                    _b.error(dd)
-                end
-                if coroutine.status(self.coroutine) == "dead" then
-                    self.program.set("running", false)
-                    self.program.set("program", nil)
-                    local __a = self.program.get("doneCallback")
-                    if __a then
-                        __a(self.program, cd, dd)
-                    end
-                end
-            else
-                _b.header = "Basalt Program Error " .. _c
-                _b.error("File not found")
-            end
-        else
-            _b.header = "Basalt Program Error"
-            _b.error("Program " .. _c .. " not found")
-        end
-    end
-    function bb:resize(_c, ac)
-        self.window.reposition(1, 1, _c, ac)
-        self:resume("term_resize", _c, ac)
-    end
-    function bb:resume(_c, ...)
-        local ac = {...}
-        if (_c:find("mouse_")) then
-            ac[2], ac[3] = self.program:getRelativePosition(ac[2], ac[3])
-        end
-        if self.coroutine == nil or coroutine.status(self.coroutine) == "dead" then
-            self.program.set("running", false)
-            return
-        end
-        if (self.filter ~= nil) then
-            if (_c ~= self.filter) then
-                return
-            end
-            self.filter = nil
-        end
-        local bc = term.current()
-        term.redirect(self.window)
-        local cc, dc = coroutine.resume(self.coroutine, _c, table.unpack(ac))
-        term.redirect(bc)
-        if cc then
-            self.filter = dc
-            if coroutine.status(self.coroutine) == "dead" then
-                self.program.set("running", false)
-                self.program.set("program", nil)
-                local _d = self.program.get("doneCallback")
-                if _d then
-                    _d(self.program, cc, dc)
-                end
-            end
-        else
-            local _d = self.program.get("doneCallback")
-            if _d then
-                _d(self.program, cc, dc)
-            end
-            local ad = self.program.get("errorCallback")
-            if ad then
-                local bd = debug.traceback(self.coroutine, dc)
-                bd = bd == nil and "" or bd;
-                dc = dc or "Unknown error"
-                local cd = ad(self.program, dc, bd:gsub(dc, ""))
-                if (cd == false) then
-                    self.filter = nil;
-                    return cc, dc
-                end
-            end
-            _b.header = "Basalt Program Error"
-            _b.error(dc)
-        end
-        return cc, dc
-    end
-    function bb:stop()
-        if self.coroutine == nil or coroutine.status(self.coroutine) == "dead" then
-            self.program.set("running", false)
-            return
-        end
-        coroutine.close(self.coroutine)
-        self.coroutine = nil
-    end
-    function ab.new()
-        local _c = setmetatable({}, ab):__init()
-        _c.class = ab;
-        _c.set("z", 5)
-        _c.set("width", 30)
-        _c.set("height", 12)
-        return _c
-    end
-    function ab:init(_c, ac)
-        da.init(self, _c, ac)
-        self.set("type", "Program")
-        self:observe("width", function(bc, cc)
-            local dc = bc.get("program")
-            if dc then
-                dc:resize(cc, bc.get("height"))
-            end
-        end)
-        self:observe("height", function(bc, cc)
-            local dc = bc.get("program")
-            if dc then
-                dc:resize(bc.get("width"), cc)
-            end
-        end)
-        return self
-    end
-    function ab:execute(_c, ac, bc, ...)
-        self.set("path", _c)
-        self.set("running", true)
-        local cc = bb.new(self, ac, bc)
-        self.set("program", cc)
-        cc:setArgs(...)
-        cc:run(_c, self.get("width"), self.get("height"), ...)
-        self:updateRender()
-        return self
-    end
-    function ab:stop()
-        local _c = self.get("program")
-        if _c then
-            _c:stop()
-            self.set("running", false)
-            self.set("program", nil)
-        end
-        return self
-    end
-    function ab:sendEvent(_c, ...)
-        self:dispatchEvent(_c, ...)
-        return self
-    end
-    function ab:onError(_c)
-        self.set("errorCallback", _c)
-        return self
-    end
-    function ab:onDone(_c)
-        self.set("doneCallback", _c)
-        return self
-    end
-    function ab:dispatchEvent(_c, ...)
-        local ac = self.get("program")
-        local bc = da.dispatchEvent(self, _c, ...)
-        if ac then
-            ac:resume(_c, ...)
-            if (self.get("focused")) then
-                local cc = ac.window.getCursorBlink()
-                local dc, _d = ac.window.getCursorPos()
-                self:setCursor(dc, _d, cc, ac.window.getTextColor())
-            end
-            self:updateRender()
-        end
-        return bc
-    end
-    function ab:focus()
-        if (da.focus(self)) then
-            local _c = self.get("program")
-            if _c then
-                local ac = _c.window.getCursorBlink()
-                local bc, cc = _c.window.getCursorPos()
-                self:setCursor(bc, cc, ac, _c.window.getTextColor())
-            end
-        end
-    end
-    function ab:render()
-        da.render(self)
-        local _c = self.get("program")
-        if _c then
-            local ac, bc = _c.window.getSize()
-            for y = 1, bc do
-                local cc, dc, _d = _c.window.getLine(y)
-                if cc then
-                    self:blit(1, y, cc, dc, _d)
-                end
-            end
-        end
-    end
-    return ab
-end
-project["elements/Tree.lua"] = function(...)
-    local _a = require("elements/VisualElement")
-    local aa = string.sub
-    local ba = setmetatable({}, _a)
-    ba.__index = ba
-    ba.defineProperty(ba, "nodes", {
-        default = {},
-        type = "table",
-        canTriggerRender = true,
-        setter = function(da, _b)
-            if #_b > 0 then
-                da.get("expandedNodes")[_b[1]] = true
-            end
-            return _b
-        end
-    })
-    ba.defineProperty(ba, "selectedNode", {
-        default = nil,
-        type = "table",
-        canTriggerRender = true
-    })
-    ba.defineProperty(ba, "expandedNodes", {
-        default = {},
-        type = "table",
-        canTriggerRender = true
-    })
-    ba.defineProperty(ba, "scrollOffset", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    ba.defineProperty(ba, "horizontalOffset", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    ba.defineProperty(ba, "nodeColor", {
-        default = colors.white,
-        type = "color"
-    })
-    ba.defineProperty(ba, "selectedColor", {
-        default = colors.lightBlue,
-        type = "color"
-    })
-    ba.defineEvent(ba, "mouse_click")
-    ba.defineEvent(ba, "mouse_scroll")
-    function ba.new()
-        local da = setmetatable({}, ba):__init()
-        da.class = ba;
-        da.set("width", 30)
-        da.set("height", 10)
-        da.set("z", 5)
-        return da
-    end
-    function ba:init(da, _b)
-        _a.init(self, da, _b)
-        self.set("type", "Tree")
-        return self
-    end
-    function ba:expandNode(da)
-        self.get("expandedNodes")[da] = true
-        self:updateRender()
-        return self
-    end
-    function ba:collapseNode(da)
-        self.get("expandedNodes")[da] = nil;
-        self:updateRender()
-        return self
-    end
-    function ba:toggleNode(da)
-        if self.get("expandedNodes")[da] then
-            self:collapseNode(da)
-        else
-            self:expandNode(da)
-        end
-        return self
-    end
-    local function ca(da, _b, ab, bb)
-        bb = bb or {}
-        ab = ab or 0;
-        for cb, db in ipairs(da) do
-            table.insert(bb, {
-                node = db,
-                level = ab
-            })
-            if _b[db] and db.children then
-                ca(db.children, _b, ab + 1, bb)
-            end
-        end
-        return bb
-    end
-    function ba:mouse_click(da, _b, ab)
-        if _a.mouse_click(self, da, _b, ab) then
-            local bb, cb = self:getRelativePosition(_b, ab)
-            local db = ca(self.get("nodes"), self.get("expandedNodes"))
-            local _c = cb + self.get("scrollOffset")
-            if db[_c] then
-                local ac = db[_c]
-                local bc = ac.node
-                if bb <= ac.level * 2 + 2 then
-                    self:toggleNode(bc)
-                end
-                self.set("selectedNode", bc)
-                self:fireEvent("node_select", bc)
-            end
-            return true
-        end
-        return false
-    end
-    function ba:onSelect(da)
-        self:registerCallback("node_select", da)
-        return self
-    end
-    function ba:mouse_scroll(da, _b, ab)
-        if _a.mouse_scroll(self, da, _b, ab) then
-            local bb = ca(self.get("nodes"), self.get("expandedNodes"))
-            local cb = math.max(0, #bb - self.get("height"))
-            local db = math.min(cb, math.max(0, self.get("scrollOffset") + da))
-            self.set("scrollOffset", db)
-            return true
-        end
-        return false
-    end
-    function ba:getNodeSize()
-        local da, _b = 0, 0
-        local ab = ca(self.get("nodes"), self.get("expandedNodes"))
-        for bb, cb in ipairs(ab) do
-            da = math.max(da, cb.level + #cb.node.text)
-        end
-        _b = #ab;
-        return da, _b
-    end
-    function ba:render()
-        _a.render(self)
-        local da = ca(self.get("nodes"), self.get("expandedNodes"))
-        local _b = self.get("height")
-        local ab = self.get("selectedNode")
-        local bb = self.get("expandedNodes")
-        local cb = self.get("scrollOffset")
-        local db = self.get("horizontalOffset")
-        for y = 1, _b do
-            local _c = da[y + cb]
-            if _c then
-                local ac = _c.node;
-                local bc = _c.level
-                local cc = string.rep("  ", bc)
-                local dc = " "
-                if ac.children and #ac.children > 0 then
-                    dc = bb[ac] and "\31" or "\16"
-                end
-                local _d = ac == ab and self.get("selectedColor") or self.get("background")
-                local ad = cc .. dc .. " " .. (ac.text or "Node")
-                local bd = aa(ad, db + 1, db + self.get("width"))
-                self:textFg(1, y, bd .. string.rep(" ", self.get("width") - #bd), self.get("foreground"))
-            else
-                self:textFg(1, y, string.rep(" ", self.get("width")), self.get("foreground"), self.get("background"))
-            end
-        end
-    end
-    return ba
-end
-project["elements/Image.lua"] = function(...)
-    local ba = require("elementManager")
-    local ca = ba.getElement("VisualElement")
-    local da = require("libraries/colorHex")
-    local _b = setmetatable({}, ca)
-    _b.__index = _b
-    _b.defineProperty(_b, "bimg", {
-        default = {{}},
-        type = "table",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "currentFrame", {
-        default = 1,
-        type = "number",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "autoResize", {
-        default = false,
-        type = "boolean"
-    })
-    _b.defineProperty(_b, "offsetX", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "offsetY", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    _b.combineProperties(_b, "offset", "offsetX", "offsetY")
-    function _b.new()
-        local cb = setmetatable({}, _b):__init()
-        cb.class = _b;
-        cb.set("width", 12)
-        cb.set("height", 6)
-        cb.set("background", colors.black)
-        cb.set("z", 5)
-        return cb
-    end
-    function _b:init(cb, db)
-        ca.init(self, cb, db)
-        self.set("type", "Image")
-        return self
-    end
-    function _b:resizeImage(cb, db)
-        local _c = self.get("bimg")
-        for ac, bc in ipairs(_c) do
-            local cc = {}
-            for y = 1, db do
-                local dc = string.rep(" ", cb)
-                local _d = string.rep("f", cb)
-                local ad = string.rep("0", cb)
-                if bc[y] and bc[y][1] then
-                    local bd = bc[y][1]
-                    local cd = bc[y][2]
-                    local dd = bc[y][3]
-                    dc = (bd .. string.rep(" ", cb)):sub(1, cb)
-                    _d = (cd .. string.rep("f", cb)):sub(1, cb)
-                    ad = (dd .. string.rep("0", cb)):sub(1, cb)
-                end
-                cc[y] = {dc, _d, ad}
-            end
-            _c[ac] = cc
-        end
-        self:updateRender()
-        return self
-    end
-    function _b:getImageSize()
-        local cb = self.get("bimg")
-        if not cb[1] or not cb[1][1] then
-            return 0, 0
-        end
-        return #cb[1][1][1], #cb[1]
-    end
-    function _b:getPixelData(cb, db)
-        local _c = self.get("bimg")[self.get("currentFrame")]
-        if not _c or not _c[db] then
-            return
-        end
-        local ac = _c[db][1]
-        local bc = _c[db][2]
-        local cc = _c[db][3]
-        if not ac or not bc or not cc then
-            return
-        end
-        local dc = tonumber(bc:sub(cb, cb), 16)
-        local _d = tonumber(cc:sub(cb, cb), 16)
-        local ad = ac:sub(cb, cb)
-        return dc, _d, ad
-    end
-    local function ab(cb, db)
-        local _c = cb.get("bimg")[cb.get("currentFrame")]
-        if not _c then
-            _c = {}
-            cb.get("bimg")[cb.get("currentFrame")] = _c
-        end
-        if not _c[db] then
-            _c[db] = {"", "", ""}
-        end
-        return _c
-    end
-    local function bb(cb, db, _c)
-        if not cb.get("autoResize") then
-            return
-        end
-        local ac = cb.get("bimg")
-        local bc = db;
-        local cc = _c
-        for dc, _d in ipairs(ac) do
-            for ad, bd in pairs(_d) do
-                bc = math.max(bc, #bd[1])
-                cc = math.max(cc, ad)
-            end
-        end
-        for dc, _d in ipairs(ac) do
-            for y = 1, cc do
-                if not _d[y] then
-                    _d[y] = {"", "", ""}
-                end
-                local ad = _d[y]
-                while #ad[1] < bc do
-                    ad[1] = ad[1] .. " "
-                end
-                while #ad[2] < bc do
-                    ad[2] = ad[2] .. "f"
-                end
-                while #ad[3] < bc do
-                    ad[3] = ad[3] .. "0"
-                end
-            end
-        end
-    end
-    function _b:setText(cb, db, _c)
-        if type(_c) ~= "string" or #_c < 1 or cb < 1 or db < 1 then
-            return self
-        end
-        if not self.get("autoResize") then
-            local cc, dc = self:getImageSize()
-            if db > dc then
-                return self
-            end
-        end
-        local ac = ab(self, db)
-        if self.get("autoResize") then
-            bb(self, cb + #_c - 1, db)
-        else
-            local cc = #ac[db][1]
-            if cb > cc then
-                return self
-            end
-            _c = _c:sub(1, cc - cb + 1)
-        end
-        local bc = ac[db][1]
-        ac[db][1] = bc:sub(1, cb - 1) .. _c .. bc:sub(cb + #_c)
-        self:updateRender()
-        return self
-    end
-    function _b:getText(cb, db, _c)
-        if not cb or not db then
-            return ""
-        end
-        local ac = self.get("bimg")[self.get("currentFrame")]
-        if not ac or not ac[db] then
-            return ""
-        end
-        local bc = ac[db][1]
-        if not bc then
-            return ""
-        end
-        if _c then
-            return bc:sub(cb, cb + _c - 1)
-        else
-            return bc:sub(cb, cb)
-        end
-    end
-    function _b:setFg(cb, db, _c)
-        if type(_c) ~= "string" or #_c < 1 or cb < 1 or db < 1 then
-            return self
-        end
-        if not self.get("autoResize") then
-            local cc, dc = self:getImageSize()
-            if db > dc then
-                return self
-            end
-        end
-        local ac = ab(self, db)
-        if self.get("autoResize") then
-            bb(self, cb + #_c - 1, db)
-        else
-            local cc = #ac[db][2]
-            if cb > cc then
-                return self
-            end
-            _c = _c:sub(1, cc - cb + 1)
-        end
-        local bc = ac[db][2]
-        ac[db][2] = bc:sub(1, cb - 1) .. _c .. bc:sub(cb + #_c)
-        self:updateRender()
-        return self
-    end
-    function _b:getFg(cb, db, _c)
-        if not cb or not db then
-            return ""
-        end
-        local ac = self.get("bimg")[self.get("currentFrame")]
-        if not ac or not ac[db] then
-            return ""
-        end
-        local bc = ac[db][2]
-        if not bc then
-            return ""
-        end
-        if _c then
-            return bc:sub(cb, cb + _c - 1)
-        else
-            return bc:sub(cb)
-        end
-    end
-    function _b:setBg(cb, db, _c)
-        if type(_c) ~= "string" or #_c < 1 or cb < 1 or db < 1 then
-            return self
-        end
-        if not self.get("autoResize") then
-            local cc, dc = self:getImageSize()
-            if db > dc then
-                return self
-            end
-        end
-        local ac = ab(self, db)
-        if self.get("autoResize") then
-            bb(self, cb + #_c - 1, db)
-        else
-            local cc = #ac[db][3]
-            if cb > cc then
-                return self
-            end
-            _c = _c:sub(1, cc - cb + 1)
-        end
-        local bc = ac[db][3]
-        ac[db][3] = bc:sub(1, cb - 1) .. _c .. bc:sub(cb + #_c)
-        self:updateRender()
-        return self
-    end
-    function _b:getBg(cb, db, _c)
-        if not cb or not db then
-            return ""
-        end
-        local ac = self.get("bimg")[self.get("currentFrame")]
-        if not ac or not ac[db] then
-            return ""
-        end
-        local bc = ac[db][3]
-        if not bc then
-            return ""
-        end
-        if _c then
-            return bc:sub(cb, cb + _c - 1)
-        else
-            return bc:sub(cb)
-        end
-    end
-    function _b:setPixel(cb, db, _c, ac, bc)
-        if _c then
-            self:setText(cb, db, _c)
-        end
-        if ac then
-            self:setFg(cb, db, ac)
-        end
-        if bc then
-            self:setBg(cb, db, bc)
-        end
-        return self
-    end
-    function _b:nextFrame()
-        if not self.get("bimg").animation then
-            return self
-        end
-        local cb = self.get("bimg")
-        local db = self.get("currentFrame")
-        local _c = db + 1;
-        if _c > #cb then
-            _c = 1
-        end
-        self.set("currentFrame", _c)
-        return self
-    end
-    function _b:addFrame()
-        local cb = self.get("bimg")
-        local db = cb.width or #cb[1][1][1]
-        local _c = cb.height or #cb[1]
-        local ac = {}
-        local bc = string.rep(" ", db)
-        local cc = string.rep("f", db)
-        local dc = string.rep("0", db)
-        for y = 1, _c do
-            ac[y] = {bc, cc, dc}
-        end
-        table.insert(cb, ac)
-        return self
-    end
-    function _b:updateFrame(cb, db)
-        local _c = self.get("bimg")
-        _c[cb] = db
-        self:updateRender()
-        return self
-    end
-    function _b:getFrame(cb)
-        local db = self.get("bimg")
-        return db[cb or self.get("currentFrame")]
-    end
-    function _b:getMetadata()
-        local cb = {}
-        local db = self.get("bimg")
-        for _c, ac in pairs(db) do
-            if (type(ac) == "string") then
-                cb[_c] = ac
-            end
-        end
-        return cb
-    end
-    function _b:setMetadata(cb, db)
-        if (type(cb) == "table") then
-            for ac, bc in pairs(cb) do
-                self:setMetadata(ac, bc)
-            end
-            return self
-        end
-        local _c = self.get("bimg")
-        if (type(db) == "string") then
-            _c[cb] = db
-        end
-        return self
-    end
-    function _b:render()
-        ca.render(self)
-        local cb = self.get("bimg")[self.get("currentFrame")]
-        if not cb then
-            return
-        end
-        local db = self.get("offsetX")
-        local _c = self.get("offsetY")
-        local ac = self.get("width")
-        local bc = self.get("height")
-        for y = 1, bc do
-            local cc = y + _c
-            local dc = cb[cc]
-            if dc then
-                local _d = dc[1]
-                local ad = dc[2]
-                local bd = dc[3]
-                if _d and ad and bd then
-                    local cd = ac - math.max(0, db)
-                    if cd > 0 then
-                        if db < 0 then
-                            local dd = math.abs(db) + 1;
-                            _d = _d:sub(dd)
-                            ad = ad:sub(dd)
-                            bd = bd:sub(dd)
-                        end
-                        _d = _d:sub(1, cd)
-                        ad = ad:sub(1, cd)
-                        bd = bd:sub(1, cd)
-                        self:blit(math.max(1, 1 + db), y, _d, ad, bd)
-                    end
-                end
-            end
-        end
-    end
-    return _b
-end
-project["elements/Label.lua"] = function(...)
-    local _a = require("elementManager")
-    local aa = _a.getElement("VisualElement")
-    local ba = require("libraries/utils").wrapText
-    local ca = setmetatable({}, aa)
-    ca.__index = ca
-    ca.defineProperty(ca, "text", {
-        default = "Label",
-        type = "string",
-        canTriggerRender = true,
-        setter = function(da, _b)
-            if (type(_b) == "function") then
-                _b = _b()
-            end
-            if (da.get("autoSize")) then
-                da.set("width", #_b)
-            else
-                da.set("height", #ba(_b, da.get("width")))
-            end
-            return _b
-        end
-    })
-    ca.defineProperty(ca, "autoSize", {
-        default = true,
-        type = "boolean",
-        canTriggerRender = true,
-        setter = function(da, _b)
-            if (_b) then
-                da.set("width", #da.get("text"))
-            else
-                da.set("height", #ba(da.get("text"), da.get("width")))
-            end
-            return _b
-        end
-    })
-    function ca.new()
-        local da = setmetatable({}, ca):__init()
-        da.class = ca;
-        da.set("z", 3)
-        da.set("foreground", colors.black)
-        da.set("backgroundEnabled", false)
-        return da
-    end
-    function ca:init(da, _b)
-        aa.init(self, da, _b)
-        if (self.parent) then
-            self.set("background", self.parent.get("background"))
-            self.set("foreground", self.parent.get("foreground"))
-        end
-        self.set("type", "Label")
-        return self
-    end
-    function ca:getWrappedText()
-        local da = self.get("text")
-        local _b = ba(da, self.get("width"))
-        return _b
-    end
-    function ca:render()
-        aa.render(self)
-        local da = self.get("text")
-        if (self.get("autoSize")) then
-            self:textFg(1, 1, da, self.get("foreground"))
-        else
-            local _b = ba(da, self.get("width"))
-            for ab, bb in ipairs(_b) do
-                self:textFg(1, ab, bb, self.get("foreground"))
-            end
-        end
-    end
-    return ca
-end
-project["elements/Input.lua"] = function(...)
-    local d = require("elements/VisualElement")
-    local _a = require("libraries/colorHex")
-    local aa = setmetatable({}, d)
-    aa.__index = aa
-    aa.defineProperty(aa, "text", {
-        default = "",
-        type = "string",
-        canTriggerRender = true
-    })
-    aa.defineProperty(aa, "cursorPos", {
-        default = 1,
-        type = "number"
-    })
-    aa.defineProperty(aa, "viewOffset", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    aa.defineProperty(aa, "maxLength", {
-        default = nil,
-        type = "number"
-    })
-    aa.defineProperty(aa, "placeholder", {
-        default = "...",
-        type = "string"
-    })
-    aa.defineProperty(aa, "placeholderColor", {
-        default = colors.gray,
-        type = "color"
-    })
-    aa.defineProperty(aa, "focusedBackground", {
-        default = colors.blue,
-        type = "color"
-    })
-    aa.defineProperty(aa, "focusedForeground", {
-        default = colors.white,
-        type = "color"
-    })
-    aa.defineProperty(aa, "pattern", {
-        default = nil,
-        type = "string"
-    })
-    aa.defineProperty(aa, "cursorColor", {
-        default = nil,
-        type = "number"
-    })
-    aa.defineProperty(aa, "replaceChar", {
-        default = nil,
-        type = "string",
-        canTriggerRender = true
-    })
-    aa.defineEvent(aa, "mouse_click")
-    aa.defineEvent(aa, "key")
-    aa.defineEvent(aa, "char")
-    aa.defineEvent(aa, "paste")
-    function aa.new()
-        local ba = setmetatable({}, aa):__init()
-        ba.class = aa;
-        ba.set("width", 8)
-        ba.set("z", 3)
-        return ba
-    end
-    function aa:init(ba, ca)
-        d.init(self, ba, ca)
-        self.set("type", "Input")
-        return self
-    end
-    function aa:setCursor(ba, ca, da, _b)
-        ba = math.min(self.get("width"), math.max(1, ba))
-        return d.setCursor(self, ba, ca, da, _b)
-    end
-    function aa:char(ba)
-        if not self.get("focused") then
-            return false
-        end
-        local ca = self.get("text")
-        local da = self.get("cursorPos")
-        local _b = self.get("maxLength")
-        local ab = self.get("pattern")
-        if _b and #ca >= _b then
-            return false
-        end
-        if ab and not ba:match(ab) then
-            return false
-        end
-        self.set("text", ca:sub(1, da - 1) .. ba .. ca:sub(da))
-        self.set("cursorPos", da + 1)
-        self:updateViewport()
-        local bb = self.get("cursorPos") - self.get("viewOffset")
-        self:setCursor(bb, 1, true, self.get("cursorColor") or self.get("foreground"))
-        d.char(self, ba)
-        return true
-    end
-    function aa:key(ba, ca)
-        if not self.get("focused") then
-            return false
-        end
-        local da = self.get("cursorPos")
-        local _b = self.get("text")
-        local ab = self.get("viewOffset")
-        local bb = self.get("width")
-        if ba == keys.left then
-            if da > 1 then
-                self.set("cursorPos", da - 1)
-                if da - 1 <= ab then
-                    self.set("viewOffset", math.max(0, da - 2))
-                end
-            end
-        elseif ba == keys.right then
-            if da <= #_b then
-                self.set("cursorPos", da + 1)
-                if da - ab >= bb then
-                    self.set("viewOffset", da - bb + 1)
-                end
-            end
-        elseif ba == keys.backspace then
-            if da > 1 then
-                self.set("text", _b:sub(1, da - 2) .. _b:sub(da))
-                self.set("cursorPos", da - 1)
-                self:updateRender()
-                self:updateViewport()
-            end
-        end
-        local cb = self.get("cursorPos") - self.get("viewOffset")
-        self:setCursor(cb, 1, true, self.get("cursorColor") or self.get("foreground"))
-        d.key(self, ba, ca)
-        return true
-    end
-    function aa:mouse_click(ba, ca, da)
-        if d.mouse_click(self, ba, ca, da) then
-            local _b, ab = self:getRelativePosition(ca, da)
-            local bb = self.get("text")
-            local cb = self.get("viewOffset")
-            local db = #bb + 1;
-            local _c = math.min(db, cb + _b)
-            self.set("cursorPos", _c)
-            local ac = _c - cb
-            self:setCursor(ac, 1, true, self.get("cursorColor") or self.get("foreground"))
-            return true
-        end
-        return false
-    end
-    function aa:updateViewport()
-        local ba = self.get("width")
-        local ca = self.get("cursorPos")
-        local da = self.get("viewOffset")
-        local _b = #self.get("text")
-        if ca - da >= ba then
-            self.set("viewOffset", ca - ba + 1)
-        elseif ca <= da then
-            self.set("viewOffset", ca - 1)
-        end
-        self.set("viewOffset", math.max(0, math.min(self.get("viewOffset"), _b - ba + 1)))
-        return self
-    end
-    function aa:focus()
-        d.focus(self)
-        self:setCursor(self.get("cursorPos") - self.get("viewOffset"), 1, true,
-            self.get("cursorColor") or self.get("foreground"))
-        self:updateRender()
-    end
-    function aa:blur()
-        d.blur(self)
-        self:setCursor(1, 1, false, self.get("cursorColor") or self.get("foreground"))
-        self:updateRender()
-    end
-    function aa:paste(ba)
-        if not self.get("focused") then
-            return false
-        end
-        local ca = self.get("text")
-        local da = self.get("cursorPos")
-        local _b = self.get("maxLength")
-        local ab = self.get("pattern")
-        local bb = ca:sub(1, da - 1) .. ba .. ca:sub(da)
-        if _b and #bb > _b then
-            bb = bb:sub(1, _b)
-        end
-        if ab and not bb:match(ab) then
-            return false
-        end
-        self.set("text", bb)
-        self.set("cursorPos", da + #ba)
-        self:updateViewport()
-    end
-    function aa:render()
-        local ba = self.get("text")
-        local ca = self.get("viewOffset")
-        local da = self.get("width")
-        local _b = self.get("placeholder")
-        local ab = self.get("focusedBackground")
-        local bb = self.get("focusedForeground")
-        local cb = self.get("focused")
-        local db, _c = self.get("width"), self.get("height")
-        local ac = self.get("replaceChar")
-        self:multiBlit(1, 1, db, _c, " ", _a[cb and bb or self.get("foreground")],
-            _a[cb and ab or self.get("background")])
-        if #ba == 0 and #_b ~= 0 and self.get("focused") == false then
-            self:textFg(1, 1, _b:sub(1, db), self.get("placeholderColor"))
-            return
-        end
-        if (cb) then
-            self:setCursor(self.get("cursorPos") - ca, 1, true, self.get("cursorColor") or self.get("foreground"))
-        end
-        local bc = ba:sub(ca + 1, ca + db)
-        if ac and #ac > 0 then
-            bc = ac:rep(#bc)
-        end
-        self:textFg(1, 1, bc, self.get("foreground"))
-    end
-    return aa
-end
-project["elements/BarChart.lua"] = function(...)
-    local aa = require("elementManager")
-    local ba = aa.getElement("VisualElement")
-    local ca = aa.getElement("Graph")
-    local da = require("libraries/colorHex")
-    local _b = setmetatable({}, ca)
-    _b.__index = _b;
-    function _b.new()
-        local ab = setmetatable({}, _b):__init()
-        ab.class = _b;
-        return ab
-    end
-    function _b:init(ab, bb)
-        ca.init(self, ab, bb)
-        self.set("type", "BarChart")
-        return self
-    end
-    function _b:render()
-        ba.render(self)
-        local ab = self.get("width")
-        local bb = self.get("height")
-        local cb = self.get("minValue")
-        local db = self.get("maxValue")
-        local _c = self.get("series")
-        local ac = 0;
-        local bc = {}
-        for ad, bd in pairs(_c) do
-            if (bd.visible) then
-                if #bd.data > 0 then
-                    ac = ac + 1
-                    table.insert(bc, bd)
-                end
-            end
-        end
-        local cc = ac;
-        local dc = 1
-        local _d = math.min(bc[1] and bc[1].pointCount or 0, math.floor((ab + dc) / (cc + dc)))
-        for groupIndex = 1, _d do
-            local ad = ((groupIndex - 1) * (cc + dc)) + 1
-            for bd, cd in ipairs(bc) do
-                local dd = cd.data[groupIndex]
-                if dd then
-                    local __a = ad + (bd - 1)
-                    local a_a = (dd - cb) / (db - cb)
-                    local b_a = math.floor(bb - (a_a * (bb - 1)))
-                    b_a = math.max(1, math.min(b_a, bb))
-                    for barY = b_a, bb do
-                        self:blit(__a, barY, cd.symbol, da[cd.fgColor], da[cd.bgColor])
-                    end
-                end
-            end
-        end
-    end
-    return _b
-end
-project["elements/Button.lua"] = function(...)
-    local _a = require("elementManager")
-    local aa = _a.getElement("VisualElement")
-    local ba = require("libraries/utils").getCenteredPosition;
-    local ca = setmetatable({}, aa)
-    ca.__index = ca
-    ca.defineProperty(ca, "text", {
-        default = "Button",
-        type = "string",
-        canTriggerRender = true
-    })
-    ca.defineEvent(ca, "mouse_click")
-    ca.defineEvent(ca, "mouse_up")
-    function ca.new()
-        local da = setmetatable({}, ca):__init()
-        da.class = ca;
-        da.set("width", 10)
-        da.set("height", 3)
-        da.set("z", 5)
-        return da
-    end
-    function ca:init(da, _b)
-        aa.init(self, da, _b)
-        self.set("type", "Button")
-    end
-    function ca:render()
-        aa.render(self)
-        local da = self.get("text")
-        da = da:sub(1, self.get("width"))
-        local _b, ab = ba(da, self.get("width"), self.get("height"))
-        self:textFg(_b, ab, da, self.get("foreground"))
-    end
-    return ca
-end
-project["elements/BaseElement.lua"] = function(...)
-    local _a = require("propertySystem")
-    local aa = require("libraries/utils").uuid;
-    local ba = require("errorManager")
-    local ca = setmetatable({}, _a)
-    ca.__index = ca
-    ca.defineProperty(ca, "type", {
-        default = {"BaseElement"},
-        type = "string",
-        setter = function(da, _b)
-            if type(_b) == "string" then
-                table.insert(da._values.type, 1, _b)
-                return da._values.type
-            end
-            return _b
-        end,
-        getter = function(da, _b, ab)
-            if ab ~= nil and ab < 1 then
-                return da._values.type
-            end
-            return da._values.type[ab or 1]
-        end
-    })
-    ca.defineProperty(ca, "id", {
-        default = "",
-        type = "string",
-        readonly = true
-    })
-    ca.defineProperty(ca, "name", {
-        default = "",
-        type = "string"
-    })
-    ca.defineProperty(ca, "eventCallbacks", {
-        default = {},
-        type = "table"
-    })
-    ca.defineProperty(ca, "enabled", {
-        default = true,
-        type = "boolean"
-    })
-    function ca.defineEvent(da, _b, ab)
-        if not rawget(da, '_eventConfigs') then
-            da._eventConfigs = {}
-        end
-        da._eventConfigs[_b] = {
-            requires = ab and ab or _b
-        }
-    end
-    function ca.registerEventCallback(da, _b, ...)
-        local ab = _b:match("^on") and _b or "on" .. _b;
-        local bb = {...}
-        local cb = bb[1]
-        da[ab] = function(db, ...)
-            for _c, ac in ipairs(bb) do
-                if not db._registeredEvents[ac] then
-                    db:listenEvent(ac, true)
-                end
-            end
-            db:registerCallback(cb, ...)
-            return db
-        end
-    end
-    function ca.new()
-        local da = setmetatable({}, ca):__init()
-        da.class = ca;
-        return da
-    end
-    function ca:init(da, _b)
-        if self._initialized then
-            return self
-        end
-        self._initialized = true;
-        self._props = da;
-        self._values.id = aa()
-        self.basalt = _b;
-        self._registeredEvents = {}
-        local ab = getmetatable(self).__index
-        local bb = {}
-        ab = self.class
-        while ab do
-            if type(ab) == "table" and ab._eventConfigs then
-                for cb, db in pairs(ab._eventConfigs) do
-                    if not bb[cb] then
-                        bb[cb] = db
-                    end
-                end
-            end
-            ab = getmetatable(ab) and getmetatable(ab).__index
-        end
-        for cb, db in pairs(bb) do
-            self._registeredEvents[db.requires] = true
-        end
-        if self._callbacks then
-            for cb, db in pairs(self._callbacks) do
-                self[db] = function(_c, ...)
-                    _c:registerCallback(cb, ...)
-                    return _c
-                end
-            end
-        end
-        return self
-    end
-    function ca:postInit()
-        if self._postInitialized then
-            return self
-        end
-        self._postInitialized = true;
-        if (self._props) then
-            for da, _b in pairs(self._props) do
-                self.set(da, _b)
-            end
-        end
-        self._props = nil;
-        return self
-    end
-    function ca:isType(da)
-        for _b, ab in ipairs(self._values.type) do
-            if ab == da then
-                return true
-            end
-        end
-        return false
-    end
-    function ca:listenEvent(da, _b)
-        _b = _b ~= false
-        if _b ~= (self._registeredEvents[da] or false) then
-            if _b then
-                self._registeredEvents[da] = true;
-                if self.parent then
-                    self.parent:registerChildEvent(self, da)
-                end
-            else
-                self._registeredEvents[da] = nil
-                if self.parent then
-                    self.parent:unregisterChildEvent(self, da)
-                end
-            end
-        end
-        return self
-    end
-    function ca:registerCallback(da, _b)
-        if not self._registeredEvents[da] then
-            self:listenEvent(da, true)
-        end
-        if not self._values.eventCallbacks[da] then
-            self._values.eventCallbacks[da] = {}
-        end
-        table.insert(self._values.eventCallbacks[da], _b)
-        return self
-    end
-    function ca:fireEvent(da, ...)
-        if self.get("eventCallbacks")[da] then
-            for _b, ab in ipairs(self.get("eventCallbacks")[da]) do
-                local bb = ab(self, ...)
-                return bb
-            end
-        end
-        return self
-    end
-    function ca:dispatchEvent(da, ...)
-        if self.get("enabled") == false then
-            return false
-        end
-        if self[da] then
-            return self[da](self, ...)
-        end
-        return self:handleEvent(da, ...)
-    end
-    function ca:handleEvent(da, ...)
-        return false
-    end
-    function ca:onChange(da, _b)
-        self:observe(da, _b)
-        return self
-    end
-    function ca:getBaseFrame()
-        if self.parent then
-            return self.parent:getBaseFrame()
-        end
-        return self
-    end
-    function ca:destroy()
-        self._destroyed = true;
-        self:removeAllObservers()
-        self:setFocused(false)
-        for da in pairs(self._registeredEvents) do
-            self:listenEvent(da, false)
-        end
-        if (self.parent) then
-            self.parent:removeChild(self)
-        end
-    end
-    function ca:updateRender()
-        if (self.parent) then
-            self.parent:updateRender()
-        else
-            self._renderUpdate = true
-        end
-        return self
-    end
-    return ca
-end
-project["elements/TextBox.lua"] = function(...)
-    local ca = require("elements/VisualElement")
-    local da = require("libraries/colorHex")
-    local _b = setmetatable({}, ca)
-    _b.__index = _b
-    _b.defineProperty(_b, "lines", {
-        default = {""},
-        type = "table",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "cursorX", {
-        default = 1,
-        type = "number"
-    })
-    _b.defineProperty(_b, "cursorY", {
-        default = 1,
-        type = "number"
-    })
-    _b.defineProperty(_b, "scrollX", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "scrollY", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    _b.defineProperty(_b, "editable", {
-        default = true,
-        type = "boolean"
-    })
-    _b.defineProperty(_b, "syntaxPatterns", {
-        default = {},
-        type = "table"
-    })
-    _b.defineProperty(_b, "cursorColor", {
-        default = nil,
-        type = "color"
-    })
-    _b.defineEvent(_b, "mouse_click")
-    _b.defineEvent(_b, "key")
-    _b.defineEvent(_b, "char")
-    _b.defineEvent(_b, "mouse_scroll")
-    _b.defineEvent(_b, "paste")
-    function _b.new()
-        local _c = setmetatable({}, _b):__init()
-        _c.class = _b;
-        _c.set("width", 20)
-        _c.set("height", 10)
-        return _c
-    end
-    function _b:init(_c, ac)
-        ca.init(self, _c, ac)
-        self.set("type", "TextBox")
-        return self
-    end
-    function _b:addSyntaxPattern(_c, ac)
-        table.insert(self.get("syntaxPatterns"), {
-            pattern = _c,
-            color = ac
-        })
-        return self
-    end
-    local function ab(_c, ac)
-        local bc = _c.get("lines")
-        local cc = _c.get("cursorX")
-        local dc = _c.get("cursorY")
-        local _d = bc[dc]
-        bc[dc] = _d:sub(1, cc - 1) .. ac .. _d:sub(cc)
-        _c.set("cursorX", cc + 1)
-        _c:updateViewport()
-        _c:updateRender()
-    end
-    local function bb(_c)
-        local ac = _c.get("lines")
-        local bc = _c.get("cursorX")
-        local cc = _c.get("cursorY")
-        local dc = ac[cc]
-        local _d = dc:sub(bc)
-        ac[cc] = dc:sub(1, bc - 1)
-        table.insert(ac, cc + 1, _d)
-        _c.set("cursorX", 1)
-        _c.set("cursorY", cc + 1)
-        _c:updateViewport()
-        _c:updateRender()
-    end
-    local function cb(_c)
-        local ac = _c.get("lines")
-        local bc = _c.get("cursorX")
-        local cc = _c.get("cursorY")
-        local dc = ac[cc]
-        if bc > 1 then
-            ac[cc] = dc:sub(1, bc - 2) .. dc:sub(bc)
-            _c.set("cursorX", bc - 1)
-        elseif cc > 1 then
-            local _d = ac[cc - 1]
-            _c.set("cursorX", #_d + 1)
-            _c.set("cursorY", cc - 1)
-            ac[cc - 1] = _d .. dc
-            table.remove(ac, cc)
-        end
-        _c:updateViewport()
-        _c:updateRender()
-    end
-    function _b:updateViewport()
-        local _c = self.get("cursorX")
-        local ac = self.get("cursorY")
-        local bc = self.get("scrollX")
-        local cc = self.get("scrollY")
-        local dc = self.get("width")
-        local _d = self.get("height")
-        if _c - bc > dc then
-            self.set("scrollX", _c - dc)
-        elseif _c - bc < 1 then
-            self.set("scrollX", _c - 1)
-        end
-        if ac - cc > _d then
-            self.set("scrollY", ac - _d)
-        elseif ac - cc < 1 then
-            self.set("scrollY", ac - 1)
-        end
-        return self
-    end
-    function _b:char(_c)
-        if not self.get("editable") or not self.get("focused") then
-            return false
-        end
-        ab(self, _c)
-        return true
-    end
-    function _b:key(_c)
-        if not self.get("editable") or not self.get("focused") then
-            return false
-        end
-        local ac = self.get("lines")
-        local bc = self.get("cursorX")
-        local cc = self.get("cursorY")
-        if _c == keys.enter then
-            bb(self)
-        elseif _c == keys.backspace then
-            cb(self)
-        elseif _c == keys.left then
-            if bc > 1 then
-                self.set("cursorX", bc - 1)
-            elseif cc > 1 then
-                self.set("cursorY", cc - 1)
-                self.set("cursorX", #ac[cc - 1] + 1)
-            end
-        elseif _c == keys.right then
-            if bc <= #ac[cc] then
-                self.set("cursorX", bc + 1)
-            elseif cc < #ac then
-                self.set("cursorY", cc + 1)
-                self.set("cursorX", 1)
-            end
-        elseif _c == keys.up and cc > 1 then
-            self.set("cursorY", cc - 1)
-            self.set("cursorX", math.min(bc, #ac[cc - 1] + 1))
-        elseif _c == keys.down and cc < #ac then
-            self.set("cursorY", cc + 1)
-            self.set("cursorX", math.min(bc, #ac[cc + 1] + 1))
-        end
-        self:updateRender()
-        self:updateViewport()
-        return true
-    end
-    function _b:mouse_scroll(_c, ac, bc)
-        if self:isInBounds(ac, bc) then
-            local cc = self.get("scrollY")
-            local dc = self.get("height")
-            local _d = self.get("lines")
-            local ad = math.max(0, #_d - dc + 2)
-            local bd = math.max(0, math.min(ad, cc + _c))
-            self.set("scrollY", bd)
-            self:updateRender()
-            return true
-        end
-        return false
-    end
-    function _b:mouse_click(_c, ac, bc)
-        if ca.mouse_click(self, _c, ac, bc) then
-            local cc, dc = self:getRelativePosition(ac, bc)
-            local _d = self.get("scrollX")
-            local ad = self.get("scrollY")
-            local bd = dc + ad;
-            local cd = self.get("lines")
-            if bd <= #cd then
-                self.set("cursorY", bd)
-                self.set("cursorX", math.min(cc + _d, #cd[bd] + 1))
-            end
-            self:updateRender()
-            return true
-        end
-        return false
-    end
-    function _b:paste(_c)
-        if not self.get("editable") or not self.get("focused") then
-            return false
-        end
-        for ac in _c:gmatch(".") do
-            if ac == "\n" then
-                bb(self)
-            else
-                ab(self, ac)
-            end
-        end
-        return true
-    end
-    function _b:setText(_c)
-        local ac = {}
-        if _c == "" then
-            ac = {""}
-        else
-            for bc in (_c .. "\n"):gmatch("([^\n]*)\n") do
-                table.insert(ac, bc)
-            end
-        end
-        self.set("lines", ac)
-        return self
-    end
-    function _b:getText()
-        return table.concat(self.get("lines"), "\n")
-    end
-    local function db(_c, ac)
-        local bc = ac
-        local cc = string.rep(da[_c.get("foreground")], #bc)
-        local dc = _c.get("syntaxPatterns")
-        for _d, ad in ipairs(dc) do
-            local bd = 1
-            while true do
-                local cd, dd = bc:find(ad.pattern, bd)
-                if not cd then
-                    break
-                end
-                cc = cc:sub(1, cd - 1) .. string.rep(da[ad.color], dd - cd + 1) .. cc:sub(dd + 1)
-                bd = dd + 1
-            end
-        end
-        return bc, cc
-    end
-    function _b:render()
-        ca.render(self)
-        local _c = self.get("lines")
-        local ac = self.get("scrollX")
-        local bc = self.get("scrollY")
-        local cc = self.get("width")
-        local dc = self.get("height")
-        local _d = da[self.get("foreground")]
-        local ad = da[self.get("background")]
-        for y = 1, dc do
-            local bd = y + bc;
-            local cd = _c[bd] or ""
-            local dd = cd:sub(ac + 1, ac + cc)
-            if #dd < cc then
-                dd = dd .. string.rep(" ", cc - #dd)
-            end
-            local __a, a_a = db(self, dd)
-            self:blit(1, y, __a, a_a, string.rep(ad, #dd))
-        end
-        if self.get("focused") then
-            local bd = self.get("cursorX") - ac;
-            local cd = self.get("cursorY") - bc;
-            if bd >= 1 and bd <= cc and cd >= 1 and cd <= dc then
-                self:setCursor(bd, cd, true, self.get("cursorColor") or self.get("foreground"))
-            end
-        end
-    end
-    return _b
-end
-project["elements/Table.lua"] = function(...)
-    local d = require("elements/VisualElement")
-    local _a = require("libraries/colorHex")
-    local aa = setmetatable({}, d)
-    aa.__index = aa
-    aa.defineProperty(aa, "columns", {
-        default = {},
-        type = "table",
-        canTriggerRender = true,
-        setter = function(ba, ca)
-            local da = {}
-            for _b, ab in ipairs(ca) do
-                if type(ab) == "string" then
-                    da[_b] = {
-                        name = ab,
-                        width = #ab + 1
-                    }
-                elseif type(ab) == "table" then
-                    da[_b] = {
-                        name = ab.name or "",
-                        width = ab.width or #ab.name + 1
-                    }
-                end
-            end
-            return da
-        end
-    })
-    aa.defineProperty(aa, "data", {
-        default = {},
-        type = "table",
-        canTriggerRender = true
-    })
-    aa.defineProperty(aa, "selectedRow", {
-        default = nil,
-        type = "number",
-        canTriggerRender = true
-    })
-    aa.defineProperty(aa, "headerColor", {
-        default = colors.blue,
-        type = "color"
-    })
-    aa.defineProperty(aa, "selectedColor", {
-        default = colors.lightBlue,
-        type = "color"
-    })
-    aa.defineProperty(aa, "gridColor", {
-        default = colors.gray,
-        type = "color"
-    })
-    aa.defineProperty(aa, "sortColumn", {
-        default = nil,
-        type = "number"
-    })
-    aa.defineProperty(aa, "sortDirection", {
-        default = "asc",
-        type = "string"
-    })
-    aa.defineProperty(aa, "scrollOffset", {
-        default = 0,
-        type = "number",
-        canTriggerRender = true
-    })
-    aa.defineEvent(aa, "mouse_click")
-    aa.defineEvent(aa, "mouse_scroll")
-    function aa.new()
-        local ba = setmetatable({}, aa):__init()
-        ba.class = aa;
-        ba.set("width", 30)
-        ba.set("height", 10)
-        ba.set("z", 5)
-        return ba
-    end
-    function aa:init(ba, ca)
-        d.init(self, ba, ca)
-        self.set("type", "Table")
-        return self
-    end
-    function aa:addColumn(ba, ca)
-        local da = self.get("columns")
-        table.insert(da, {
-            name = ba,
-            width = ca
-        })
-        self.set("columns", da)
-        return self
-    end
-    function aa:addData(...)
-        local ba = self.get("data")
-        table.insert(ba, {...})
-        self.set("data", ba)
-        return self
-    end
-    function aa:sortData(ba, ca)
-        local da = self.get("data")
-        local _b = self.get("sortDirection")
-        if not ca then
-            table.sort(da, function(ab, bb)
-                if _b == "asc" then
-                    return ab[ba] < bb[ba]
-                else
-                    return ab[ba] > bb[ba]
-                end
-            end)
-        else
-            table.sort(da, function(ab, bb)
-                return ca(ab[ba], bb[ba])
-            end)
-        end
-        return self
-    end
-    function aa:mouse_click(ba, ca, da)
-        if not d.mouse_click(self, ba, ca, da) then
-            return false
-        end
-        local _b, ab = self:getRelativePosition(ca, da)
-        if ab == 1 then
-            local bb = 1
-            for cb, db in ipairs(self.get("columns")) do
-                if _b >= bb and _b < bb + db.width then
-                    if self.get("sortColumn") == cb then
-                        self.set("sortDirection", self.get("sortDirection") == "asc" and "desc" or "asc")
-                    else
-                        self.set("sortColumn", cb)
-                        self.set("sortDirection", "asc")
-                    end
-                    self:sortData(cb)
-                    break
-                end
-                bb = bb + db.width
-            end
-        end
-        if ab > 1 then
-            local bb = ab - 2 + self.get("scrollOffset")
-            if bb >= 0 and bb < #self.get("data") then
-                local cb = bb + 1
-                self.set("selectedRow", cb)
-                self:fireEvent("select", cb, self.get("data")[cb])
-            end
-        end
-        return true
-    end
-    function aa:onSelect(ba)
-        self:registerCallback("select", ba)
-        return self
-    end
-    function aa:mouse_scroll(ba, ca, da)
-        if (d.mouse_scroll(self, ba, ca, da)) then
-            local _b = self.get("data")
-            local ab = self.get("height")
-            local bb = ab - 2;
-            local cb = math.max(0, #_b - bb + 1)
-            local db = math.min(cb, math.max(0, self.get("scrollOffset") + ba))
-            self.set("scrollOffset", db)
-            return true
-        end
-        return false
-    end
-    function aa:render()
-        d.render(self)
-        local ba = self.get("columns")
-        local ca = self.get("data")
-        local da = self.get("selectedRow")
-        local _b = self.get("sortColumn")
-        local ab = self.get("scrollOffset")
-        local bb = self.get("height")
-        local cb = self.get("width")
-        local db = 1
-        for _c, ac in ipairs(ba) do
-            local bc = ac.name;
-            if _c == _b then
-                bc = bc .. (self.get("sortDirection") == "asc" and "\30" or "\31")
-            end
-            self:textFg(db, 1, bc:sub(1, ac.width), self.get("headerColor"))
-            db = db + ac.width
-        end
-        for y = 2, bb do
-            local _c = y - 2 + ab;
-            local ac = ca[_c + 1]
-            if ac and (_c + 1) <= #ca then
-                db = 1
-                local bc = (_c + 1) == da and self.get("selectedColor") or self.get("background")
-                for cc, dc in ipairs(ba) do
-                    local _d = tostring(ac[cc] or "")
-                    local ad = _d .. string.rep(" ", dc.width - #_d)
-                    if cc < #ba then
-                        ad = string.sub(ad, 1, dc.width - 1) .. " "
-                    end
-                    local bd = string.sub(ad, 1, dc.width)
-                    local cd = string.rep(_a[self.get("foreground")], #bd)
-                    local dd = string.rep(_a[bc], #bd)
-                    self:blit(db, y, bd, cd, dd)
-                    db = db + dc.width
-                end
-            else
-                self:blit(1, y, string.rep(" ", self.get("width")),
-                    string.rep(_a[self.get("foreground")], self.get("width")),
-                    string.rep(_a[self.get("background")], self.get("width")))
-            end
-        end
-    end
-    return aa
-end
-project["log.lua"] = function(...)
-    local aa = {}
-    aa._logs = {}
-    aa._enabled = false;
-    aa._logToFile = false
-    aa._logFile = "basalt.log"
-    fs.delete(aa._logFile)
-    aa.LEVEL = {
-        DEBUG = 1,
-        INFO = 2,
-        WARN = 3,
-        ERROR = 4
-    }
-    local ba = {
-        [aa.LEVEL.DEBUG] = "Debug",
-        [aa.LEVEL.INFO] = "Info",
-        [aa.LEVEL.WARN] = "Warn",
-        [aa.LEVEL.ERROR] = "Error"
-    }
-    local ca = {
-        [aa.LEVEL.DEBUG] = colors.lightGray,
-        [aa.LEVEL.INFO] = colors.white,
-        [aa.LEVEL.WARN] = colors.yellow,
-        [aa.LEVEL.ERROR] = colors.red
-    }
-    function aa.setLogToFile(ab)
-        aa._logToFile = ab
-    end
-    function aa.setEnabled(ab)
-        aa._enabled = ab
-    end
-    local function da(ab)
-        if aa._logToFile then
-            local bb = io.open(aa._logFile, "a")
-            if bb then
-                bb:write(ab .. "\n")
-                bb:close()
-            end
-        end
-    end
-    local function _b(ab, ...)
-        if not aa._enabled then
-            return
-        end
-        local bb = os.date("%H:%M:%S")
-        local cb = debug.getinfo(3, "Sl")
-        local db = cb.source:match("@?(.*)")
-        local _c = cb.currentline
-        local ac = string.format("[%s:%d]", db:match("([^/\\]+)%.lua$"), _c)
-        local bc = "[" .. ba[ab] .. "]"
-        local cc = ""
-        for _d, ad in ipairs(table.pack(...)) do
-            if _d > 1 then
-                cc = cc .. " "
-            end
-            cc = cc .. tostring(ad)
-        end
-        local dc = string.format("%s %s%s %s", bb, ac, bc, cc)
-        da(dc)
-        table.insert(aa._logs, {
-            time = bb,
-            level = ab,
-            message = cc
-        })
-    end
-    function aa.debug(...)
-        _b(aa.LEVEL.DEBUG, ...)
-    end
-    function aa.info(...)
-        _b(aa.LEVEL.INFO, ...)
-    end
-    function aa.warn(...)
-        _b(aa.LEVEL.WARN, ...)
-    end
-    function aa.error(...)
-        _b(aa.LEVEL.ERROR, ...)
-    end
-    return aa
-end
-project["elementManager.lua"] = function(...)
-    local ab = table.pack(...)
-    local bb = fs.getDir(ab[2] or "basalt")
-    local cb = ab[1]
-    if (bb == nil) then
-        error("Unable to find directory " .. ab[2] .. " please report this bug to our discord.")
-    end
-    local db = require("log")
-    local _c = package.path;
-    local ac = "path;/path/?.lua;/path/?/init.lua;"
-    local bc = ac:gsub("path", bb)
-    local cc = {}
-    cc._elements = {}
-    cc._plugins = {}
-    cc._APIs = {}
-    local dc = fs.combine(bb, "elements")
-    local _d = fs.combine(bb, "plugins")
-    db.info("Loading elements from " .. dc)
-    if fs.exists(dc) then
-        for ad, bd in ipairs(fs.list(dc)) do
-            local cd = bd:match("(.+).lua")
-            if cd then
-                db.debug("Found element: " .. cd)
-                cc._elements[cd] = {
-                    class = nil,
-                    plugins = {},
-                    loaded = false
-                }
-            end
-        end
-    end
-    db.info("Loading plugins from " .. _d)
-    if fs.exists(_d) then
-        for ad, bd in ipairs(fs.list(_d)) do
-            local cd = bd:match("(.+).lua")
-            if cd then
-                db.debug("Found plugin: " .. cd)
-                local dd = require(fs.combine("plugins", cd))
-                if type(dd) == "table" then
-                    for __a, a_a in pairs(dd) do
-                        if (__a ~= "API") then
-                            if (cc._plugins[__a] == nil) then
-                                cc._plugins[__a] = {}
-                            end
-                            table.insert(cc._plugins[__a], a_a)
-                        else
-                            cc._APIs[cd] = a_a
-                        end
-                    end
-                end
-            end
-        end
-    end
-    if (minified) then
-        if (minified_elementDirectory == nil) then
-            error("Unable to find minified_elementDirectory please report this bug to our discord.")
-        end
-        for ad, bd in pairs(minified_elementDirectory) do
-            cc._elements[ad:gsub(".lua", "")] = {
-                class = nil,
-                plugins = {},
-                loaded = false
-            }
-        end
-        if (minified_pluginDirectory == nil) then
-            error("Unable to find minified_pluginDirectory please report this bug to our discord.")
-        end
-        for ad, bd in pairs(minified_pluginDirectory) do
-            local cd = ad:gsub(".lua", "")
-            local dd = require(fs.combine("plugins", cd))
-            if type(dd) == "table" then
-                for __a, a_a in pairs(dd) do
-                    if (__a ~= "API") then
-                        if (cc._plugins[__a] == nil) then
-                            cc._plugins[__a] = {}
-                        end
-                        table.insert(cc._plugins[__a], a_a)
-                    else
-                        cc._APIs[cd] = a_a
-                    end
-                end
-            end
-        end
-    end
-    function cc.loadElement(ad)
-        if not cc._elements[ad].loaded then
-            package.path = bc .. "rom/?"
-            local bd = require(fs.combine("elements", ad))
-            package.path = _c;
-            cc._elements[ad] = {
-                class = bd,
-                plugins = bd.plugins,
-                loaded = true
-            }
-            db.debug("Loaded element: " .. ad)
-            if (cc._plugins[ad] ~= nil) then
-                for cd, dd in pairs(cc._plugins[ad]) do
-                    if (dd.setup) then
-                        dd.setup(bd)
-                    end
-                    if (dd.hooks) then
-                        for __a, a_a in pairs(dd.hooks) do
-                            local b_a = bd[__a]
-                            if (type(b_a) ~= "function") then
-                                error("Element " .. ad .. " does not have a method " .. __a)
-                            end
-                            if (type(a_a) == "function") then
-                                bd[__a] = function(c_a, ...)
-                                    local d_a = b_a(c_a, ...)
-                                    local _aa = a_a(c_a, ...)
-                                    return _aa == nil and d_a or _aa
-                                end
-                            elseif (type(a_a) == "table") then
-                                bd[__a] = function(c_a, ...)
-                                    if a_a.pre then
-                                        a_a.pre(c_a, ...)
-                                    end
-                                    local d_a = b_a(c_a, ...)
-                                    if a_a.post then
-                                        a_a.post(c_a, ...)
-                                    end
-                                    return d_a
-                                end
-                            end
-                        end
-                    end
-                    for __a, a_a in pairs(dd) do
-                        if __a ~= "setup" and __a ~= "hooks" then
-                            bd[__a] = a_a
-                        end
-                    end
-                end
-            end
-        end
-    end
-    function cc.getElement(ad)
-        if not cc._elements[ad].loaded then
-            cc.loadElement(ad)
-        end
-        return cc._elements[ad].class
-    end
-    function cc.getElementList()
-        return cc._elements
-    end
-    function cc.getAPI(ad)
-        return cc._APIs[ad]
-    end
-    return cc
-end
-project["propertySystem.lua"] = function(...)
-    local ba = require("libraries/utils").deepCopy
-    local ca = require("libraries/expect")
-    local da = require("errorManager")
-    local _b = {}
-    _b.__index = _b
-    _b._properties = {}
-    local ab = {}
-    _b._setterHooks = {}
-    function _b.addSetterHook(cb)
-        table.insert(_b._setterHooks, cb)
-    end
-    local function bb(cb, db, _c, ac)
-        for bc, cc in ipairs(_b._setterHooks) do
-            local dc = cc(cb, db, _c, ac)
-            if dc ~= nil then
-                _c = dc
-            end
-        end
-        return _c
-    end
-    function _b.defineProperty(cb, db, _c)
-        if not rawget(cb, '_properties') then
-            cb._properties = {}
-        end
-        cb._properties[db] = {
-            type = _c.type,
-            default = _c.default,
-            canTriggerRender = _c.canTriggerRender,
-            getter = _c.getter,
-            setter = _c.setter,
-            allowNil = _c.allowNil
-        }
-        local ac = db:sub(1, 1):upper() .. db:sub(2)
-        cb["get" .. ac] = function(bc, ...)
-            ca(1, bc, "element")
-            local cc = bc._values[db]
-            if type(cc) == "function" and _c.type ~= "function" then
-                cc = cc(bc)
-            end
-            return _c.getter and _c.getter(bc, cc, ...) or cc
-        end
-        cb["set" .. ac] = function(bc, cc, ...)
-            ca(1, bc, "element")
-            cc = bb(bc, db, cc, _c)
-            if type(cc) ~= "function" then
-                if _c.type == "table" then
-                    if cc == nil then
-                        if not _c.allowNil then
-                            ca(2, cc, _c.type)
-                        end
-                    end
-                else
-                    ca(2, cc, _c.type)
-                end
-            end
-            if _c.setter then
-                cc = _c.setter(bc, cc, ...)
-            end
-            bc:_updateProperty(db, cc)
-            return bc
-        end
-    end
-    function _b.combineProperties(cb, db, ...)
-        local _c = {...}
-        for bc, cc in pairs(_c) do
-            if not cb._properties[cc] then
-                da.error("Property not found: " .. cc)
-            end
-        end
-        local ac = db:sub(1, 1):upper() .. db:sub(2)
-        cb["get" .. ac] = function(bc)
-            ca(1, bc, "element")
-            local cc = {}
-            for dc, _d in pairs(_c) do
-                table.insert(cc, bc.get(_d))
-            end
-            return table.unpack(cc)
-        end
-        cb["set" .. ac] = function(bc, ...)
-            ca(1, bc, "element")
-            local cc = {...}
-            for dc, _d in pairs(_c) do
-                bc.set(_d, cc[dc])
-            end
-            return bc
-        end
-    end
-    function _b.blueprint(cb, db, _c, ac)
-        if not ab[cb] then
-            local cc = {
-                basalt = _c,
-                __isBlueprint = true,
-                _values = db or {},
-                _events = {},
-                render = function()
-                end,
-                dispatchEvent = function()
-                end,
-                init = function()
-                end
-            }
-            cc.loaded = function(_d, ad)
-                _d.loadedCallback = ad;
-                return cc
-            end
-            cc.create = function(_d)
-                local ad = cb.new()
-                ad:init({}, _d.basalt)
-                for bd, cd in pairs(_d._values) do
-                    ad._values[bd] = cd
-                end
-                for bd, cd in pairs(_d._events) do
-                    for dd, __a in ipairs(cd) do
-                        ad[bd](ad, __a)
-                    end
-                end
-                if (ac ~= nil) then
-                    ac:addChild(ad)
-                end
-                ad:updateRender()
-                _d.loadedCallback(ad)
-                ad:postInit()
-                return ad
-            end;
-            local dc = cb
-            while dc do
-                if rawget(dc, '_properties') then
-                    for _d, ad in pairs(dc._properties) do
-                        if type(ad.default) == "table" then
-                            cc._values[_d] = ba(ad.default)
-                        else
-                            cc._values[_d] = ad.default
-                        end
-                    end
-                end
-                dc = getmetatable(dc) and rawget(getmetatable(dc), '__index')
-            end
-            ab[cb] = cc
-        end
-        local bc = {
-            _values = {},
-            _events = {},
-            loadedCallback = function()
-            end
-        }
-        bc.get = function(cc)
-            local dc = bc._values[cc]
-            local _d = cb._properties[cc]
-            if type(dc) == "function" and _d.type ~= "function" then
-                dc = dc(bc)
-            end
-            return dc
-        end
-        bc.set = function(cc, dc)
-            bc._values[cc] = dc;
-            return bc
-        end
-        setmetatable(bc, {
-            __index = function(cc, dc)
-                if dc:match("^on%u") then
-                    return function(_d, ad)
-                        cc._events[dc] = cc._events[dc] or {}
-                        table.insert(cc._events[dc], ad)
-                        return cc
-                    end
-                end
-                if dc:match("^get%u") then
-                    local _d = dc:sub(4, 4):lower() .. dc:sub(5)
-                    return function()
-                        return cc._values[_d]
-                    end
-                end
-                if dc:match("^set%u") then
-                    local _d = dc:sub(4, 4):lower() .. dc:sub(5)
-                    return function(ad, bd)
-                        cc._values[_d] = bd;
-                        return cc
-                    end
-                end
-                return ab[cb][dc]
-            end
-        })
-        return bc
-    end
-    function _b.createFromBlueprint(cb, db, _c)
-        local ac = cb.new({}, _c)
-        for bc, cc in pairs(db._values) do
-            if type(cc) == "table" then
-                ac._values[bc] = ba(cc)
-            else
-                ac._values[bc] = cc
-            end
-        end
-        return ac
-    end
-    function _b:__init()
-        self._values = {}
-        self._observers = {}
-        self.set = function(bc, cc, ...)
-            local dc = self._values[bc]
-            local _d = self._properties[bc]
-            if (_d ~= nil) then
-                if (_d.setter) then
-                    cc = _d.setter(self, cc, ...)
-                end
-                if _d.canTriggerRender then
-                    self:updateRender()
-                end
-                self._values[bc] = bb(self, bc, cc, _d)
-                if dc ~= cc and self._observers[bc] then
-                    for ad, bd in ipairs(self._observers[bc]) do
-                        bd(self, cc, dc)
-                    end
-                end
-            end
-        end
-        self.get = function(bc, ...)
-            local cc = self._values[bc]
-            local dc = self._properties[bc]
-            if (dc == nil) then
-                da.error("Property not found: " .. bc)
-                return
-            end
-            if type(cc) == "function" and dc.type ~= "function" then
-                cc = cc(self)
-            end
-            return dc.getter and dc.getter(self, cc, ...) or cc
-        end;
-        local cb = {}
-        local db = getmetatable(self).__index
-        while db do
-            if rawget(db, '_properties') then
-                for bc, cc in pairs(db._properties) do
-                    if not cb[bc] then
-                        cb[bc] = cc
-                    end
-                end
-            end
-            db = getmetatable(db) and rawget(getmetatable(db), '__index')
-        end
-        self._properties = cb;
-        local _c = getmetatable(self)
-        local ac = _c.__index
-        setmetatable(self, {
-            __index = function(bc, cc)
-                local dc = self._properties[cc]
-                if dc then
-                    local _d = self._values[cc]
-                    if type(_d) == "function" and dc.type ~= "function" then
-                        _d = _d(self)
-                    end
-                    return _d
-                end
-                if type(ac) == "function" then
-                    return ac(bc, cc)
-                else
-                    return ac[cc]
-                end
-            end,
-            __newindex = function(bc, cc, dc)
-                local _d = self._properties[cc]
-                if _d then
-                    if _d.setter then
-                        dc = _d.setter(self, dc)
-                    end
-                    dc = bb(self, cc, dc, _d)
-                    self:_updateProperty(cc, dc)
-                else
-                    rawset(bc, cc, dc)
-                end
-            end,
-            __tostring = function(bc)
-                return string.format("Object: %s (id: %s)", bc._values.type, bc.id)
-            end
-        })
-        for bc, cc in pairs(cb) do
-            if self._values[bc] == nil then
-                if type(cc.default) == "table" then
-                    self._values[bc] = ba(cc.default)
-                else
-                    self._values[bc] = cc.default
-                end
-            end
-        end
-        return self
-    end
-    function _b:_updateProperty(cb, db)
-        local _c = self._values[cb]
-        if type(_c) == "function" then
-            _c = _c(self)
-        end
-        self._values[cb] = db
-        local ac = type(db) == "function" and db(self) or db
-        if _c ~= ac then
-            if self._properties[cb].canTriggerRender then
-                self:updateRender()
-            end
-            if self._observers[cb] then
-                for bc, cc in ipairs(self._observers[cb]) do
-                    cc(self, ac, _c)
-                end
-            end
-        end
-        return self
-    end
-    function _b:observe(cb, db)
-        self._observers[cb] = self._observers[cb] or {}
-        table.insert(self._observers[cb], db)
-        return self
-    end
-    function _b:removeObserver(cb, db)
-        if self._observers[cb] then
-            for _c, ac in ipairs(self._observers[cb]) do
-                if ac == db then
-                    table.remove(self._observers[cb], _c)
-                    if #self._observers[cb] == 0 then
-                        self._observers[cb] = nil
-                    end
-                    break
-                end
-            end
-        end
-        return self
-    end
-    function _b:removeAllObservers(cb)
-        if cb then
-            self._observers[cb] = nil
-        else
-            self._observers = {}
-        end
-        return self
-    end
-    function _b:instanceProperty(cb, db)
-        _b.defineProperty(self, cb, db)
-        self._values[cb] = db.default;
-        return self
-    end
-    function _b:removeProperty(cb)
-        self._values[cb] = nil;
-        self._properties[cb] = nil;
-        self._observers[cb] = nil
-        local db = cb:sub(1, 1):upper() .. cb:sub(2)
-        self["get" .. db] = nil;
-        self["set" .. db] = nil;
-        return self
-    end
-    function _b:getPropertyConfig(cb)
-        return self._properties[cb]
-    end
-    return _b
-end
-project["init.lua"] = function(...)
-    local da = {...}
-    local _b = fs.getDir(da[2])
-    local ab = package.path
-    local bb = "path;/path/?.lua;/path/?/init.lua;"
-    local cb = bb:gsub("path", _b)
-    package.path = cb .. "rom/?;" .. ab
-    local function db(bc)
-        package.path = cb .. "rom/?"
-        local cc = require("errorManager")
-        package.path = ab;
-        cc.header = "Basalt Loading Error"
-        cc.error(bc)
-    end
-    local _c, ac = pcall(require, "main")
-    package.loaded.log = nil
-    package.path = ab;
-    if not _c then
-        db(ac)
-    else
-        return ac
-    end
-end
-project["errorManager.lua"] = function(...)
-    local d = require("log")
-    local _a = {
-        tracebackEnabled = true,
-        header = "Basalt Error"
-    }
-    local function aa(ba, ca)
-        term.setTextColor(ca)
-        print(ba)
-        term.setTextColor(colors.white)
-    end
-    function _a.error(ba)
-        if _a.errorHandled then
-            error()
-        end
-        term.setBackgroundColor(colors.black)
-        term.clear()
-        term.setCursorPos(1, 1)
-        aa(_a.header .. ":", colors.red)
-        print()
-        local ca = 2;
-        local da;
-        while true do
-            local db = debug.getinfo(ca, "Sl")
-            if not db then
-                break
-            end
-            da = db;
-            ca = ca + 1
-        end
-        local _b = da or debug.getinfo(2, "Sl")
-        local ab = _b.source:sub(2)
-        local bb = _b.currentline;
-        local cb = ba
-        if (_a.tracebackEnabled) then
-            local db = debug.traceback()
-            if db then
-                for _c in db:gmatch("[^\r\n]+") do
-                    local ac, bc = _c:match("([^:]+):(%d+):")
-                    if ac and bc then
-                        term.setTextColor(colors.lightGray)
-                        term.write(ac)
-                        term.setTextColor(colors.gray)
-                        term.write(":")
-                        term.setTextColor(colors.lightBlue)
-                        term.write(bc)
-                        term.setTextColor(colors.gray)
-                        _c = _c:gsub(ac .. ":" .. bc, "")
-                    end
-                    aa(_c, colors.gray)
-                end
-                print()
-            end
-        end
-        if ab and bb then
-            term.setTextColor(colors.red)
-            term.write("Error in ")
-            term.setTextColor(colors.white)
-            term.write(ab)
-            term.setTextColor(colors.red)
-            term.write(":")
-            term.setTextColor(colors.lightBlue)
-            term.write(bb)
-            term.setTextColor(colors.red)
-            term.write(": ")
-            if cb then
-                cb = string.gsub(cb, "stack traceback:.*", "")
-                if cb ~= "" then
-                    aa(cb, colors.red)
-                else
-                    aa("Error message not available", colors.gray)
-                end
-            else
-                aa("Error message not available", colors.gray)
-            end
-            local db = fs.open(ab, "r")
-            if db then
-                local _c = ""
-                local ac = 1
-                repeat
-                    _c = db.readLine()
-                    if ac == tonumber(bb) then
-                        aa("\149Line " .. bb, colors.cyan)
-                        aa(_c, colors.lightGray)
-                        break
-                    end
-                    ac = ac + 1
-                until not _c;
-                db.close()
-            end
-        end
-        term.setBackgroundColor(colors.black)
-        d.error(ba)
-        _a.errorHandled = true;
-        error()
-    end
-    return _a
-end
-return project["main.lua"]()
- end
-modules["elements.TabView"] = function() local basalt = require("libraries.basalt")
-
-local LOGGER = basalt.LOGGER
-
-local Direction = {
-    LEFT = 1,
-    RIGHT = 2,
-}
-
-local TabView = {}
-
-TabView.__index = TabView
-
-function TabView:new(pframe, x, y, width, height, tabBg, tabFg, bottomFrameBg, bottomFrameFg)
-    local instance = setmetatable({}, TabView)
-
-    instance.frame = pframe
-
-    self.selectedTab = nil
-
-    self.firstTab = nil
-    self.lastTab = nil
-    
-    instance.leftIcon = "\17"
-    instance.rightIcon = "\16"
-    instance.vSep = "|"
-
-    instance.tabs = {}
-    instance.vSepLabel = {}
-
-    instance.firstTabidx = 1
-
-    instance.tabBg = tabBg or colors.black
-    instance.tabFg = tabFg or colors.white
-    instance.bottomFrameBg = bottomFrameBg or colors.lightGray
-    instance.bottomFrameFg = bottomFrameFg or colors.white
-
-    instance.frame:setPosition(x, y)
-        :setSize(width, height)
-        :setBackground(instance.tabBg)
-        :setForeground(instance.tabFg)
-
-    instance.topFrame = instance.frame:addFrame()
-        :setPosition(1, 1)
-        :setSize(pframe:getWidth(), 1)
-        :setBackground(instance.tabBg)
-        :setForeground(instance.tabFg)
-
-    instance.leftIconLabel = instance.topFrame:addLabel()
-        :setText(instance.leftIcon)
-        :setPosition(1, 1)
-        :setBackground(instance.tabBg)
-        :setForeground(instance.tabFg)
-        :setBackgroundEnabled(true)
-        :setAutoSize(true)
-        :onClick(function()
-            instance:updateTabBar(instance.lastTab and instance.lastTab.idx or 0, Direction.LEFT)
-        end)
-
-    instance.rightIconLabel = instance.topFrame:addLabel()
-        :setText(instance.rightIcon)
-        :setPosition(instance.topFrame:getWidth(), 1)
-        :setBackground(instance.tabBg)
-        :setForeground(instance.tabFg)
-        :setAutoSize(true)
-        :setBackgroundEnabled(true)
-        :onClick(function()
-            instance:updateTabBar(instance.firstTab and instance.firstTab.idx or 0, Direction.RIGHT)
-        end)
-
-    instance.bottomFrame = instance.frame:addFrame()
-        :setPosition(1, 2)
-        :setSize(pframe:getWidth(), pframe:getHeight() - 1)
-        :setBackground(instance.bottomFrameBg)
-        :setForeground(instance.bottomFrameFg)
-
-    return instance
-end
-
-function TabView:selectTab (tab) 
-    if tab.selected then
-        LOGGER.debug("Tab " .. tab.name .. " is already selected.")
-        return
-    end
-    for _, t in ipairs(self.tabs) do
-        if t.selected then
-            t.selected = false
-            t.label:setBackground(self.tabBg)
-            t.label:setForeground(self.tabFg)
-            t.frame:setVisible(false)
-        end
-    end
-    if tab then
-        self.selectedTab = tab
-        tab.selected = true
-        tab.label:setBackground(self.bottomFrameBg)
-        tab.label:setForeground(self.bottomFrameFg)
-        tab.frame:setVisible(true)
-    end
-end
-
-
-function TabView:createTab(name)
-
-    LOGGER.debug("Creating tab: " .. name)
-
-    local singleTabView = {}
-
-    singleTabView.name = name
-    singleTabView.idx = #self.tabs + 1
-    singleTabView.selected = false
-
-    singleTabView.label = self.topFrame:addLabel()
-        :setText(" " .. name .. " ")
-        :setBackground(self.tabBg)
-        :setForeground(self.tabFg)
-        :setAutoSize(true)
-        :setBackgroundEnabled(true)
-        :setVisible(false)
-        :onClick(function()
-            self:selectTab(singleTabView)
-        end)
-
-    singleTabView.frame = self.bottomFrame:addFrame()
-        :setPosition(1, 1)
-        :setSize(self.bottomFrame:getWidth(), self.bottomFrame:getHeight())
-        :setBackground(self.bottomFrameBg)
-        :setForeground(self.bottomFrameFg)
-        :setVisible(false)
-
-    table.insert(self.tabs, singleTabView)
-
-    return self.tabs[#self.tabs]
-end
-
-function TabView:getVSepLabel(idx)
-    if not self.vSepLabel[idx] then
-        self.vSepLabel[idx] = self.topFrame:addLabel()
-            :setText(self.vSep)
-            :setBackground(self.tabBg)
-            :setForeground(self.tabFg)
-            :setAutoSize(true)
-            :setBackgroundEnabled(true)
-    end
-    return self.vSepLabel[idx]
-end
-
-function TabView:nextTab(idx)
-    local nextIdx = idx + 1
-    if nextIdx > #self.tabs then
-        nextIdx = 1
-    end
-    return self.tabs[nextIdx]
-end
-
-function TabView:prevTab(idx)
-    local prevIdx = idx - 1
-    if prevIdx < 1 then
-        prevIdx = #self.tabs
-    end
-    return self.tabs[prevIdx]
-end
-
-function TabView:displayTopFrameLabel(prevLabel, label, direction)
-    local x
-    if direction == Direction.LEFT then
-        x = prevLabel:getX() - label:getWidth()
-    else
-        x = prevLabel:getX() + prevLabel:getWidth()
-    end
-    local y = prevLabel:getY()
-    LOGGER.debug("Setting label position to: " .. x .. ", " .. y)
-    label:setPosition(x, y)
-    label:setVisible(true)
-end
-
-function TabView:updateTabBar(currentIdx, direction)
-    LOGGER.debug("==================================================")
-
-    if #self.tabs == 0 then
-        return
-    end
-
-    -- Hide all tab labels and vSepLabels first
-    for _, tab in ipairs(self.tabs) do
-        tab.label:setVisible(false)
-    end
-    for _, vlabel in pairs(self.vSepLabel) do
-        vlabel:setVisible(false)
-    end
-
-    local vSepIdx = 1
-    local vSepLabel = self:getVSepLabel(vSepIdx)
-
-    local arrowLabel = (direction == Direction.LEFT) and self.rightIconLabel or self.leftIconLabel
-    self:displayTopFrameLabel(arrowLabel, vSepLabel, direction)
-
-    local totalWidth = 0
-    local idx = currentIdx
-    local maxWidth = self.topFrame:getWidth() - 2
-    local displayedTabs = {}
-
-    -- Collect tabs to display within maxWidth
-    for i = 1, #self.tabs do
-        local currTab = (direction == Direction.LEFT) and self:prevTab(idx) or self:nextTab(idx)
-        if i == 1 then
-            if direction == Direction.RIGHT then
-                self.firstTab = currTab
-            else
-                self.lastTab = currTab
-            end
-        end
-        local tabWidth = currTab.label:getWidth() + vSepLabel:getWidth()
-        if totalWidth + tabWidth <= maxWidth then
-            table.insert(displayedTabs, currTab)
-            totalWidth = totalWidth + tabWidth
-            if direction == Direction.LEFT then
-                self.firstTab = currTab
-            else
-                self.lastTab = currTab
-            end
-        else
-            LOGGER.debug("Tab bar is full, hiding tab: " .. currTab.name)
-            currTab.label:setVisible(false)
-        end
-        idx = currTab.idx
-    end
-
-    -- Actually display the collected tabs and separators
-    vSepIdx = 1
-    vSepLabel = self:getVSepLabel(vSepIdx)
-    local prevLabel = arrowLabel
-    for _, tab in ipairs(displayedTabs) do
-        tab.label:setVisible(true)
-        self:displayTopFrameLabel(prevLabel, vSepLabel, direction)
-        self:displayTopFrameLabel(vSepLabel, tab.label, direction)
-        vSepIdx = vSepIdx + 1
-        prevLabel = tab.label
-        vSepLabel = self:getVSepLabel(vSepIdx)
-    end
-    
-    -- Place the last separator and arrow
-    self:displayTopFrameLabel(prevLabel, vSepLabel, direction)
-    self:displayTopFrameLabel(vSepLabel, (direction == Direction.LEFT) and self.leftIconLabel or self.rightIconLabel, direction)
-
-    LOGGER.debug("firstTab: " .. (self.firstTab and self.firstTab.name or "nil") .. " LastTab: " .. (self.lastTab and self.lastTab.name or "nil"))
-end
-
-function TabView:init()
-    self:updateTabBar(0 , Direction.RIGHT)
-    if #self.tabs > 0 then
-        self:selectTab(self.tabs[1])
-    end
-end
-
-function TabView:getTabByName(name)
-    for _, tab in ipairs(self.tabs) do
-        if tab.name == name then
-            return tab
-        end
-    end
-    return nil
-end
-
-function TabView:getTabByIndex(idx)
-    if idx < 1 or idx > #self.tabs then
-        return nil
-    end
-    return self.tabs[idx]
-end
-
-return TabView end
-modules["programs.ae2.crafter.CraftingListTab"] = function() local StringUtils = require("utils.StringUtils")
-local ContainerLoader = require("utils.ContainerLoader")
-local OSUtils = require("utils.OSUtils")
-local Logger = require("utils.Logger")
-
-local MessageBox = require("elements.MessageBox")
-
-local inputSlots = {1, 2, 3, 10, 11, 12, 19, 20, 21}
-
-local CraftingListTab = {}
-
-CraftingListTab.__index = CraftingListTab
-
-function CraftingListTab:new(pframe)
-
-    local instance = setmetatable({}, CraftingListTab)
-
-    instance.recipes = {}
-
-    instance.frame = pframe
-
-    local _, patternChest = next(ContainerLoader.load.trapped_chests())
-    instance.patternChest = patternChest
-
-    instance.list = pframe:addList()
-        :setPosition(2, 2)
-        :setSize(15, pframe:getHeight() - 4)
-        :setBackground(colors.gray)
-        :setForeground(colors.white)
-        :onSelect(function(_, _, item) 
-            if item and item.mark and item.mark.nbt then
-                local displayText = textutils.serialize({
-                    input = item.input,
-                    output = item.output,
-                    mark = item.mark,
-                })
-                instance.textBox:setText(displayText)
-            else
-                instance.textBox:setText("")
-            end
-        end)
-
-    Logger.debug("CraftingListTab: List created")
-
-    instance.textBox = pframe:addTextBox()
-        :setBackground(colors.gray)
-        :setForeground(colors.white)
-        :setPosition(instance.list:getWidth() + instance.list:getX() + 2, 2)
-        :setSize(pframe:getWidth() - instance.list:getWidth() - 4, pframe:getHeight() - 2)
-        :setText("")
-
-
-    instance.readBtn = pframe:addButton()
-        :setText("Read")
-        :setPosition(instance.list:getX(), pframe:getHeight() - 1)
-        :setSize(4, 1)
-        :setBackground(colors.lightBlue)
-        :setForeground(colors.white)
-        :onClick(function()
-            local ok, result = pcall(function() 
-                local input = {}
-                local output = instance.patternChest.getItemDetail(4)
-                if not output or not output.name then
-                    instance.messageBox:open("Error", "No valid output item found in slot 4.")
-                    return
-                end
-                local mark = instance.patternChest.getItemDetail(13)
-                if not mark or not mark.name or not mark.nbt then
-                    instance.messageBox:open("Error", "No valid mark item found in slot 13.")
-                    return
-                end
-                for i = 1, 9 do
-                    local slot = inputSlots[i]
-                    local item = instance.patternChest.getItemDetail(slot)
-                    if item and item.name then
-                        table.insert(input, {
-                            name = item.name,
-                            displayName = item.displayName or StringUtils.getDisplayName(item.name),
-                        })
-                    else
-                        table.insert(input, false)
-                    end
-                end
-                local recipe = {
-                    input = input,
-                    output = {name = output.name, displayName = output.displayName, count = output.count or 1},
-                    mark = {name=mark.name, displayName=mark.displayName, nbt=mark.nbt},
-                }
-                local displayText = textutils.serialize(recipe)
-                instance.textBox:setText(displayText)
-            end)
-            if not ok then
-                instance.messageBox:open("Error", "Failed to read recipe: " .. result)
-                return
-            end
-            Logger.debug("CraftingListTab: Recipe read successfully")
-        end)
-
-    instance.saveBtn = pframe:addButton()
-        :setText("Save")
-        :setPosition(instance.readBtn:getX() + instance.readBtn:getWidth() + 2, pframe:getHeight() - 1)
-        :setSize(4, 1)
-        :setBackground(colors.green)
-        :setForeground(colors.white)
-        :onClick(function()
-            local text = instance.textBox:getText()
-            local ok, toAdd = pcall(textutils.unserialize, text)
-            if not ok or type(toAdd) ~= "table" or not toAdd.mark or not toAdd.mark.nbt then
-                instance.messageBox:open("Error", "Invalid recipe format!\n" .. text)
-                return
-            end
-            local found = false
-            for _, recipe in ipairs(instance.recipes) do
-                if self:isMarkItemInRecipeInputAndOutput(toAdd.mark, recipe) then
-                    instance.messageBox:open("Error", 
-                        "Mark Item " .. (toAdd.mark.displayName or "?") ..
-                        " is in recipe of " .. (recipe.output and recipe.output.displayName or "?") .. ". Change MarkItem to save the recipe")
-                    return
-                end
-                if recipe.mark.nbt == toAdd.mark.nbt then
-                    recipe.input = toAdd.input
-                    recipe.output = toAdd.output
-                    recipe.mark = toAdd.mark
-                    instance:addToMarkTable(toAdd)
-                    found = true
-                    break
-                end
-            end
-            if not found then
-                table.insert(instance.recipes, toAdd)
-            end
-            instance:addToMarkTable(toAdd)
-            instance:saveRecipes()
-            instance:updateRcipesList()
-        end)
-
-    instance.DelBtn = pframe:addButton()
-        :setText("Del")
-        :setPosition(instance.saveBtn:getX() + instance.saveBtn:getWidth() + 2, pframe:getHeight() - 1)
-        :setSize(3, 1)
-        :setBackground(colors.red)
-        :setForeground(colors.white)
-        :onClick(function()
-            local selectedItem = instance.list:getSelectedItem()
-            if not selectedItem then
-                instance.messageBox:open("Error", "No recipe selected to delete.")
-                return
-            end
-            instance:removeRecipe(selectedItem)
-            instance:updateRcipesList()
-        end)
-
-    instance.messageBox = MessageBox:new(pframe, 30, 10)
-
-    return instance
-end
-
-function CraftingListTab:isMarkItemInRecipeInputAndOutput(markItem, recipe)
-    if not markItem or not recipe then
-        return false
-    end
-
-    -- Check if the mark item is in the input slots
-    for _, input in ipairs(recipe.input) do
-        if input and input.name == markItem.name then
-            return true
-        end
-    end
-
-    -- Check if the mark item is in the output slot
-    if recipe.output and recipe.output.name == markItem.name then
-        return true
-    end
-
-    return false
-end
-
-
-function CraftingListTab:loadRecipes()
-    local recipes = OSUtils.loadTable("crafting_recipes.json")
-    if not recipes then
-        self.recipes = {}
-        return
-    end
-    self.recipes = recipes
-    for _, recipe in ipairs(self.recipes) do
-        if recipe.mark and recipe.mark.name and recipe.mark.nbt then
-            self:addToMarkTable(recipe)
-        end
-    end
-end
-
-function CraftingListTab:saveRecipes()
-     OSUtils.saveTable("crafting_recipes.json", self.recipes)
-end
-
-function CraftingListTab:addToMarkTable(recipe)
-    if self.markTables == nil then
-        self.markTables = {}
-    end
-    if self.markTables[recipe.mark.name] == nil then
-        self.markTables[recipe.mark.name] = {}
-    end
-    self.markTables[recipe.mark.name][recipe.mark.nbt] = recipe
-end
-
-function CraftingListTab:removeFromMarkTable(recipe)
-    if self.markTables == nil or not self.markTables[recipe.mark.name] then
-        return
-    end
-    if self.markTables[recipe.mark.name][recipe.mark.nbt] then
-        self.markTables[recipe.mark.name][recipe.mark.nbt] = nil
-    end
-    if next(self.markTables[recipe.mark.name]) == nil then
-        self.markTables[recipe.mark.name] = nil
-    end
-end
-
-function CraftingListTab:removeRecipe(toRemove)
-    for i, recipe in ipairs(self.recipes) do
-        if recipe.mark.name == toRemove.mark.name and recipe.mark.nbt == toRemove.mark.nbt then
-            table.remove(self.recipes, i)
-            self:removeFromMarkTable(recipe)
-            self:saveRecipes()
-            return
-        end
-    end
-end
-
-function CraftingListTab:updateRcipesList()
-    local displayList = {}
-    for _, recipe in ipairs(self.recipes) do
-        local displayRecipe  = {
-            input = recipe.input,
-            output = recipe.output,
-            mark = recipe.mark,
-            text = StringUtils.ellipsisMiddle(recipe.output.displayName, 11) .. "  " .. string.sub(recipe.mark.nbt, 1, 3)
-        }
-        Logger.debug("CraftingListTab: Adding recipe to display list: {}", displayRecipe.text )
-        table.insert(displayList, displayRecipe)
-    end
-    self.list:setItems(displayList)
-end
-
-function CraftingListTab:getRecipeByMark(markItem)   
-    if not self.markTables or not self.markTables[markItem.name] then
-        return nil
-    end
-    return self.markTables[markItem.name][markItem.nbt]
-end
-
-function CraftingListTab:getRecipes()
-    return self.recipes
-end
-
-function CraftingListTab:getMarkTables()
-    return self.markTables
-end
-
-function CraftingListTab:init()
-    self:loadRecipes()
-    self:updateRcipesList()
-    return self
-end
-
-return CraftingListTab end
-modules["utils.Logger"] = function() local Logger = {
-    currentLevel = 1, -- Default to DEBUG
-    printFunctions = {}
-}
-
-Logger.levels = {
-    DEBUG = 1,
-    INFO = 2,
-    WARN = 3,
-    ERROR = 4,
-}
-
-Logger.addPrintFunction = function(func)
-    table.insert(Logger.printFunctions, func)
-end
-
-Logger.print = function(level, src, currentline, message, ...)
-    if level >= Logger.currentLevel then
-        local completeMessage = Logger.formatBraces(message, ...)
-        for _, func in ipairs(Logger.printFunctions) do
-            func(level, src, currentline, completeMessage)
-        end
-    end
-end
-
-Logger.custom = function(level, message, ...)
-    local currentline = debug.getinfo(2, "l").currentline
-    local src = debug.getinfo(2, "S").short_src
-    Logger.print(level, src, currentline, message, ...)
-end
-
-Logger.debug = function(message, ...)
-    local currentline = debug.getinfo(2, "l").currentline
-    local src = debug.getinfo(2, "S").short_src
-    Logger.print(Logger.levels.DEBUG, src, currentline, message, ...)
-end 
-
-Logger.info = function(message, ...)
-    local currentline = debug.getinfo(2, "l").currentline
-    local src = debug.getinfo(2, "S").short_src
-    Logger.print(Logger.levels.INFO, src, currentline, message, ...)
-end
-
-Logger.warn = function(message, ...)
-    local currentline = debug.getinfo(2, "l").currentline
-    local src = debug.getinfo(2, "S").short_src
-    Logger.print(Logger.levels.WARN, src, currentline, message, ...)
-end
-
-Logger.error = function(message, ...)
-    local currentline = debug.getinfo(2, "l").currentline
-    local src = debug.getinfo(2, "S").short_src
-    Logger.print(Logger.levels.ERROR, src, currentline, message, ...)
-end
-
-Logger.formatBraces = function(message, ...)
-    local args = {...}
-    local i = 1
-    local formatted = tostring(message):gsub("{}", function()
-        local arg = args[i]
-        i = i + 1
-        return tostring(arg)
-    end)
-    return formatted
-end
-
-return Logger end
-modules["programs.ae2.crafter.TurtleCraft"] = function() local Container = require("utils.ContainerLoader")
-local OSUtils = require("utils.OSUtils")
-
-local _, vault = next(Container.load.item_vaults())
-local _, partternProvider = next(Container.load.ae2_pattern_providers())
-local _, dropper = next(Container.load.droppers())
-local _, chest = next(Container.load.chests())
-
-local TurtleCraft = {}
-
-local STEPS ={
-    PREPARE_ITEM = 1,
-    CHECKING = 2,
-    CRAFT = 3,
-    DROP_OUTPUT = 4,
-    PROVIDER_TAKE_OUTPUT = 5,
-}
-
-local CRAFTING_SLOT = {1, 2, 3, 5, 6, 7, 9, 10, 11}
-
-TurtleCraft.hasMarkedItems = function(items, markTables)
-    for _, item in pairs(items) do
-        if markTables[item.name] and item.nbt ~=nil and markTables[item.name][item.nbt] then
-            return true, item, markTables[item.name][item.nbt]
-        end
-    end
-    return false, nil, nil
-end
-
-TurtleCraft.moveCraftingItemToBuffer = function(item, amount)
-    return vault.moveItem(dropper, item.name, amount)
-end
-
-TurtleCraft.moveMarkItemToOutputChest = function(item, amount)
-    return vault.moveItem(chest, item.name, amount)
-end
-
-TurtleCraft.getInputFromBuffer = function(slot, count)
-    turtle.select(slot)
-    return turtle.suckUp(count)
-end
-
-
-TurtleCraft.prepareItem = function(params)
-    
-    local movedMarkItemCount, err = TurtleCraft.moveMarkItemToOutputChest(params.markItem, params.inputAmt)
-    if movedMarkItemCount <= 0 then
-        return false, "Failed to move marked item to output chest: " .. (err or "unknown error")
-    end
-
-    TurtleCraft.saveStep(STEPS.PREPARE_ITEM, params)
-    for idx, input in ipairs(params.recipe.input) do
-        if input and input.name then
-            local movedItemCount, err = TurtleCraft.moveCraftingItemToBuffer(input, params.inputAmt)
-            if movedItemCount <= 0 then
-                return false, "Failed to move crafting item to buffer: " .. (err or "unknown error")
-            end
-            local gotCount, err = TurtleCraft.getInputFromBuffer(CRAFTING_SLOT[idx], movedItemCount)
-            if not gotCount then
-                return false, "Failed to get input from buffer: " .. (err or "unknown error")
-            end
-        end
-    end
-end
-
-TurtleCraft.checkingInput = function(params)
-    TurtleCraft.saveStep(STEPS.CHECKING, params)
-    for index, slot in ipairs(CRAFTING_SLOT) do
-        local item = turtle.getItemDetail(slot)
-        if params.recipe.input[index] and params.recipe.input[index].name then
-            if not item or item.name ~= params.recipe.input[index].name or item.count ~= params.inputAmt then
-                return false, "Input slot " .. index .. " has incorrect item or amount"
-            end
-        end
-    end
-    return true
-end
-
-TurtleCraft.craft = function(params)
-    TurtleCraft.saveStep(STEPS.CRAFT, params)
-    return turtle.craft()
-end
-
-TurtleCraft.dropOutput = function(params)
-    TurtleCraft.saveStep(STEPS.DROP_OUTPUT, params)
-    for i = 1, 16 do
-        local item = turtle.getItemDetail(i)
-        if item and item.count > 0 then
-            turtle.select(i)
-            local moved = turtle.drop()
-            if not moved then
-                return false, "Failed to drop item from slot " .. i
-            end
-        end
-    end
-    return true, "Output items dropped successfully"
-end
-
-TurtleCraft.moveOutputItem = function(params)
-    local items = chest.listItem()
-    local outputItem, markItem = nil, nil
-    for _, item in pairs(items) do
-        if params.recipe.output and item.name == params.recipe.output.name then
-            outputItem = item
-        end
-        if params.recipe.mark and item.name == params.recipe.mark.name and item.nbt == params.recipe.mark.nbt then
-            markItem = item
-        end
-    end
-    local requireOutputCount = params.inputAmt * params.recipe.output.count
-    if outputItem and outputItem.count ~= requireOutputCount then
-        return false, "Output item count mismatch: expected " .. requireOutputCount .. ", got " .. outputItem.count
-    end
-    TurtleCraft.saveStep(STEPS.PROVIDER_TAKE_OUTPUT, params)
-    local totalMoved = 0
-    local tryCount = 0
-    while totalMoved < requireOutputCount do
-        local movedCount, err = partternProvider.moveItem(chest, params.recipe.output.name, requireOutputCount - totalMoved)
-        if movedCount <= 0 then
-            tryCount = tryCount + 1
-        end
-        if tryCount > 5 then
-            return false, "Failed to move output item after multiple attempts: " .. (err or "unknown error")
-        end
-        totalMoved = totalMoved + movedCount
-    end
-    return true, "Output item moved successfully: " .. totalMoved .. " items"
-end
-
-TurtleCraft.saveStep = function(step, params)
-    OSUtils.saveTable("step", {step=step, params=params})
-end
-
-TurtleCraft.readStep = function()
-    return OSUtils.loadTable("step")
-end
-
-TurtleCraft.clearBuffer = function()
-    local items = dropper.list()
-    for _, item in pairs(items) do
-        vault.takeItem(dropper, item.name, item.count)
-    end
-end
-
-TurtleCraft.clearTurtle = function()
-    for i = 1, 16 do
-        local item = turtle.getItemDetail(i)
-        if item and item.count > 0 then
-            turtle.select(i)
-            turtle.dropUp()
-            vault.takeItem(dropper, item.name, item.count)
-        end
-    end
-end
-
-TurtleCraft.clearOutputChest = function()
-    local items = chest.listItem()
-    for _, item in pairs(items) do
-        vault.takeItem(chest, item.name, item.count)
-    end
-end
-
-TurtleCraft.clear = function()
-    TurtleCraft.clearBuffer()
-    TurtleCraft.clearTurtle()
-    TurtleCraft.clearOutputChest()
-end
-
-TurtleCraft.process = function(params, save)
-    local step = 0
-    if not save then
-        params.inputAmt = math.min(12, params.markItem.count)
-        step = save.step
-        if params.inputAmt <= 0 then
-            return false, "No marked item available for crafting:"
-        end
-    end
-    
-    if STEPS.PREPARE_ITEM >= step then
-        local success, msg = TurtleCraft.prepareItem(params)
-        if not success then
-            return false, "Preparation failed: " .. msg
-        end
-    end
-    if STEPS.CHECKING >= step then
-        local success, msg = TurtleCraft.checkingInput(params)
-        if not success then
-            return false, "Checking input failed: " .. msg
-        end
-    end
-    if STEPS.CRAFT >= step then
-        local success, msg = TurtleCraft.craft(params)
-        if not success then
-            return false, "Crafting failed: " .. msg
-        end
-    end
-    if STEPS.DROP_OUTPUT >= step then
-        local success, msg = TurtleCraft.dropOutput(params)
-        if not success then
-            return false, "Dropping output failed: " .. msg
-        end
-    end
-    if STEPS.PROVIDER_TAKE_OUTPUT >= step then
-        local success, msg = TurtleCraft.moveOutputItem(params)
-        if not success then
-            return false, "Moving output item failed: " .. msg
-        end
-    end
-    TurtleCraft.saveStep(nil, nil)
-    return true, "Crafting process completed successfully"
-end
-
-TurtleCraft.hasUnfinishedJob = function()
-    local save = TurtleCraft.readStep()
-    if not save or not save.step then
-        return false, "No unfinished job found"
-    end
-    if save.step == STEPS.PREPARE_ITEM then
-        TurtleCraft.clear()
-    end
-    if save.step == STEPS.CRAFT then
-        local success, msg = TurtleCraft.checkingInput(save.params)
-        if not success then
-            save.step = STEPS.DROP_OUTPUT
-            TurtleCraft.saveStep(STEPS.DROP_OUTPUT, save.params)
-            return true, save
-        end
-    end
-    return true, save
-end
-
-TurtleCraft.listen = function(getMarkTable)
-    while true do 
-        local waitTime = 3
-        local shouldProcess = false
-
-        local hasUnfinished, save = TurtleCraft.hasUnfinishedJob()
-        if hasUnfinished then
-            TurtleCraft.process(save.params, save)
-            waitTime = 0.2
-        else
-            local vaultItems = vault.listItem()
-            if vaultItems and #vaultItems > 0 then
-                local markTables = getMarkTable()
-                if markTables then
-                    local hasMarked, markItem, recipe = TurtleCraft.hasMarkedItems(vaultItems, markTables)
-                    if hasMarked then
-                        waitTime = 0.2
-                        TurtleCraft.process({markItem = markItem, recipe = recipe})
-                    end
-                end
-            end
-        end
-
-        os.sleep(waitTime)
-    end
-end
-
-return TurtleCraft end
-modules["elements.LogBox"] = function() local basalt = require("libraries.basalt")
-local StringUtils = require("utils.StringUtils")
-
-local LogBox = {}
-LogBox.__index = LogBox
-
--- Helper function to count newlines in a string
-local function countNewlines(str)
-    if not str or str == "" then
-        return 0
-    end
-    local _, count = str:gsub("\n", "")
-    return count
-end
-
-function LogBox:new(pframe, x, y, width, height, fg, bg)
-    local instance = setmetatable({}, LogBox)
-
-    instance.frame = pframe
-    instance.text = ""
-
-    instance.logs = {}
-    instance.needUpdate = false
-
-    instance.maxLines = 30
-
-    instance.textBox = instance.frame:addTextBox()
-            :setPosition(x, y)
-            :setSize(width, height)
-            :setBackground(bg or colors.gray)
-            :setForeground(fg or colors.white)
-            :setText("")
-
-    return instance
-end
-
-function LogBox:addLog(message)
-    local wrappedMsg = StringUtils:wrapText(message, self.textBox.getWidth())
-    self.text = self.text .. wrappedMsg .. "\n"
-    
-    -- Check if we need to trim lines
-    local currentLines = countNewlines(self.text)
-    
-    if currentLines > self.maxLines then
-        local linesToRemove = currentLines - self.maxLines
-        
-        -- Find the position after the nth newline to remove
-        local pos = 1
-        for i = 1, linesToRemove do
-            pos = self.text:find("\n", pos)
-            if pos then
-                pos = pos + 1  -- Move past the newline
-            else
-                break
-            end
-        end
-        
-        -- Keep only the text after the removed lines
-        if pos and pos <= #self.text then
-            self.text = self.text:sub(pos)
-        end
-    end
-    
-    self.textBox:setText(self.text)
-end
-
-function LogBox:setMaxLines(maxLines)
-    self.maxLines = maxLines or 30
-end
-
--- Get current number of lines in the log
-function LogBox:getLineCount()
-    return countNewlines(self.text)
-end
-
--- Clear all logs
-function LogBox:clear()
-    self.text = ""
-    self.logs = {}
-    self.textBox:setText("")
-end
-
-return LogBox end
-modules["utils.StringUtils"] = function() local StringUtils = {}
-
-StringUtils.split = function(input, delimiter)
-    local result = {}
-    for match in (input .. delimiter):gmatch("(.-)" .. delimiter) do
-        table.insert(result, match)
-    end
-    return result
-end
-
-StringUtils.formatNumber = function(num)
-    if num >= 1000 then
-        return math.floor(num / 1000) .. "k"
-    elseif num >= 1000000 then
-        return math.floor(num / 1000000) .. "m"
-    elseif num >= 100000000 then
-        return math.floor(num / 1000000000) .. "b"
-    elseif num >= 1000000000000 then
-        return math.floor(num / 1000000000000) .. "t"
-    end
-    return tostring(num)
-end
-
-StringUtils.stringContainsIgnoreCase = function(str, substr)
-    if str == nil or substr == nil then
-        return false
-    end
-    return string.find(string.lower(str), string.lower(substr), 1, true) ~= nil
-end
-
-StringUtils.wrapText = function(text, width)
-    local tempLines = {}
-    local currentLine = ""
-    for word in string.gmatch(text, "%S+") do
-        if #currentLine + #word + 1 > width then
-            table.insert(tempLines, currentLine)
-            currentLine = word
-        else
-            if currentLine ~= "" then
-                currentLine = currentLine .. " "
-            end
-            currentLine = currentLine .. word
-        end
-    end
-    if currentLine ~= "" then
-        table.insert(tempLines, currentLine)
-    end
-
-    return table.concat(tempLines, "\n")
-end
-
-StringUtils.ellipsisMiddle = function (text, maxLen)
-    if #text <= maxLen then
-        return text
-    end
-    if maxLen <= 3 then
-        return string.sub(text, 1, maxLen)
-    end
-    local leftLen = math.floor((maxLen - 3) / 2)
-    local rightLen = maxLen - 3 - leftLen
-    return string.sub(text, 1, leftLen) .. "..." .. string.sub(text, -rightLen)
-end
-
-StringUtils.getAbbreviation = function(str)
-    local abbr = ""
-    for word in string.gmatch(str, "%a+") do
-        abbr = abbr .. word:sub(1,1):upper()
-    end
-    return abbr
-end
-
-return StringUtils end
-modules["utils.ContainerLoader"] = function() -- Computer Craft script
--- pastebin get CunkAYSg constants.lua
--- https://pastebin.com/CunkAYSg
-
-
-local CONTAINER_NAMES = {
-    -- Minecraft
-    chest_name = "minecraft:chest",
-    barrel_name = "minecraft:barrel",
-    hopper_name = "minecraft:hopper",
-    dropper_name = "minecraft:dropper",
-    dispenser_name = "minecraft:dispenser",
-    trapped_chest_name = "minecraft:trapped_chest",
-
-    -- Create
-    basin_name = "create:basin",
-    depot_name = "create:depot",
-    belt_name = "create:belt",
-    crushing_wheel_name = "create:crushing_wheel",
-    tank_name = "create:fluid_tank",
-    millstone_name = "create:millstone",
-    deployer_name = "create:deployer",
-    spout_name = "create:spout",
-    item_vaults_name = "create:item_vault",
-    mechanical_crafter_name = "create:mechanical_crafter",
-    item_drain_name = "create:item_drain",
-
-    -- Create Addition
-    liquid_blaze_burner_name = "createaddition:liquid_blaze_burner",
-    rolling_mill_name = "createaddition:rolling_mill",
-
-    -- Extended Drawers
-    double_drawers_name = "extended_drawers:double_drawer",
-    quad_drawers_name = "extended_drawers:quad_drawer",
-    single_drawers_name = "extended_drawers:single_drawer",
-
-    -- Tinkers' Construct
-    seared_basin_name = "tconstruct:seared_basin",
-    seared_melter_name = "tconstruct:seared_melter",
-    seared_ingot_tank_name = "tconstruct:seared_ingot_tank",
-    seared_table_name = "tconstruct:seared_table",
-    seared_heater_name = "tconstruct:seared_heater",
-    scorched_drain_name = "tconstruct:scorched_drain",
-    foundry_controller_name = "tconstruct:foundry_controller",
-    scorched_fuel_tank_name = "tconstruct:scorched_fuel_tank",
-
-    -- AE2
-    ae2_interface_name = "ae2:interface",
-    ae2_pattern_provider_name = "ae2:pattern_provider",
-    ae2_1k_crafting_storage_name = "ae2:1k_crafting_storage",
-    ae2_4k_crafting_storage_name = "ae2:4k_crafting_storage",
-
-    -- Tech Reborn
-    solid_canning_machine_name = "techreborn:solid_canning_machine",
-    industrial_centrifuge_name = "techreborn:industrial_centrifuge",
-    industrial_electrolyzer_name = "techreborn:industrial_electrolyzer",
-    compressor_name = "techreborn:compressor",
-    basic_tank_unit_name = "techreborn:basic_tank_unit",
-    grinder_name = "techreborn:grinder",
-    chemical_reactor_name = "techreborn:chemical_reactor",
-    thermal_generator_name = "techreborn:thermal_generator",
-
-    -- Ad Astra
-    cryo_freezer_name = "ad_astra:cryo_freezer",
-
-    -- Custom Machinery
-    custom_machine_block_name = "custommachinery:custom_machine_block",
-
-    --Reinfchest
-    diamond_chest_name = "reinfchest:diamond_chest", 
-    copper_cehst_name = "reinfchest:copper_chest",
-
-    -- Miscellaneous
-    transh_can_name = "trashcans:item_trash_can",
-    redrouter_name = "redrouter",
-    all_tank_unit_name = "tank_unit",
-
-    -- yttr
-    centrifuge = "yttr:centrifuge",
-}
-
-local ALL_PERIPHERAL_NAMES = peripheral.getNames()
-
-local createItemFinder = function (container, item_name)
-    local cacheIndex = nil
-    return function() 
-        local items = container.listItem()
-        if not items or #items == 0 then
-            return nil -- No items in the container
-        end
-        if cacheIndex ~= nil and items[cacheIndex] and items[cacheIndex].name == item_name then
-            return items[cacheIndex], cacheIndex
-        end
-        -- If cache is invalid or not set, find the item in the list again
-        for index, item in ipairs(items) do
-            if item.name == item_name then
-                cacheIndex = index -- Cache the index for future calls
-                return item, cacheIndex -- Return the found item
-            end
-        end
-        return nil
-    end
-end
-
-local createFluidFinder = function (container, fluid_name)
-    local cacheIndex = nil
-    return function() 
-        local fluids = container.tanks()
-        if not fluids or #fluids == 0 then
-            return nil -- No items in the container
-        end
-        if cacheIndex ~= nil and fluids[cacheIndex] and fluids[cacheIndex].name == fluid_name then
-            return fluids[cacheIndex], cacheIndex
-        end
-        -- If cache is invalid or not set, find the item in the list again
-        for index, fluid in ipairs(fluids) do
-            if fluid.name == fluid_name then
-                cacheIndex = index -- Cache the index for future calls
-                return fluid , cacheIndex -- Return the found item
-            end
-        end
-        return nil
-    end
-end
-
-local createCraftingStorageItemFinder = function (container, item_name)
-    local cacheIndex = nil
-    return function() 
-        local items = container.items()
-        if not items or #items == 0 then
-            return nil -- No items in the container
-        end
-        if cacheIndex ~= nil and items[cacheIndex] and items[cacheIndex].technicalName == item_name then
-            local item, index = items[cacheIndex], cacheIndex
-            item.displayName = item.name
-            item.name = item.technicalName
-            return item, index
-        end
-        -- If cache is invalid or not set, find the item in the list again
-        for index, item in ipairs(items) do
-            if item.technicalName == item_name then
-                cacheIndex = index -- Cache the index for future calls
-                item.displayName = item.name
-                item.name = item.technicalName
-                return item, cacheIndex -- Return the found item
-            end
-        end
-        return nil
-    end
-end
-
-local addListItemsMethod = function(container)
-    if string.find(container.name, "crafting_storage") then
-        container.listItem = function() 
-            local nameIdxMap = {}
-            local items = {}
-            for _, item in ipairs(container.items()) do
-                item.displayName = item.name
-                item.name = item.technicalName
-                local itemName = item.name
-                if not nameIdxMap[itemName] then
-                    nameIdxMap[itemName] = #items + 1
-                    table.insert(items, item)
-                else
-                    local idx = nameIdxMap[itemName]
-                    items[idx].count = items[idx].count + item.count
-                end
-            end
-            return items
-        end
-    elseif container.items then
-        container.listItem = function() 
-            return container.items()
-        end
-    elseif container.list then
-        container.listItem = function() 
-            local nameIdxMap = {}
-            local items = {}
-            for _, item in ipairs(container.list()) do
-                local itemName = item.name
-                if not nameIdxMap[itemName] then
-                    nameIdxMap[itemName] = #items + 1
-                    table.insert(items, item)
-                else
-                    local idx = nameIdxMap[itemName]
-                    items[idx].count = items[idx].count + item.count
-                end
-            end
-            return items
-        end
-    end
-end
-
-local addMoveTakeItemMehod = function(container)
-    if container.list then
-        container.moveItem = function(targetContainer, itemName, amount) 
-            if amount == nil then
-                amount = 64
-            end
-            if targetContainer.list then
-                local amountMoved = 0
-                for i = 1, container.size() do
-                    local item = container.getItemDetail(i)
-                    if item and item.name == itemName then
-                        local amountToMove = math.min(amount - amountMoved, item.count)
-                        local thisMovedAmount = container.pushItems(targetContainer.id, i, amountToMove)
-                        if thisMovedAmount == 0 then 
-                            break
-                        else
-                            amountMoved = amountMoved + thisMovedAmount
-                        end
-                    end
-                end
-                return amountMoved
-            end
-            if targetContainer.items then
-                return targetContainer.pullItem(container.name, itemName, amount)
-            end
-        end
-        container.takeItem = function(targetContainer, itemName, amount) 
-            if amount == nil then
-                amount = 64
-            end
-            if targetContainer.list then
-                local amountTaken = 0
-                for i = 1, targetContainer.size() do
-                    local item = targetContainer.getItemDetail(i)
-                    if item and item.name == itemName then
-                        local amountToTake = math.min(amount - amountTaken, item.count)
-                        local thisTakeAmount = container.pullItems(container.id, i, amountToTake)
-                        if thisTakeAmount == 0 then 
-                            break
-                        else
-                            amountTaken = amountTaken + thisTakeAmount
-                        end
-                    end
-                end
-                return amountTaken
-            end
-            if targetContainer.items then
-                return targetContainer.pushItem(container.name, itemName, amount)
-            end
-        end
-    end
-    if container.items then
-        container.moveItem = function (targetContainer, itemName, amount) 
-            if amount == nil then
-                amount = 64
-            end
-            return container.pushItem(targetContainer.name, itemName, amount)
-        end
-        container.takeItem = function (targetContainer, itemName, amount) 
-            if amount == nil then
-                amount = 64
-            end
-            return container.pullItem(targetContainer.name, itemName, amount)
-        end
-    end
-end
-
-local addMoveAndTakeLiquidMehod = function(container)
-    container.moveFluid = function(targetContainer, amount, fluidName)
-        return container.pushFluid(targetContainer.name, amount, fluidName)
-    end
-    container.takeFluid = function(targetContainer, amount, fluidName)
-        return container.pullFluid(targetContainer.name, amount, fluidName)
-    end
-end
-
-local addGetItemMethod = function(container)
-    local finderCache = {}
-    if string.find(container.name, "crafting_storage") then
-        container.getItem = function(name) 
-            if not finderCache[name] then
-                local itemFinder = createCraftingStorageItemFinder(container, name)
-                finderCache[name] = itemFinder
-            end
-            local item = finderCache[name]()
-            return item
-        end
-        return
-    end
-    container.getItem = function(name) 
-        if not finderCache[name] then
-            finderCache[name] = createItemFinder(container, name)
-        end
-        return finderCache[name]()
-    end
-end
-
-local addGetFluidMethod = function(container)
-    local finderCache = {}
-    container.getFluid = function(name) 
-        if not finderCache[name] then
-            finderCache[name] = createFluidFinder(container, name)
-        end
-        return finderCache[name]()
-    end
-end
-
-local addCommonContainerPropsAndMethods = function(name, container)
-    container.id = name
-    container.name = name
-    if container.list or container.items then
-        addListItemsMethod(container)
-        addMoveTakeItemMehod(container)
-        addGetItemMethod(container)
-    end
-    if container.tanks then
-        addMoveAndTakeLiquidMehod(container)
-        addGetFluidMethod(container)
-    end
-end
-
-
-
-local loadContainers = function(targetName) 
-    local containers = {}
-    for _, name in ipairs(ALL_PERIPHERAL_NAMES) do
-        if string.find(name, targetName) then
-            local container = peripheral.wrap(name)
-            containers[name] = container
-            addCommonContainerPropsAndMethods(name, container)
-        end
-    end
-    return containers
-end
-
-local load = {
-    -- Minecraft
-    chests = function() return loadContainers(CONTAINER_NAMES.chest_name) end,
-    barrels = function() return loadContainers(CONTAINER_NAMES.barrel_name) end,
-    hoppers = function() return loadContainers(CONTAINER_NAMES.hopper_name) end,
-    droppers = function() return loadContainers(CONTAINER_NAMES.dropper_name) end,
-    dispensers = function() return loadContainers(CONTAINER_NAMES.dispenser_name) end,
-    trapped_chests = function() return loadContainers(CONTAINER_NAMES.trapped_chest_name) end,
-
-    -- Create
-    basins = function() return loadContainers(CONTAINER_NAMES.basin_name) end,
-    depots = function() return loadContainers(CONTAINER_NAMES.depot_name) end,
-    belts = function() return loadContainers(CONTAINER_NAMES.belt_name) end,
-    crushing_wheels = function() return loadContainers(CONTAINER_NAMES.crushing_wheel_name) end,
-    tanks = function() return loadContainers(CONTAINER_NAMES.tank_name) end,
-    millstones = function() return loadContainers(CONTAINER_NAMES.millstone_name) end,
-    deployers = function() return loadContainers(CONTAINER_NAMES.deployer_name) end,
-    spouts = function() return loadContainers(CONTAINER_NAMES.spout_name) end,
-    item_vaults = function() return loadContainers(CONTAINER_NAMES.item_vaults_name) end,
-    mechanical_crafters = function() return loadContainers(CONTAINER_NAMES.mechanical_crafter_name) end,
-    item_drain = function() return loadContainers(CONTAINER_NAMES.item_drain_name) end,
-
-    -- Create Addition
-    liquid_blaze_burners = function() return loadContainers(CONTAINER_NAMES.liquid_blaze_burner_name) end,
-    rolling_mills = function() return loadContainers(CONTAINER_NAMES.rolling_mill_name) end,
-
-    -- Extended Drawers
-    double_drawers = function() return loadContainers(CONTAINER_NAMES.double_drawers_name) end,
-    single_drawers = function() return loadContainers(CONTAINER_NAMES.single_drawers_name) end,
-    quad_drawers = function() return loadContainers(CONTAINER_NAMES.quad_drawers_name) end,
-
-    -- Tinkers' Construct
-    seared_basins = function() return loadContainers(CONTAINER_NAMES.seared_basin_name) end,
-    seared_melters = function() return loadContainers(CONTAINER_NAMES.seared_melter_name) end,
-    seared_ingot_tanks = function() return loadContainers(CONTAINER_NAMES.seared_ingot_tank_name) end,
-    seared_tables = function() return loadContainers(CONTAINER_NAMES.seared_table_name) end,
-    seared_heaters = function() return loadContainers(CONTAINER_NAMES.seared_heater_name) end,
-    scorched_drains = function() return loadContainers(CONTAINER_NAMES.scorched_drain_name) end,
-    foundry_controllers = function() return loadContainers(CONTAINER_NAMES.foundry_controller_name) end,
-    scorched_fuel_tanks = function() return loadContainers(CONTAINER_NAMES.scorched_fuel_tank_name) end,
-
-    -- AE2
-    ae2_interfaces = function() return loadContainers(CONTAINER_NAMES.ae2_interface_name) end,
-    ae2_1k_crafting_storages = function() return loadContainers(CONTAINER_NAMES.ae2_1k_crafting_storage_name) end,
-    ae2_4k_crafting_storages = function() return loadContainers(CONTAINER_NAMES.ae2_4k_crafting_storage_name) end,
-    ae2_pattern_providers = function() return loadContainers(CONTAINER_NAMES.ae2_pattern_provider_name) end,
-
-    -- Tech Reborn
-    solid_canning_machines = function() return loadContainers(CONTAINER_NAMES.solid_canning_machine_name) end,
-    industrial_centrifuges = function() return loadContainers(CONTAINER_NAMES.industrial_centrifuge_name) end,
-    industrial_electrolyzers = function() return loadContainers(CONTAINER_NAMES.industrial_electrolyzer_name) end,
-    compressors = function() return loadContainers(CONTAINER_NAMES.compressor_name) end,
-    basic_tank_units = function() return loadContainers(CONTAINER_NAMES.basic_tank_unit_name) end,
-    grinders = function() return loadContainers(CONTAINER_NAMES.grinder_name) end,
-    chemical_reactors = function() return loadContainers(CONTAINER_NAMES.chemical_reactor_name) end,
-    thermal_generators = function() return loadContainers(CONTAINER_NAMES.thermal_generator_name) end,
-
-    -- Ad Astra
-    cryo_freezers = function() return loadContainers(CONTAINER_NAMES.cryo_freezer_name) end,
-
-    -- Custom Machinery
-    custom_machine_blocks = function() return loadContainers(CONTAINER_NAMES.custom_machine_block_name) end,
-
-    -- Reinfchest
-    diamond_chests = function() return loadContainers(CONTAINER_NAMES.diamond_chest_name) end,
-    copper_chests = function() return loadContainers(CONTAINER_NAMES.copper_cehst_name) end,
-
-    -- Miscellaneous
-    redrouters = function() return loadContainers(CONTAINER_NAMES.redrouter_name) end,
-    all_tank_units = function() return loadContainers(CONTAINER_NAMES.all_tank_unit_name) end,
-
-    -- yttr
-    centrifuges = function() return loadContainers(CONTAINER_NAMES.centrifuge) end,
-}
-
-return {
-    load = load,
-    CONTAINER_NAMES = CONTAINER_NAMES,
-    addCommonContainerPropsAndMethods = addCommonContainerPropsAndMethods,
-} end
-modules["utils.OSUtils"] = function() local Logger = require("utils.Logger")
-
-local OSUtils = {}
-
-OSUtils.timestampBaseIdGenerate = function()
-    local timestamp = os.epoch("utc")
-    local random = math.random(1000, 9999)
-    return tostring(timestamp) .. "-" .. tostring(random)
-end
-
-OSUtils.loadTable = function(file_name)
-    local obj = {}
-    local file = fs.open(file_name, "r")
-    if file then
-        obj = textutils.unserialize(file.readAll())
-        file.close()
-    else
-        return nil
-    end
-    return obj
-end
-
-OSUtils.saveTable = function(file_name, obj)
-    local file = fs.open(file_name, "w")
-    if file then
-        xpcall(function()
-            local serialized = textutils.serialize(obj)
-            file.write(serialized)
-        end, function(err)
-            Logger.error("Failed to save table to {}, error: {}", file_name, err)
-        end)
-        file.close()
-    end
-end
-
-return OSUtils end
-modules["elements.MessageBox"] = function() local basalt = require("libraries.basalt")
-local StringUtils = require("utils.StringUtils")
-
-local MessageBox = {}
-MessageBox.__index = MessageBox
-
-function MessageBox:new(pframe, width, height)
-    local instance = setmetatable({}, MessageBox)
-
-    instance.frame = pframe
-    instance.title = "Message"
-    instance.message = "No message provided."
-
-    instance.coverFrame = pframe:addFrame()
-        :setPosition(1, 1)
-        :setSize(pframe:getWidth(), pframe:getHeight())
-        :setBackground(colors.black)
-        :setForeground(colors.white)
-        :setVisible(false)
-
-    instance.boxFrame = instance.coverFrame:addFrame()
-        :setPosition(5, 2)
-        :setSize(width, height)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-
-    instance.titleLabel = instance.boxFrame:addLabel()
-        :setText(instance.title)
-        :setPosition(2, 2)
-        :setBackgroundEnabled(true)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-
-    instance.textBox = instance.boxFrame:addTextBox()
-        :setText(instance.message)
-        :setSize(instance.boxFrame:getWidth() - 2, instance.boxFrame:getHeight() - 6)
-        :setPosition(2, 4)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-
-    instance.closeBtn = instance.boxFrame:addButton()
-        :setText("Close")
-        :setPosition(instance.boxFrame:getWidth() -7, instance.boxFrame:getHeight() - 1)
-        :setSize(7, 1)
-        :setBackground(colors.gray)
-        :setForeground(colors.white)
-        :onClick(function()
-            instance:close()
-        end)
-
-    return instance
-end
-
-function MessageBox:open(title, message)
-    if title then
-        self.title = title
-        self.titleLabel:setText(title)
-
-    end
-    if message then
-        self.message = message
-        self.textBox:setText(StringUtils.wrapText(message, self.textBox:getWidth()))
-    end
-
-    self.coverFrame:setVisible(true)
-end
-
-function MessageBox:close()
-    self.coverFrame:setVisible(false)
-end
-
-return MessageBox end
+modules["programs.AE2Crafter"] = function() local _c=require("libraries.basalt")
+local ac=require("elements.TabView")local bc=require("programs.ae2.crafter.CraftingListTab")
+local cc=require("utils.Logger")local dc=require("programs.ae2.crafter.TurtleCraft")
+local _d=require("elements.LogBox")local ad=true;_c.LOGGER.setEnabled(ad)
+_c.LOGGER.setLogToFile(true)
+if ad then
+cc.addPrintFunction(function(d_a,_aa,aaa,baa)baa=string.format("[%s:%d] %s",_aa,aaa,baa)
+if
+d_a==cc.levels.DEBUG then _c.LOGGER.debug(baa)elseif
+d_a==cc.levels.INFO then _c.LOGGER.info(baa)elseif d_a==cc.levels.WARN then
+_c.LOGGER.warn(baa)elseif d_a==cc.levels.ERROR then _c.LOGGER.error(baa)end end)end;local bd=_c.getMainFrame()
+_c.LOGGER.debug("Starting MachineController...")
+local cd=ac:new(bd:addFrame(),1,1,bd:getWidth(),bd:getHeight())local dd=cd:createTab("Crafting List")
+local __a=cd:createTab("Log")local a_a=cd:createTab("Settings")
+local b_a=bc:new(dd.frame):init()
+local c_a=_d:new(__a.frame,2,2,__a.frame:getWidth()-2,__a.frame:getHeight()-2,colors.white,colors.gray)cd:init()_c.run() end
+modules["libraries.basalt"] = function() local ba=true;local ca={}local da={}local _b={}local ab={}local bb=require
+require=function(cb)if(_b[cb..".lua"])then if
+(ab[cb]==nil)then ab[cb]=_b[cb..".lua"]()end
+return ab[cb]end;return bb(cb)end;da["canvas"]={}da["debug"]={}da["reactive"]={}
+da["theme"]={}da["xml"]={}da["animation"]={}da["benchmark"]={}
+da["state"]={}ca["Scrollbar"]={}ca["Display"]={}ca["Dropdown"]={}
+ca["LineChart"]={}ca["Switch"]={}ca["Menu"]={}ca["Slider"]={}ca["Frame"]={}
+ca["Flexbox"]={}ca["Timer"]={}ca["VisualElement"]={}ca["Graph"]={}
+ca["BigFont"]={}ca["BaseFrame"]={}ca["Checkbox"]={}ca["Container"]={}
+ca["List"]={}ca["ProgressBar"]={}ca["Program"]={}ca["Tree"]={}
+ca["Image"]={}ca["Label"]={}ca["Input"]={}ca["BarChart"]={}
+ca["Button"]={}ca["BaseElement"]={}ca["TextBox"]={}ca["Table"]={}
+_b["plugins/canvas.lua"]=function(...)
+local cb=require("libraries/colorHex")local db=require("errorManager")local _c={}_c.__index=_c
+local ac,bc=string.sub,string.rep
+function _c.new(dc)local _d=setmetatable({},_c)_d.commands={pre={},post={}}
+_d.type="pre"_d.element=dc;return _d end
+function _c:clear()self.commands={pre={},post={}}return self end;function _c:getValue(dc)
+if type(dc)=="function"then return dc(self.element)end;return dc end
+function _c:setType(dc)if
+dc=="pre"or dc=="post"then self.type=dc else
+db.error("Invalid type. Use 'pre' or 'post'.")end;return self end
+function _c:addCommand(dc)
+local _d=#self.commands[self.type]+1;self.commands[self.type][_d]=dc;return _d end
+function _c:setCommand(dc,_d)self.commands[dc]=_d;return self end;function _c:removeCommand(dc)
+table.remove(self.commands[self.type],dc)return self end
+function _c:text(dc,_d,ad,bd,cd)
+return
+self:addCommand(function(dd)
+local a_a,b_a=self:getValue(dc),self:getValue(_d)local c_a=self:getValue(ad)local d_a=self:getValue(bd)
+local _aa=self:getValue(cd)
+local aaa=type(d_a)=="number"and cb[d_a]:rep(#ad)or d_a
+local baa=type(_aa)=="number"and cb[_aa]:rep(#ad)or _aa;dd:drawText(a_a,b_a,c_a)
+if aaa then dd:drawFg(a_a,b_a,aaa)end;if baa then dd:drawBg(a_a,b_a,baa)end end)end;function _c:bg(dc,_d,ad)return
+self:addCommand(function(bd)bd:drawBg(dc,_d,ad)end)end
+function _c:fg(dc,_d,ad)return self:addCommand(function(bd)
+bd:drawFg(dc,_d,ad)end)end
+function _c:rect(_d,ad,bd,cd,dd,__a,a_a)
+return
+self:addCommand(function(b_a)local aaa,baa=self:getValue(_d),self:getValue(ad)
+local caa,daa=self:getValue(bd),self:getValue(cd)local _ba=self:getValue(dd)local aba=self:getValue(__a)
+local bba=self:getValue(a_a)if(type(aba)=="number")then aba=cb[aba]end;if
+(type(bba)=="number")then bba=cb[bba]end
+local cba=bba and ac(bba:rep(caa),1,caa)local dba=aba and ac(aba:rep(caa),1,caa)local _ca=_ba and
+ac(_ba:rep(caa),1,caa)
+for i=0,daa-1 do if bba then
+b_a:drawBg(aaa,baa+i,cba)end
+if aba then b_a:drawFg(aaa,baa+i,dba)end;if _ba then b_a:drawText(aaa,baa+i,_ca)end end end)end
+function _c:line(_d,ad,bd,cd,dd,__a,a_a)
+local function b_a(_aa,aaa,baa,caa)local daa={}local _ba=0;local aba=math.abs(baa-_aa)
+local bba=math.abs(caa-aaa)local cba=(_aa<baa)and 1 or-1
+local dba=(aaa<caa)and 1 or-1;local _ca=aba-bba
+while true do _ba=_ba+1;daa[_ba]={x=_aa,y=aaa}if
+(_aa==baa)and(aaa==caa)then break end;local aca=_ca*2
+if aca>-bba then _ca=_ca-bba;_aa=_aa+cba end;if aca<aba then _ca=_ca+aba;aaa=aaa+dba end end;return daa end;local c_a=false;local d_a
+if
+type(_d)=="function"or type(ad)=="function"or type(bd)=="function"or
+type(cd)=="function"then c_a=true else
+d_a=b_a(self:getValue(_d),self:getValue(ad),self:getValue(bd),self:getValue(cd))end
+return
+self:addCommand(function(_aa)if c_a then
+d_a=b_a(self:getValue(_d),self:getValue(ad),self:getValue(bd),self:getValue(cd))end
+local aaa=self:getValue(dd)local baa=self:getValue(__a)local caa=self:getValue(a_a)local daa=type(baa)==
+"number"and cb[baa]or baa
+local _ba=
+type(caa)=="number"and cb[caa]or caa
+for aba,bba in ipairs(d_a)do local cba=math.floor(bba.x)
+local dba=math.floor(bba.y)if aaa then _aa:drawText(cba,dba,aaa)end;if daa then
+_aa:drawFg(cba,dba,daa)end;if _ba then _aa:drawBg(cba,dba,_ba)end end end)end
+function _c:ellipse(_d,ad,bd,cd,dd,__a,a_a)
+local function b_a(d_a,_aa,aaa,baa)local aba={}local bba=0;local cba=aaa*aaa;local dba=baa*baa;local _ca=0;local aca=baa;local bca=
+dba-cba*baa+0.25 *cba;local cca=0;local dca=2 *cba*aca
+local function _da(ada,bda)bba=bba+1;aba[bba]={x=
+d_a+ada,y=_aa+bda}bba=bba+1
+aba[bba]={x=d_a-ada,y=_aa+bda}bba=bba+1;aba[bba]={x=d_a+ada,y=_aa-bda}bba=bba+1;aba[bba]={x=d_a-
+ada,y=_aa-bda}end;_da(_ca,aca)
+while cca<dca do _ca=_ca+1;cca=cca+2 *dba
+if bca<0 then
+bca=bca+dba+cca else aca=aca-1;dca=dca-2 *cba;bca=bca+dba+cca-dca end;_da(_ca,aca)end;bca=
+dba* (_ca+0.5)* (_ca+0.5)+cba* (aca-1)* (aca-1)-cba*dba;while aca>0 do
+aca=aca-1;dca=dca-2 *cba;if bca>0 then bca=bca+cba-dca else _ca=_ca+1
+cca=cca+2 *dba;bca=bca+cba-dca+cca end
+_da(_ca,aca)end
+return aba end;local c_a=b_a(_d,ad,bd,cd)
+return
+self:addCommand(function(d_a)local _aa=self:getValue(dd)
+local aaa=self:getValue(__a)local baa=self:getValue(a_a)local caa=
+type(aaa)=="number"and cb[aaa]or aaa;local daa=
+type(baa)=="number"and cb[baa]or baa
+for _ba,aba in pairs(c_a)do
+local bba=math.floor(aba.x)local cba=math.floor(aba.y)
+if _aa then d_a:drawText(bba,cba,_aa)end;if caa then d_a:drawFg(bba,cba,caa)end;if daa then
+d_a:drawBg(bba,cba,daa)end end end)end;local cc={hooks={}}
+function cc.setup(dc)
+dc.defineProperty(dc,"canvas",{default=nil,type="table",getter=function(_d)if not _d._values.canvas then
+_d._values.canvas=_c.new(_d)end;return _d._values.canvas end})end;function cc.hooks.render(dc)local _d=dc.get("canvas")
+if
+_d and#_d.commands.pre>0 then for ad,bd in pairs(_d.commands.pre)do bd(dc)end end end
+function cc.hooks.postRender(dc)
+local _d=dc.get("canvas")if _d and#_d.commands.post>0 then for ad,bd in pairs(_d.commands.post)do
+bd(dc)end end end;return{VisualElement=cc,API=_c}end
+_b["plugins/debug.lua"]=function(...)local dc=require("log")
+local _d=require("libraries/colorHex")local ad=10;local bd=false;local cd={ERROR=1,WARN=2,INFO=3,DEBUG=4}
+local function dd(c_a)
+local d_a={renderCount=0,eventCount={},lastRender=os.epoch("utc"),properties={},children={}}
+return
+{trackProperty=function(_aa,aaa)d_a.properties[_aa]=aaa end,trackRender=function()
+d_a.renderCount=d_a.renderCount+1;d_a.lastRender=os.epoch("utc")end,trackEvent=function(_aa)d_a.eventCount[_aa]=(
+d_a.eventCount[_aa]or 0)+1 end,dump=function()return
+{type=c_a.get("type"),id=c_a.get("id"),stats=d_a}end}end;local __a={}function __a.debug(c_a,d_a)c_a._debugger=dd(c_a)c_a._debugLevel=d_a or cd.INFO;return
+c_a end
+function __a.dumpDebug(c_a)if
+not c_a._debugger then return end;return c_a._debugger.dump()end;local a_a={}
+function a_a.openConsole(c_a)
+if not c_a._debugFrame then local d_a=c_a.get("width")
+local _aa=c_a.get("height")
+c_a._debugFrame=c_a:addFrame("basaltDebugLog"):setWidth(d_a):setHeight(_aa):listenEvent("mouse_scroll",true)
+c_a._debugFrame:addButton("basaltDebugLogClose"):setWidth(9):setHeight(1):setX(
+d_a-8):setY(_aa):setText("Close"):onClick(function()
+c_a:closeConsole()end)c_a._debugFrame._scrollOffset=0
+c_a._debugFrame._processedLogs={}
+local function aaa(aba,bba)local cba={}while#aba>0 do local dba=aba:sub(1,bba)table.insert(cba,dba)aba=aba:sub(
+bba+1)end;return cba end
+local function baa()local aba={}local bba=c_a._debugFrame.get("width")
+for cba,dba in
+ipairs(dc._logs)do local _ca=aaa(dba.message,bba)for aca,bca in ipairs(_ca)do
+table.insert(aba,{text=bca,level=dba.level})end end;return aba end;local caa=#baa()-c_a.get("height")
+c_a._scrollOffset=caa;local daa=c_a._debugFrame.render
+c_a._debugFrame.render=function(aba)daa(aba)
+aba._processedLogs=baa()local bba=aba.get("height")-2
+local cba=#aba._processedLogs;local dba=math.max(0,cba-bba)
+aba._scrollOffset=math.min(aba._scrollOffset,dba)
+for i=1,bba-2 do local _ca=i+aba._scrollOffset
+local aca=aba._processedLogs[_ca]
+if aca then
+local bca=
+
+aca.level==dc.LEVEL.ERROR and colors.red or aca.level==
+dc.LEVEL.WARN and colors.yellow or aca.level==dc.LEVEL.DEBUG and colors.lightGray or colors.white;aba:textFg(2,i,aca.text,bca)end end end;local _ba=c_a._debugFrame.dispatchEvent
+c_a._debugFrame.dispatchEvent=function(aba,bba,cba,...)
+if
+(bba=="mouse_scroll")then
+aba._scrollOffset=math.max(0,aba._scrollOffset+cba)aba:updateRender()return true else return _ba(aba,bba,cba,...)end end end
+c_a._debugFrame.set("width",c_a.get("width"))
+c_a._debugFrame.set("height",c_a.get("height"))c_a._debugFrame.set("visible",true)return c_a end
+function a_a.closeConsole(c_a)if c_a._debugFrame then
+c_a._debugFrame.set("visible",false)end;return c_a end
+function a_a.toggleConsole(c_a)
+if
+c_a._debugFrame and c_a._debugFrame:getVisible()then c_a:closeConsole()else c_a:openConsole()end;return c_a end;local b_a={}
+function b_a.debugChildren(c_a,d_a)c_a:debug(d_a)
+for _aa,aaa in pairs(c_a.get("children"))do if
+aaa.debug then aaa:debug(d_a)end end;return c_a end;return{BaseElement=__a,Container=b_a,BaseFrame=a_a}end
+_b["plugins/reactive.lua"]=function(...)local ad=require("errorManager")
+local bd=require("propertySystem")local cd={colors=true,math=true,clamp=true,round=true}
+local dd={clamp=function(aaa,baa,caa)return
+math.min(math.max(aaa,baa),caa)end,round=function(aaa)
+return math.floor(aaa+0.5)end,floor=math.floor,ceil=math.ceil,abs=math.abs}
+local function __a(aaa,baa,caa)aaa=aaa:gsub("^{(.+)}$","%1")
+aaa=aaa:gsub("([%w_]+)%$([%w_]+)",function(bba,cba)
+if bba=="self"then return
+string.format('__getState("%s")',cba)elseif bba=="parent"then return
+string.format('__getParentState("%s")',cba)else return
+string.format('__getElementState("%s", "%s")',bba,cba)end end)
+aaa=aaa:gsub("([%w_]+)%.([%w_]+)",function(bba,cba)if cd[bba]then return bba.."."..cba end;if
+tonumber(bba)then return bba.."."..cba end;return
+string.format('__getProperty("%s", "%s")',bba,cba)end)
+local daa=setmetatable({colors=colors,math=math,tostring=tostring,tonumber=tonumber,__getState=function(bba)return baa:getState(bba)end,__getParentState=function(bba)return
+baa.parent:getState(bba)end,__getElementState=function(bba,cba)if tonumber(bba)then return nil end
+local dba=baa:getBaseFrame():getChild(bba)if not dba then ad.header="Reactive evaluation error"
+ad.error("Could not find element: "..bba)return nil end;return
+dba:getState(cba).value end,__getProperty=function(bba,cba)if
+tonumber(bba)then return nil end
+if bba=="self"then return baa.get(cba)elseif bba=="parent"then return
+baa.parent.get(cba)else local dba=baa.parent:getChild(bba)if not dba then
+ad.header="Reactive evaluation error"
+ad.error("Could not find element: "..bba)return nil end
+return dba.get(cba)end end},{__index=dd})if(baa._properties[caa].type=="string")then
+aaa="tostring("..aaa..")"elseif(baa._properties[caa].type=="number")then
+aaa="tonumber("..aaa..")"end;local _ba,aba=load(
+"return "..aaa,"reactive","t",daa)
+if not _ba then
+ad.header="Reactive evaluation error"ad.error("Invalid expression: "..aba)return
+function()return nil end end;return _ba end
+local function a_a(aaa,baa)
+for caa in aaa:gmatch("([%w_]+)%.")do
+if not cd[caa]then
+if caa=="self"then elseif caa=="parent"then
+if not baa.parent then
+ad.header="Reactive evaluation error"ad.error("No parent element available")return false end else
+if(tonumber(caa)==nil)then local daa=baa.parent:getChild(caa)if not daa then
+ad.header="Reactive evaluation error"
+ad.error("Referenced element not found: "..caa)return false end end end end end;return true end;local b_a=setmetatable({},{__mode="k"})
+local c_a=setmetatable({},{__mode="k",__index=function(aaa,baa)aaa[baa]={}return
+aaa[baa]end})
+local function d_a(aaa,baa,caa)
+if c_a[aaa][caa]then for _ba,aba in ipairs(c_a[aaa][caa])do
+aba.target:removeObserver(aba.property,aba.callback)end end;local daa={}
+for _ba,aba in baa:gmatch("([%w_]+)%.([%w_]+)")do
+if not cd[_ba]then local bba;if _ba=="self"then bba=aaa elseif _ba==
+"parent"then bba=aaa.parent else
+bba=aaa:getBaseFrame():getChild(_ba)end;if bba then
+local cba={target=bba,property=aba,callback=function()
+aaa:updateRender()end}bba:observe(aba,cba.callback)
+table.insert(daa,cba)end end end;c_a[aaa][caa]=daa end
+bd.addSetterHook(function(aaa,baa,caa,daa)
+if type(caa)=="string"and caa:match("^{.+}$")then
+local _ba=caa:gsub("^{(.+)}$","%1")if not a_a(_ba,aaa)then return daa.default end
+d_a(aaa,_ba,baa)if not b_a[aaa]then b_a[aaa]={}end;if not b_a[aaa][caa]then
+local aba=__a(caa,aaa,baa)b_a[aaa][caa]=aba end
+return
+function(aba)
+local bba,cba=pcall(b_a[aaa][caa])
+if not bba then ad.header="Reactive evaluation error"if type(cba)=="string"then ad.error(
+"Error evaluating expression: "..cba)else
+ad.error("Error evaluating expression")end
+return daa.default end;return cba end end end)local _aa={}
+_aa.hooks={destroy=function(aaa)
+if c_a[aaa]then
+for baa,caa in pairs(c_a[aaa])do for daa,_ba in ipairs(caa)do
+_ba.target:removeObserver(_ba.property,_ba.callback)end end;c_a[aaa]=nil end end}return{BaseElement=_aa}end
+_b["plugins/theme.lua"]=function(...)local ad=require("errorManager")
+local bd={default={background=colors.lightGray,foreground=colors.black},BaseFrame={background=colors.white,foreground=colors.black,Frame={background=colors.black,names={basaltDebugLogClose={background=colors.blue,foreground=colors.white}}},Button={background="{self.clicked and colors.black or colors.cyan}",foreground="{self.clicked and colors.cyan or colors.black}"},names={basaltDebugLog={background=colors.red,foreground=colors.white},test={background="{self.clicked and colors.black or colors.green}",foreground="{self.clicked and colors.green or colors.black}"}}}}local cd={default=bd}local dd="default"
+local __a={hooks={postInit={pre=function(aaa)if aaa._postInitialized then return aaa end
+aaa:applyTheme()end}}}
+function __a.____getElementPath(aaa,baa)
+if baa then
+table.insert(baa,1,aaa._values.type)else baa={aaa._values.type}end;local caa=aaa.parent
+if caa then return caa.____getElementPath(caa,baa)else return baa end end
+local function a_a(aaa,baa)local caa=aaa
+for i=1,#baa do local daa=false;local _ba=baa[i]for aba,bba in ipairs(_ba)do if caa[bba]then caa=caa[bba]daa=true
+break end end
+if not daa then return nil end end;return caa end
+local function b_a(aaa,baa)local caa={}
+if aaa.default then for daa,_ba in pairs(aaa.default)do
+if type(_ba)~="table"then caa[daa]=_ba end end;if aaa.default[baa]then
+for daa,_ba in
+pairs(aaa.default[baa])do if type(_ba)~="table"then caa[daa]=_ba end end end end;return caa end
+local function c_a(aaa,baa,caa,daa,_ba)
+if
+baa.default and baa.default.names and baa.default.names[daa]then for aba,bba in pairs(baa.default.names[daa])do if type(bba)~="table"then
+aaa[aba]=bba end end end
+if
+
+baa.default and baa.default[caa]and baa.default[caa].names and baa.default[caa].names[daa]then
+for aba,bba in pairs(baa.default[caa].names[daa])do if
+type(bba)~="table"then aaa[aba]=bba end end end;if _ba and _ba.names and _ba.names[daa]then
+for aba,bba in
+pairs(_ba.names[daa])do if type(bba)~="table"then aaa[aba]=bba end end end end
+local function d_a(aaa,baa,caa,daa)local _ba={}local aba=a_a(aaa,baa)
+if aba then for bba,cba in pairs(aba)do
+if type(cba)~="table"then _ba[bba]=cba end end end;if next(_ba)==nil then _ba=b_a(aaa,caa)end
+c_a(_ba,aaa,caa,daa,aba)return _ba end
+function __a:applyTheme(aaa)local baa=self:getTheme()
+if(baa~=nil)then
+for caa,daa in pairs(baa)do
+local _ba=self._properties[caa]
+if(_ba)then
+if( (_ba.type)=="color")then if(type(daa)=="string")then if(colors[daa])then
+daa=colors[daa]end end end;self.set(caa,daa)end end end
+if(aaa~=false)then
+if(self:isType("Container"))then local caa=self.get("children")
+for daa,_ba in
+ipairs(caa)do if(_ba and _ba.applyTheme)then _ba:applyTheme()end end end end;return self end
+function __a:getTheme()local aaa=self:____getElementPath()
+local baa=self.get("type")local caa=self.get("name")return d_a(cd[dd],aaa,baa,caa)end;local _aa={}function _aa.setTheme(aaa)cd.default=aaa end
+function _aa.getTheme()return cd.default end
+function _aa.loadTheme(aaa)local baa=fs.open(aaa,"r")
+if baa then local caa=baa.readAll()
+baa.close()cd.default=textutils.unserializeJSON(caa)
+if not cd.default then ad.error(
+"Failed to load theme from "..aaa)end else
+ad.error("Could not open theme file: "..aaa)end end;return{BaseElement=__a,API=_aa}end
+_b["plugins/xml.lua"]=function(...)local ad=require("errorManager")
+local bd=require("log")
+local cd={new=function(aaa)
+return
+{tag=aaa,value=nil,attributes={},children={},addChild=function(baa,caa)table.insert(baa.children,caa)end,addAttribute=function(baa,caa,daa)
+baa.attributes[caa]=daa end}end}
+local dd=function(aaa,baa)
+local caa,daa=string.gsub(baa,"(%w+)=([\"'])(.-)%2",function(bba,cba,dba)
+aaa:addAttribute(bba,"\""..dba.."\"")end)
+local _ba,aba=string.gsub(baa,"(%w+)={(.-)}",function(bba,cba)aaa:addAttribute(bba,cba)end)end
+local __a={parseText=function(aaa)local baa={}local caa=cd.new()table.insert(baa,caa)local daa,_ba,aba,bba,cba
+local dba,_ca=1,1
+while true do
+daa,_ca,_ba,aba,bba,cba=string.find(aaa,"<(%/?)([%w_:]+)(.-)(%/?)>",dba)if not daa then break end;local aca=string.sub(aaa,dba,daa-1)if not
+string.find(aca,"^%s*$")then local bca=(caa.value or"")..aca
+baa[#baa].value=bca end
+if cba=="/"then local bca=cd.new(aba)
+dd(bca,bba)caa:addChild(bca)elseif _ba==""then local bca=cd.new(aba)dd(bca,bba)
+table.insert(baa,bca)caa=bca else local bca=table.remove(baa)caa=baa[#baa]
+if#baa<1 then ad.error(
+"XMLParser: nothing to close with "..aba)end;if bca.tag~=aba then
+ad.error("XMLParser: trying to close "..bca.tag.." with "..aba)end;caa:addChild(bca)end;dba=_ca+1 end;if#baa>1 then
+error("XMLParser: unclosed "..baa[#baa].tag)end;return caa.children end}
+local function a_a(aaa)local baa={}local caa=1
+while true do local daa,_ba,aba=aaa:find("%${([^}]+)}",caa)
+if not daa then break end
+table.insert(baa,{start=daa,ending=_ba,expression=aba,raw=aaa:sub(daa,_ba)})caa=_ba+1 end;return baa end
+local function b_a(aaa,baa)if type(aaa)~="string"then return aaa end
+if aaa:sub(1,1)=="\""and aaa:sub(
+-1)=="\""then aaa=aaa:sub(2,-2)end;local caa=a_a(aaa)
+for daa,_ba in ipairs(caa)do local aba=_ba.expression;local bba=_ba.start-1;local cba=
+_ba.ending+1;if baa[aba]then aaa=aaa:sub(1,bba)..
+tostring(baa[aba])..aaa:sub(cba)else
+ad.error("XMLParser: variable '"..aba..
+"' not found in scope")end end
+if aaa:match("^%s*<!%[CDATA%[.*%]%]>%s*$")then
+local daa=aaa:match("<!%[CDATA%[(.*)%]%]>")local _ba=_ENV;for aba,bba in pairs(baa)do _ba[aba]=bba end;return
+load("return "..daa,nil,"bt",_ba)()end
+if aaa=="true"then return true elseif aaa=="false"then return false elseif colors[aaa]then return colors[aaa]elseif
+tonumber(aaa)then return tonumber(aaa)else return aaa end end
+local function c_a(aaa,baa)local caa={}
+for daa,_ba in pairs(aaa.children)do
+if
+_ba.tag=="item"or _ba.tag=="entry"then local aba={}
+for bba,cba in pairs(_ba.attributes)do aba[bba]=b_a(cba,baa)end;for bba,cba in pairs(_ba.children)do
+if cba.value then aba[cba.tag]=b_a(cba.value,baa)elseif#
+cba.children>0 then aba[cba.tag]=c_a(cba)end end
+table.insert(caa,aba)else if _ba.value then caa[_ba.tag]=b_a(_ba.value,baa)elseif#_ba.children>0 then
+caa[_ba.tag]=c_a(_ba)end end end;return caa end;local d_a={}function d_a.setup(aaa)
+aaa.defineProperty(aaa,"customXML",{default={attributes={},children={}},type="table"})end
+function d_a:fromXML(aaa,baa)
+if(aaa.attributes)then
+for caa,daa in
+pairs(aaa.attributes)do
+if(self._properties[caa])then self.set(caa,b_a(daa,baa))elseif self[caa]then
+if(
+caa:sub(1,2)=="on")then local _ba=daa:gsub("\"","")
+if(baa[_ba])then if
+(type(baa[_ba])~="function")then
+ad.error("XMLParser: variable '".._ba..
+"' is not a function for element '"..self:getType().."' "..caa)end
+self[caa](self,baa[_ba])else
+ad.error("XMLParser: variable '".._ba.."' not found in scope")end else
+ad.error("XMLParser: property '"..caa..
+"' not found in element '"..self:getType().."'")end else local _ba=self.get("customXML")
+_ba.attributes[caa]=b_a(daa,baa)end end end
+if(aaa.children)then
+for caa,daa in pairs(aaa.children)do
+if(self._properties[daa.tag])then
+if(
+self._properties[daa.tag].type=="table")then
+self.set(daa.tag,c_a(daa,baa))else self.set(daa.tag,b_a(daa.value,baa))end else local _ba={}
+if(daa.children)then
+for aba,bba in pairs(daa.children)do
+if(bba.tag=="param")then
+table.insert(_ba,b_a(bba.value,baa))elseif(bba.tag=="table")then table.insert(_ba,c_a(bba,baa))end end end
+if(self[daa.tag])then
+if(#_ba>0)then
+self[daa.tag](self,table.unpack(_ba))elseif(daa.value)then
+self[daa.tag](self,b_a(daa.value,baa))else self[daa.tag](self)end else local aba=self.get("customXML")
+daa.value=b_a(daa.value,baa)aba.children[daa.tag]=daa end end end end;return self end;local _aa={}
+function _aa:loadXML(aaa,baa)baa=baa or{}local caa=__a.parseText(aaa)
+self:fromXML(caa,baa)
+if(caa)then
+for daa,_ba in ipairs(caa)do
+local aba=_ba.tag:sub(1,1):upper().._ba.tag:sub(2)if self["add"..aba]then local bba=self["add"..aba](self)
+bba:fromXML(_ba,baa)end end end;return self end
+function _aa:fromXML(aaa,baa)d_a.fromXML(self,aaa,baa)
+if(aaa.children)then
+for caa,daa in ipairs(aaa.children)do local _ba=
+daa.tag:sub(1,1):upper()..daa.tag:sub(2)if
+self["add".._ba]then local aba=self["add".._ba](self)
+aba:fromXML(daa,baa)end end end;return self end;return{API=__a,Container=_aa,BaseElement=d_a}end
+_b["plugins/animation.lua"]=function(...)local cb={}
+local db={linear=function(cc)return cc end,easeInQuad=function(cc)return cc*cc end,easeOutQuad=function(cc)return
+1 - (1 -cc)* (1 -cc)end,easeInOutQuad=function(cc)if cc<0.5 then return
+2 *cc*cc end;return 1 - (-2 *cc+2)^2 /2 end}local _c={}_c.__index=_c
+function _c.new(cc,dc,_d,ad,bd)local cd=setmetatable({},_c)cd.element=cc
+cd.type=dc;cd.args=_d;cd.duration=ad or 1;cd.startTime=0;cd.isPaused=false
+cd.handlers=cb[dc]cd.easing=bd;return cd end;function _c:start()self.startTime=os.epoch("local")/1000;if
+self.handlers.start then self.handlers.start(self)end
+return self end
+function _c:update(cc)local dc=math.min(1,
+cc/self.duration)
+local _d=db[self.easing](dc)return self.handlers.update(self,_d)end;function _c:complete()if self.handlers.complete then
+self.handlers.complete(self)end end
+local ac={}ac.__index=ac
+function ac.registerAnimation(cc,dc)cb[cc]=dc
+ac[cc]=function(_d,...)local ad={...}local bd="linear"
+if(
+type(ad[#ad])=="string")then bd=table.remove(ad,#ad)end;local cd=table.remove(ad,#ad)
+return _d:addAnimation(cc,ad,cd,bd)end end;function ac.registerEasing(cc,dc)db[cc]=dc end
+function ac.new(cc)local dc={}dc.element=cc
+dc.sequences={{}}dc.sequenceCallbacks={}dc.currentSequence=1;dc.timer=nil
+setmetatable(dc,ac)return dc end
+function ac:sequence()table.insert(self.sequences,{})self.currentSequence=#
+self.sequences;self.sequenceCallbacks[self.currentSequence]={start=nil,update=nil,complete=
+nil}return self end
+function ac:onStart(cc)
+if
+not self.sequenceCallbacks[self.currentSequence]then self.sequenceCallbacks[self.currentSequence]={}end
+self.sequenceCallbacks[self.currentSequence].start=cc;return self end
+function ac:onUpdate(cc)
+if
+not self.sequenceCallbacks[self.currentSequence]then self.sequenceCallbacks[self.currentSequence]={}end
+self.sequenceCallbacks[self.currentSequence].update=cc;return self end
+function ac:onComplete(cc)
+if
+not self.sequenceCallbacks[self.currentSequence]then self.sequenceCallbacks[self.currentSequence]={}end
+self.sequenceCallbacks[self.currentSequence].complete=cc;return self end
+function ac:addAnimation(cc,dc,_d,ad)local bd=_c.new(self.element,cc,dc,_d,ad)
+table.insert(self.sequences[self.currentSequence],bd)return self end
+function ac:start()self.currentSequence=1;self.timer=nil
+if
+(self.sequenceCallbacks[self.currentSequence])then if(self.sequenceCallbacks[self.currentSequence].start)then
+self.sequenceCallbacks[self.currentSequence].start(self.element)end end
+if
+#self.sequences[self.currentSequence]>0 then self.timer=os.startTimer(0.05)for cc,dc in
+ipairs(self.sequences[self.currentSequence])do dc:start()end end;return self end
+function ac:event(cc,dc)
+if cc=="timer"and dc==self.timer then
+local _d=os.epoch("local")/1000;local ad=true;local bd={}
+local cd=self.sequenceCallbacks[self.currentSequence]
+for dd,__a in ipairs(self.sequences[self.currentSequence])do
+local a_a=_d-__a.startTime;local b_a=a_a/__a.duration;local c_a=__a:update(a_a)if cd and cd.update then
+cd.update(self.element,b_a)end;if not c_a then table.insert(bd,__a)ad=false else
+__a:complete()end end
+if ad then
+if cd and cd.complete then cd.complete(self.element)end
+if self.currentSequence<#self.sequences then
+self.currentSequence=self.currentSequence+1;bd={}
+local dd=self.sequenceCallbacks[self.currentSequence]if dd and dd.start then dd.start(self.element)end
+for __a,a_a in
+ipairs(self.sequences[self.currentSequence])do a_a:start()table.insert(bd,a_a)end end end;if#bd>0 then self.timer=os.startTimer(0.05)end
+return true end end
+ac.registerAnimation("move",{start=function(cc)cc.startX=cc.element.get("x")
+cc.startY=cc.element.get("y")end,update=function(cc,dc)local _d=cc.startX+
+(cc.args[1]-cc.startX)*dc;local ad=cc.startY+
+(cc.args[2]-cc.startY)*dc
+cc.element.set("x",math.floor(_d))cc.element.set("y",math.floor(ad))return dc>=1 end,complete=function(cc)
+cc.element.set("x",cc.args[1])cc.element.set("y",cc.args[2])end})
+ac.registerAnimation("resize",{start=function(cc)cc.startW=cc.element.get("width")
+cc.startH=cc.element.get("height")end,update=function(cc,dc)local _d=cc.startW+
+(cc.args[1]-cc.startW)*dc;local ad=cc.startH+
+(cc.args[2]-cc.startH)*dc
+cc.element.set("width",math.floor(_d))cc.element.set("height",math.floor(ad))
+return dc>=1 end,complete=function(cc)
+cc.element.set("width",cc.args[1])cc.element.set("height",cc.args[2])end})
+ac.registerAnimation("moveOffset",{start=function(cc)cc.startX=cc.element.get("offsetX")
+cc.startY=cc.element.get("offsetY")end,update=function(cc,dc)local _d=cc.startX+ (cc.args[1]-cc.startX)*
+dc;local ad=cc.startY+ (cc.args[2]-
+cc.startY)*dc
+cc.element.set("offsetX",math.floor(_d))cc.element.set("offsetY",math.floor(ad))return
+dc>=1 end,complete=function(cc)
+cc.element.set("offsetX",cc.args[1])cc.element.set("offsetY",cc.args[2])end})
+ac.registerAnimation("number",{start=function(cc)
+cc.startValue=cc.element.get(cc.args[1])cc.targetValue=cc.args[2]end,update=function(cc,dc)
+local _d=
+cc.startValue+ (cc.targetValue-cc.startValue)*dc
+cc.element.set(cc.args[1],math.floor(_d))return dc>=1 end,complete=function(cc)
+cc.element.set(cc.args[1],cc.targetValue)end})
+ac.registerAnimation("entries",{start=function(cc)
+cc.startColor=cc.element.get(cc.args[1])cc.colorList=cc.args[2]end,update=function(cc,dc)
+local _d=cc.colorList;local ad=math.floor(#_d*dc)+1;if ad>#_d then ad=#_d end
+cc.element.set(cc.args[1],_d[ad])end,complete=function(cc)
+cc.element.set(cc.args[1],cc.colorList[
+#cc.colorList])end})
+ac.registerAnimation("morphText",{start=function(cc)local dc=cc.element.get(cc.args[1])
+local _d=cc.args[2]local ad=math.max(#dc,#_d)
+local bd=string.rep(" ",math.floor(ad-#dc)/2)cc.startText=bd..dc..bd
+cc.targetText=_d..string.rep(" ",ad-#_d)cc.length=ad end,update=function(cc,dc)
+local _d=""
+for i=1,cc.length do local ad=cc.startText:sub(i,i)
+local bd=cc.targetText:sub(i,i)
+if dc<0.5 then
+_d=_d.. (math.random()>dc*2 and ad or" ")else _d=_d..
+(math.random()> (dc-0.5)*2 and" "or bd)end end;cc.element.set(cc.args[1],_d)return dc>=1 end,complete=function(cc)
+cc.element.set(cc.args[1],cc.targetText:gsub("%s+$",""))end})
+ac.registerAnimation("typewrite",{start=function(cc)cc.targetText=cc.args[2]
+cc.element.set(cc.args[1],"")end,update=function(cc,dc)
+local _d=math.floor(#cc.targetText*dc)
+cc.element.set(cc.args[1],cc.targetText:sub(1,_d))return dc>=1 end})
+ac.registerAnimation("fadeText",{start=function(cc)cc.chars={}for i=1,#cc.args[2]do
+cc.chars[i]={char=cc.args[2]:sub(i,i),visible=false}end end,update=function(cc,dc)
+local _d=""for ad,bd in ipairs(cc.chars)do
+if math.random()<dc then bd.visible=true end
+_d=_d.. (bd.visible and bd.char or" ")end
+cc.element.set(cc.args[1],_d)return dc>=1 end})
+ac.registerAnimation("scrollText",{start=function(cc)cc.width=cc.element.get("width")
+cc.targetText=cc.args[2]cc.element.set(cc.args[1],"")end,update=function(cc,dc)local _d=math.floor(
+cc.width* (1 -dc))
+local ad=string.rep(" ",_d)
+cc.element.set(cc.args[1],ad..cc.targetText)return dc>=1 end})local bc={hooks={}}
+function bc.hooks.handleEvent(cc,dc,...)if dc=="timer"then local _d=cc.get("animation")if _d then
+_d:event(dc,...)end end end
+function bc.setup(cc)
+cc.defineProperty(cc,"animation",{default=nil,type="table"})cc.defineEvent(cc,"timer")end
+function bc:animate()local cc=ac.new(self)self.set("animation",cc)return cc end;return{VisualElement=bc}end
+_b["plugins/benchmark.lua"]=function(...)local _c=require("log")
+local ac=setmetatable({},{__mode="k"})local function bc()return{methods={}}end
+local function cc(bd,cd)local dd=bd[cd]
+if not ac[bd]then ac[bd]=bc()end
+if not ac[bd].methods[cd]then
+ac[bd].methods[cd]={calls=0,totalTime=0,minTime=math.huge,maxTime=0,lastTime=0,startTime=0,path={},methodName=cd,originalMethod=dd}end
+bd[cd]=function(__a,...)__a:startProfile(cd)local a_a=dd(__a,...)
+__a:endProfile(cd)return a_a end end;local dc={}
+function dc:startProfile(bd)local cd=ac[self]if not cd then cd=bc()ac[self]=cd end;if not
+cd.methods[bd]then
+cd.methods[bd]={calls=0,totalTime=0,minTime=math.huge,maxTime=0,lastTime=0,startTime=0,path={},methodName=bd}end
+local dd=cd.methods[bd]dd.startTime=os.clock()*1000;dd.path={}local __a=self;while __a do
+table.insert(dd.path,1,
+__a.get("name")or __a.get("id"))__a=__a.parent end;return self end
+function dc:endProfile(bd)local cd=ac[self]
+if not cd or not cd.methods[bd]then return self end;local dd=cd.methods[bd]local __a=os.clock()*1000
+local a_a=__a-dd.startTime;dd.calls=dd.calls+1;dd.totalTime=dd.totalTime+a_a
+dd.minTime=math.min(dd.minTime,a_a)dd.maxTime=math.max(dd.maxTime,a_a)dd.lastTime=a_a;return self end
+function dc:benchmark(bd)if not self[bd]then
+_c.error("Method "..bd.." does not exist")return self end;ac[self]=bc()
+ac[self].methodName=bd;ac[self].isRunning=true;cc(self,bd)return self end
+function dc:logBenchmark(bd)local cd=ac[self]
+if not cd or not cd.methods[bd]then return self end;local dd=cd.methods[bd]
+if dd then local __a=
+dd.calls>0 and(dd.totalTime/dd.calls)or 0
+_c.info(string.format(
+"Benchmark results for %s.%s: "..
+"Path: %s ".."Calls: %d "..
+"Average time: %.2fms ".."Min time: %.2fms ".."Max time: %.2fms "..
+"Last time: %.2fms ".."Total time: %.2fms",table.concat(dd.path,"."),dd.methodName,table.concat(dd.path,"/"),dd.calls,__a,
+dd.minTime~=math.huge and dd.minTime or 0,dd.maxTime,dd.lastTime,dd.totalTime))end;return self end
+function dc:stopBenchmark(bd)local cd=ac[self]
+if not cd or not cd.methods[bd]then return self end;local dd=cd.methods[bd]if dd and dd.originalMethod then
+self[bd]=dd.originalMethod end;cd.methods[bd]=nil;if
+not next(cd.methods)then ac[self]=nil end;return self end
+function dc:getBenchmarkStats(bd)local cd=ac[self]
+if not cd or not cd.methods[bd]then return nil end;local dd=cd.methods[bd]return
+{averageTime=dd.totalTime/dd.calls,totalTime=dd.totalTime,calls=dd.calls,minTime=dd.minTime,maxTime=dd.maxTime,lastTime=dd.lastTime}end;local _d={}
+function _d:benchmarkContainer(bd)self:benchmark(bd)
+for cd,dd in
+pairs(self.get("children"))do dd:benchmark(bd)if dd:isType("Container")then
+dd:benchmarkContainer(bd)end end;return self end
+function _d:logContainerBenchmarks(bd,cd)cd=cd or 0;local dd=string.rep("  ",cd)local __a=0;local a_a={}
+for c_a,d_a in
+pairs(self.get("children"))do local _aa=ac[d_a]
+if _aa and _aa.methods[bd]then local aaa=_aa.methods[bd]__a=__a+
+aaa.totalTime
+table.insert(a_a,{element=d_a,type=d_a.get("type"),calls=aaa.calls,totalTime=aaa.totalTime,avgTime=aaa.totalTime/aaa.calls})end end;local b_a=ac[self]
+if b_a and b_a.methods[bd]then local c_a=b_a.methods[bd]local d_a=
+c_a.totalTime-__a;local _aa=d_a/c_a.calls
+_c.info(string.format(
+"%sBenchmark %s (%s): ".."%.2fms/call (Self: %.2fms/call) ".."[Total: %dms, Calls: %d]",dd,self.get("type"),bd,
+c_a.totalTime/c_a.calls,_aa,c_a.totalTime,c_a.calls))
+if#a_a>0 then
+for aaa,baa in ipairs(a_a)do
+if baa.element:isType("Container")then baa.element:logContainerBenchmarks(bd,
+cd+1)else
+_c.info(string.format("%s> %s: %.2fms/call [Total: %dms, Calls: %d]",
+dd.." ",baa.type,baa.avgTime,baa.totalTime,baa.calls))end end end end;return self end
+function _d:stopContainerBenchmark(bd)
+for cd,dd in pairs(self.get("children"))do if dd:isType("Container")then
+dd:stopContainerBenchmark(bd)else dd:stopBenchmark(bd)end end;self:stopBenchmark(bd)return self end;local ad={}
+function ad.start(bd,cd)cd=cd or{}local dd=bc()dd.name=bd
+dd.startTime=os.clock()*1000;dd.custom=true;dd.calls=0;dd.totalTime=0;dd.minTime=math.huge;dd.maxTime=0
+dd.lastTime=0;ac[bd]=dd end
+function ad.stop(bd)local cd=ac[bd]if not cd or not cd.custom then return end;local dd=
+os.clock()*1000;local __a=dd-cd.startTime
+cd.calls=cd.calls+1;cd.totalTime=cd.totalTime+__a
+cd.minTime=math.min(cd.minTime,__a)cd.maxTime=math.max(cd.maxTime,__a)cd.lastTime=__a
+_c.info(string.format(
+"Custom Benchmark '%s': ".."Calls: %d "..
+"Average time: %.2fms ".."Min time: %.2fms ".."Max time: %.2fms "..
+"Last time: %.2fms ".."Total time: %.2fms",bd,cd.calls,
+cd.totalTime/cd.calls,cd.minTime,cd.maxTime,cd.lastTime,cd.totalTime))end
+function ad.getStats(bd)local cd=ac[bd]if not cd then return nil end;return
+{averageTime=cd.totalTime/cd.calls,totalTime=cd.totalTime,calls=cd.calls,minTime=cd.minTime,maxTime=cd.maxTime,lastTime=cd.lastTime}end;function ad.clear(bd)ac[bd]=nil end;function ad.clearAll()for bd,cd in pairs(ac)do
+if cd.custom then ac[bd]=nil end end end;return
+{BaseElement=dc,Container=_d,API=ad}end
+_b["plugins/state.lua"]=function(...)local cb=require("propertySystem")
+local db=require("errorManager")local _c={}function _c.setup(bc)
+bc.defineProperty(bc,"states",{default={},type="table"})
+bc.defineProperty(bc,"stateObserver",{default={},type="table"})end
+function _c:initializeState(bc,cc,dc,_d)
+local ad=self.get("states")if ad[bc]then
+db.error("State '"..bc.."' already exists")return self end;local bd=_d or"states/"..
+self.get("name")..".state"local cd={}
+if dc and
+fs.exists(bd)then local dd=fs.open(bd,"r")cd=
+textutils.unserialize(dd.readAll())or{}dd.close()end;ad[bc]={value=dc and cd[bc]or cc,persist=dc}
+return self end;local ac={}
+function ac:setState(bc,cc)local dc=self:getBaseFrame()
+local _d=dc.get("states")local ad=dc.get("stateObserver")
+if not _d[bc]then db.error("State '"..
+bc.."' not initialized")end
+if _d[bc].persist then
+local bd="states/"..dc.get("name")..".state"local cd={}
+if fs.exists(bd)then local a_a=fs.open(bd,"r")cd=
+textutils.unserialize(a_a.readAll())or{}a_a.close()end;cd[bc]=cc;local dd=fs.getDir(bd)if not fs.exists(dd)then
+fs.makeDir(dd)end;local __a=fs.open(bd,"w")
+__a.write(textutils.serialize(cd))__a.close()end;_d[bc].value=cc
+if ad[bc]then for bd,cd in ipairs(ad[bc])do cd(bc,cc)end end;for bd,cd in pairs(_d)do
+if cd.computed then cd.value=cd.computeFn(self)if ad[bd]then for dd,__a in ipairs(ad[bd])do
+__a(bd,cd.value)end end end end;return
+self end
+function ac:getState(bc)local cc=self:getBaseFrame()local dc=cc.get("states")if
+not dc[bc]then
+db.error("State '"..bc.."' not initialized")end;if dc[bc].computed then
+return dc[bc].computeFn(self)end;return dc[bc].value end
+function ac:onStateChange(bc,cc)local dc=self:getBaseFrame()
+local _d=dc.get("states")[bc]if not _d then
+db.error("Cannot observe state '"..bc.."': State not initialized")return self end
+local ad=dc.get("stateObserver")if not ad[bc]then ad[bc]={}end;table.insert(ad[bc],cc)
+return self end
+function ac:removeStateChange(bc,cc)local dc=self:getBaseFrame()
+local _d=dc.get("stateObserver")
+if _d[bc]then for ad,bd in ipairs(_d[bc])do
+if bd==cc then table.remove(_d[bc],ad)break end end end;return self end
+function ac:computed(bc,cc)local dc=self:getBaseFrame()local _d=dc.get("states")if _d[bc]then
+db.error(
+"Computed state '"..bc.."' already exists")return self end
+_d[bc]={computeFn=cc,value=cc(self),computed=true}return self end
+function ac:bind(bc,cc)cc=cc or bc;local dc=self:getBaseFrame()local _d=false
+if
+self.get(bc)~=nil then self.set(bc,dc:getState(cc))end
+self:onChange(bc,function(ad,bd)if _d then return end;_d=true;ad:setState(cc,bd)_d=false end)
+self:onStateChange(cc,function(ad,bd)if _d then return end;_d=true;if self.get(bc)~=nil then
+self.set(bc,bd)end;_d=false end)return self end;return{BaseElement=ac,BaseFrame=_c}end
+_b["main.lua"]=function(...)local cb=require("elementManager")
+local db=require("errorManager")local _c=require("propertySystem")
+local ac=require("libraries/expect")local bc={}bc.traceback=true;bc._events={}bc._schedule={}bc._eventQueue={}
+bc._plugins={}bc.isRunning=false;bc.LOGGER=require("log")
+if(ba)then
+bc.path=fs.getDir(shell.getRunningProgram())else bc.path=fs.getDir(select(2,...))end;local cc=nil;local dc=nil;local _d={}local aca=type;local bca={}local cca=10;local dca=0;local _da=false
+local function ada()
+if(_da)then return end;dca=os.startTimer(0.2)_da=true end
+local function bda(c_b)for _=1,c_b do local d_b=bca[1]if(d_b)then d_b:create()end
+table.remove(bca,1)end end;local function cda(c_b,d_b)
+if(c_b=="timer")then if(d_b==dca)then bda(cca)_da=false;dca=0;if(#bca>0)then ada()end
+return true end end end
+function bc.create(c_b,d_b,_ab,aab)if(
+aca(d_b)=="string")then d_b={name=d_b}end
+if(d_b==nil)then d_b={name=c_b}end;local bab=cb.getElement(c_b)
+if(_ab)then
+local cab=_c.blueprint(bab,d_b,bc,aab)table.insert(bca,cab)ada()return cab else local cab=bab.new()
+cab:init(d_b,bc)return cab end end
+function bc.createFrame()local c_b=bc.create("BaseFrame")c_b:postInit()
+if(cc==nil)then
+cc=tostring(term.current())bc.setActiveFrame(c_b,true)end;return c_b end;function bc.getElementManager()return cb end;function bc.getErrorManager()return db end;function bc.getMainFrame()
+local c_b=tostring(term.current())if(_d[c_b]==nil)then cc=c_b;bc.createFrame()end
+return _d[c_b]end
+function bc.setActiveFrame(c_b,d_b)
+local _ab=c_b:getTerm()if(d_b==nil)then d_b=true end;if(_ab~=nil)then
+_d[tostring(_ab)]=d_b and c_b or nil;c_b:updateRender()end end;function bc.getActiveFrame(c_b)if(c_b==nil)then c_b=term.current()end;return
+_d[tostring(c_b)]end
+function bc.setFocus(c_b)if(dc==c_b)then
+return end
+if(dc~=nil)then dc:dispatchEvent("blur")end;dc=c_b;if(dc~=nil)then dc:dispatchEvent("focus")end end;function bc.getFocus()return dc end
+function bc.schedule(c_b)ac(1,c_b,"function")
+local d_b=coroutine.create(c_b)local _ab,aab=coroutine.resume(d_b)
+if(_ab)then
+table.insert(bc._schedule,{coroutine=d_b,filter=aab})else db.header="Basalt Schedule Error"db.error(aab)end;return d_b end
+function bc.removeSchedule(c_b)
+for d_b,_ab in ipairs(bc._schedule)do if(_ab.coroutine==c_b)then
+table.remove(bc._schedule,d_b)return true end end;return false end
+local dda={mouse_click=true,mouse_up=true,mouse_scroll=true,mouse_drag=true}local __b={key=true,key_up=true,char=true}
+local function a_b(c_b,...)if(c_b=="terminate")then bc.stop()
+return end;if cda(c_b,...)then return end;local d_b={...}
+local function _ab()
+if(dda[c_b])then if
+_d[cc]then
+_d[cc]:dispatchEvent(c_b,table.unpack(d_b))end elseif(__b[c_b])then if(dc~=nil)then
+dc:dispatchEvent(c_b,table.unpack(d_b))end else for dab,_bb in pairs(_d)do
+_bb:dispatchEvent(c_b,table.unpack(d_b))end end end
+for dab,_bb in pairs(bc._eventQueue)do
+if
+coroutine.status(_bb.coroutine)=="suspended"then
+if _bb.filter==c_b or _bb.filter==nil then _bb.filter=nil
+local abb,bbb=coroutine.resume(_bb.coroutine,c_b,...)
+if not abb then db.header="Basalt Event Error"db.error(bbb)end;_bb.filter=bbb end end;if coroutine.status(_bb.coroutine)=="dead"then
+table.remove(bc._eventQueue,dab)end end;local aab={coroutine=coroutine.create(_ab),filter=c_b}
+local bab,cab=coroutine.resume(aab.coroutine,c_b,...)
+if(not bab)then db.header="Basalt Event Error"db.error(cab)end;if(cab~=nil)then aab.filter=cab end
+table.insert(bc._eventQueue,aab)
+for dab,_bb in ipairs(bc._schedule)do
+if
+coroutine.status(_bb.coroutine)=="suspended"then
+if c_b==_bb.filter or _bb.filter==nil then _bb.filter=nil
+local abb,bbb=coroutine.resume(_bb.coroutine,c_b,...)
+if(not abb)then db.header="Basalt Schedule Error"db.error(bbb)end;_bb.filter=bbb end end;if(coroutine.status(_bb.coroutine)=="dead")then
+bc.removeSchedule(_bb.coroutine)end end;if bc._events[c_b]then
+for dab,_bb in ipairs(bc._events[c_b])do _bb(...)end end end;local function b_b()
+for c_b,d_b in pairs(_d)do d_b:render()d_b:postRender()end end;function bc.render()b_b()end
+function bc.update(...)local c_b=function(...)
+bc.isRunning=true;a_b(...)b_b()end
+local d_b,_ab=pcall(c_b,...)
+if not(d_b)then db.header="Basalt Runtime Error"db.error(_ab)end;bc.isRunning=false end;function bc.stop()bc.isRunning=false;term.clear()
+term.setCursorPos(1,1)end
+function bc.run(c_b)if(bc.isRunning)then
+db.error("Basalt is already running")end
+if(c_b==nil)then bc.isRunning=true else bc.isRunning=c_b end
+local function d_b()b_b()while bc.isRunning do a_b(os.pullEventRaw())
+if(bc.isRunning)then b_b()end end end
+while bc.isRunning do local _ab,aab=pcall(d_b)if not(_ab)then db.header="Basalt Runtime Error"
+db.error(aab)end end end;function bc.getElementClass(c_b)return cb.getElement(c_b)end;function bc.getAPI(c_b)return
+cb.getAPI(c_b)end;return bc end
+_b["render.lua"]=function(...)local cb=require("libraries/colorHex")
+local db=require("log")local _c={}_c.__index=_c;local ac=string.sub
+function _c.new(bc)local cc=setmetatable({},_c)
+cc.terminal=bc;cc.width,cc.height=bc.getSize()
+cc.buffer={text={},fg={},bg={},dirtyRects={}}
+for y=1,cc.height do cc.buffer.text[y]=string.rep(" ",cc.width)
+cc.buffer.fg[y]=string.rep("0",cc.width)cc.buffer.bg[y]=string.rep("f",cc.width)end;return cc end;function _c:addDirtyRect(bc,cc,dc,_d)
+table.insert(self.buffer.dirtyRects,{x=bc,y=cc,width=dc,height=_d})return self end
+function _c:blit(bc,cc,dc,_d,ad)if
+cc<1 or cc>self.height then return self end;if(#dc~=#_d or
+#dc~=#ad)then
+error("Text, fg, and bg must be the same length")end
+self.buffer.text[cc]=ac(self.buffer.text[cc]:sub(1,
+bc-1)..dc..
+self.buffer.text[cc]:sub(bc+#dc),1,self.width)
+self.buffer.fg[cc]=ac(
+self.buffer.fg[cc]:sub(1,bc-1).._d..self.buffer.fg[cc]:sub(bc+#_d),1,self.width)
+self.buffer.bg[cc]=ac(
+self.buffer.bg[cc]:sub(1,bc-1)..ad..self.buffer.bg[cc]:sub(bc+#ad),1,self.width)self:addDirtyRect(bc,cc,#dc,1)return self end
+function _c:multiBlit(bc,cc,dc,_d,ad,bd,cd)if cc<1 or cc>self.height then return self end;if(
+#ad~=#bd or#ad~=#cd)then
+error("Text, fg, and bg must be the same length")end;ad=ad:rep(dc)
+bd=bd:rep(dc)cd=cd:rep(dc)
+for dy=0,_d-1 do local dd=cc+dy
+if dd>=1 and dd<=self.height then
+self.buffer.text[dd]=ac(self.buffer.text[dd]:sub(1,
+bc-1)..ad..
+self.buffer.text[dd]:sub(bc+#ad),1,self.width)
+self.buffer.fg[dd]=ac(
+self.buffer.fg[dd]:sub(1,bc-1)..bd..self.buffer.fg[dd]:sub(bc+#bd),1,self.width)
+self.buffer.bg[dd]=ac(
+self.buffer.bg[dd]:sub(1,bc-1)..cd..self.buffer.bg[dd]:sub(bc+#cd),1,self.width)end end;self:addDirtyRect(bc,cc,dc,_d)return self end
+function _c:textFg(bc,cc,dc,_d)if cc<1 or cc>self.height then return self end
+_d=cb[_d]or"0"_d=_d:rep(#dc)
+self.buffer.text[cc]=ac(self.buffer.text[cc]:sub(1,
+bc-1)..dc..
+self.buffer.text[cc]:sub(bc+#dc),1,self.width)
+self.buffer.fg[cc]=ac(
+self.buffer.fg[cc]:sub(1,bc-1).._d..self.buffer.fg[cc]:sub(bc+#_d),1,self.width)self:addDirtyRect(bc,cc,#dc,1)return self end
+function _c:textBg(bc,cc,dc,_d)if cc<1 or cc>self.height then return self end
+_d=cb[_d]or"f"
+self.buffer.text[cc]=ac(
+self.buffer.text[cc]:sub(1,bc-1)..
+dc..self.buffer.text[cc]:sub(bc+#dc),1,self.width)
+self.buffer.bg[cc]=ac(
+self.buffer.bg[cc]:sub(1,bc-1)..
+_d:rep(#dc)..self.buffer.bg[cc]:sub(bc+#dc),1,self.width)self:addDirtyRect(bc,cc,#dc,1)return self end
+function _c:text(bc,cc,dc)if cc<1 or cc>self.height then return self end
+self.buffer.text[cc]=ac(self.buffer.text[cc]:sub(1,
+bc-1)..dc..
+self.buffer.text[cc]:sub(bc+#dc),1,self.width)self:addDirtyRect(bc,cc,#dc,1)return self end
+function _c:fg(bc,cc,dc)if cc<1 or cc>self.height then return self end
+self.buffer.fg[cc]=ac(self.buffer.fg[cc]:sub(1,
+bc-1)..dc..
+self.buffer.fg[cc]:sub(bc+#dc),1,self.width)self:addDirtyRect(bc,cc,#dc,1)return self end
+function _c:bg(bc,cc,dc)if cc<1 or cc>self.height then return self end
+self.buffer.bg[cc]=ac(self.buffer.bg[cc]:sub(1,
+bc-1)..dc..
+self.buffer.bg[cc]:sub(bc+#dc),1,self.width)self:addDirtyRect(bc,cc,#dc,1)return self end
+function _c:text(bc,cc,dc)if cc<1 or cc>self.height then return self end
+self.buffer.text[cc]=ac(self.buffer.text[cc]:sub(1,
+bc-1)..dc..
+self.buffer.text[cc]:sub(bc+#dc),1,self.width)self:addDirtyRect(bc,cc,#dc,1)return self end
+function _c:fg(bc,cc,dc)if cc<1 or cc>self.height then return self end
+self.buffer.fg[cc]=ac(self.buffer.fg[cc]:sub(1,
+bc-1)..dc..
+self.buffer.fg[cc]:sub(bc+#dc),1,self.width)self:addDirtyRect(bc,cc,#dc,1)return self end
+function _c:bg(bc,cc,dc)if cc<1 or cc>self.height then return self end
+self.buffer.bg[cc]=ac(self.buffer.bg[cc]:sub(1,
+bc-1)..dc..
+self.buffer.bg[cc]:sub(bc+#dc),1,self.width)self:addDirtyRect(bc,cc,#dc,1)return self end
+function _c:clear(bc)local cc=cb[bc]or"f"
+for y=1,self.height do
+self.buffer.text[y]=string.rep(" ",self.width)self.buffer.fg[y]=string.rep("0",self.width)
+self.buffer.bg[y]=string.rep(cc,self.width)self:addDirtyRect(1,y,self.width,1)end;return self end
+function _c:render()local bc={}
+for cc,dc in ipairs(self.buffer.dirtyRects)do local _d=false;for ad,bd in ipairs(bc)do
+if
+self:rectOverlaps(dc,bd)then self:mergeRects(bd,dc)_d=true;break end end;if not _d then
+table.insert(bc,dc)end end
+for cc,dc in ipairs(bc)do
+for y=dc.y,dc.y+dc.height-1 do
+if y>=1 and y<=self.height then
+self.terminal.setCursorPos(dc.x,y)
+self.terminal.blit(self.buffer.text[y]:sub(dc.x,dc.x+dc.width-1),self.buffer.fg[y]:sub(dc.x,
+dc.x+dc.width-1),self.buffer.bg[y]:sub(dc.x,
+dc.x+dc.width-1))end end end;self.buffer.dirtyRects={}
+if self.blink then
+self.terminal.setTextColor(self.cursorColor or
+colors.white)
+self.terminal.setCursorPos(self.xCursor,self.yCursor)self.terminal.setCursorBlink(true)else
+self.terminal.setCursorBlink(false)end;return self end
+function _c:rectOverlaps(bc,cc)return
+not(
+bc.x+bc.width<=cc.x or cc.x+cc.width<=bc.x or bc.y+bc.height<=cc.y or
+cc.y+cc.height<=bc.y)end
+function _c:mergeRects(bc,cc)local dc=math.min(bc.x,cc.x)
+local _d=math.min(bc.y,cc.y)
+local ad=math.max(bc.x+bc.width,cc.x+cc.width)
+local bd=math.max(bc.y+bc.height,cc.y+cc.height)bc.x=dc;bc.y=_d;bc.width=ad-dc;bc.height=bd-_d;return self end
+function _c:setCursor(bc,cc,dc,_d)
+if _d~=nil then self.terminal.setTextColor(_d)end;self.terminal.setCursorPos(bc,cc)
+self.terminal.setCursorBlink(dc)self.xCursor=bc;self.yCursor=cc;self.blink=dc;self.cursorColor=_d
+return self end
+function _c:clearArea(bc,cc,dc,_d,ad)local bd=cb[ad]or"f"
+for dy=0,_d-1 do local cd=cc+dy;if
+cd>=1 and cd<=self.height then local dd=string.rep(" ",dc)local __a=string.rep(bd,dc)
+self:blit(bc,cd,dd,"0",bd)end end;return self end;function _c:getSize()return self.width,self.height end
+function _c:setSize(bc,cc)
+self.width=bc;self.height=cc
+for y=1,self.height do
+self.buffer.text[y]=string.rep(" ",self.width)self.buffer.fg[y]=string.rep("0",self.width)
+self.buffer.bg[y]=string.rep("f",self.width)end;return self end;return _c end
+_b["libraries/expect.lua"]=function(...)local cb=require("errorManager")
+local function db(_c,ac,bc)
+local cc=type(ac)if bc=="element"then
+if cc=="table"and ac.get("type")~=nil then return true end end
+if bc=="color"then
+if cc=="number"then return true end;if cc=="string"and colors[ac]then return true end end;if cc~=bc then cb.header="Basalt Type Error"
+cb.error(string.format("Bad argument #%d: expected %s, got %s",_c,bc,cc))end;return true end;return db end
+_b["libraries/colorHex.lua"]=function(...)local cb={}for i=0,15 do cb[2 ^i]=("%x"):format(i)cb[("%x"):format(i)]=
+2 ^i end;return cb end
+_b["libraries/utils.lua"]=function(...)local cb,db=math.floor,string.len;local _c={}function _c.getCenteredPosition(ac,bc,cc)
+local dc=db(ac)local _d=cb((bc-dc+1)/2 +0.5)
+local ad=cb(cc/2 +0.5)return _d,ad end
+function _c.deepCopy(ac)if
+type(ac)~="table"then return ac end;local bc={}for cc,dc in pairs(ac)do
+bc[_c.deepCopy(cc)]=_c.deepCopy(dc)end;return bc end
+function _c.copy(ac)local bc={}for cc,dc in pairs(ac)do bc[cc]=dc end;return bc end;function _c.reverse(ac)local bc={}for i=#ac,1,-1 do table.insert(bc,ac[i])end
+return bc end
+function _c.uuid()
+return
+string.format('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',math.random(0,0xffff),math.random(0,0xffff),math.random(0,0xffff),
+math.random(0,0x0fff)+0x4000,math.random(0,0x3fff)+0x8000,math.random(0,0xffff),math.random(0,0xffff),math.random(0,0xffff))end
+function _c.split(ac,bc)local cc={}for dc in(ac..bc):gmatch("(.-)"..bc)do
+table.insert(cc,dc)end;return cc end;function _c.removeTags(ac)return ac:gsub("{[^}]+}","")end
+function _c.wrapText(ac,bc)if
+ac==nil then return{}end;ac=_c.removeTags(ac)local cc={}
+local dc=_c.split(ac,"\n\n")
+for _d,ad in ipairs(dc)do
+if#ad==0 then table.insert(cc,"")if _d<#dc then
+table.insert(cc,"")end else local bd=_c.split(ad,"\n")
+for cd,dd in ipairs(bd)do
+local __a=_c.split(dd," ")local a_a=""for b_a,c_a in ipairs(__a)do
+if#a_a==0 then a_a=c_a elseif#a_a+#c_a+1 <=bc then
+a_a=a_a.." "..c_a else table.insert(cc,a_a)a_a=c_a end end;if
+#a_a>0 then table.insert(cc,a_a)end end;if _d<#dc then table.insert(cc,"")end end end;return cc end;return _c end
+_b["elements/Scrollbar.lua"]=function(...)
+local cb=require("elements/VisualElement")local db=require("libraries/colorHex")
+local _c=setmetatable({},cb)_c.__index=_c
+_c.defineProperty(_c,"value",{default=0,type="number",canTriggerRender=true})
+_c.defineProperty(_c,"min",{default=0,type="number",canTriggerRender=true})
+_c.defineProperty(_c,"max",{default=100,type="number",canTriggerRender=true})
+_c.defineProperty(_c,"step",{default=10,type="number"})
+_c.defineProperty(_c,"dragMultiplier",{default=1,type="number"})
+_c.defineProperty(_c,"symbol",{default=" ",type="string",canTriggerRender=true})
+_c.defineProperty(_c,"symbolColor",{default=colors.gray,type="color",canTriggerRender=true})
+_c.defineProperty(_c,"symbolBackgroundColor",{default=colors.black,type="color",canTriggerRender=true})
+_c.defineProperty(_c,"backgroundSymbol",{default="\127",type="string",canTriggerRender=true})
+_c.defineProperty(_c,"attachedElement",{default=nil,type="table"})
+_c.defineProperty(_c,"attachedProperty",{default=nil,type="string"})
+_c.defineProperty(_c,"minValue",{default=0,type="number"})
+_c.defineProperty(_c,"maxValue",{default=100,type="number"})
+_c.defineProperty(_c,"orientation",{default="vertical",type="string",canTriggerRender=true})
+_c.defineProperty(_c,"handleSize",{default=2,type="number",canTriggerRender=true})_c.defineEvent(_c,"mouse_click")
+_c.defineEvent(_c,"mouse_release")_c.defineEvent(_c,"mouse_drag")
+_c.defineEvent(_c,"mouse_scroll")
+function _c.new()local cc=setmetatable({},_c):__init()
+cc.class=_c;cc.set("width",1)cc.set("height",10)return cc end;function _c:init(cc,dc)cb.init(self,cc,dc)self.set("type","ScrollBar")return
+self end
+function _c:attach(cc,dc)
+self.set("attachedElement",cc)self.set("attachedProperty",dc.property)self.set("minValue",
+dc.min or 0)
+self.set("maxValue",dc.max or 100)
+cc:observe(dc.property,function(_d,ad)
+if ad then local bd=self.get("minValue")
+local cd=self.get("maxValue")if bd==cd then return end
+self.set("value",math.floor((ad-bd)/ (cd-bd)*100 +0.5))end end)return self end
+function _c:updateAttachedElement()local cc=self.get("attachedElement")
+if not cc then return end;local dc=self.get("value")local _d=self.get("minValue")
+local ad=self.get("maxValue")if type(_d)=="function"then _d=_d()end;if type(ad)=="function"then
+ad=ad()end;local bd=_d+ (dc/100)* (ad-_d)cc.set(self.get("attachedProperty"),math.floor(
+bd+0.5))
+return self end;local function ac(cc)
+return
+cc.get("orientation")=="vertical"and cc.get("height")or cc.get("width")end
+local function bc(cc,dc,_d)
+local ad,bd=cc:getRelativePosition(dc,_d)return
+cc.get("orientation")=="vertical"and bd or ad end
+function _c:mouse_click(cc,dc,_d)
+if cb.mouse_click(self,cc,dc,_d)then local ad=ac(self)
+local bd=self.get("value")local cd=self.get("handleSize")local dd=
+math.floor((bd/100)* (ad-cd))+1;local __a=bc(self,dc,_d)
+if __a>=dd and
+__a<dd+cd then self.dragOffset=__a-dd else
+local a_a=( (__a-1)/ (ad-cd))*100
+self.set("value",math.min(100,math.max(0,a_a)))self:updateAttachedElement()end;return true end end
+function _c:mouse_drag(cc,dc,_d)
+if(cb.mouse_drag(self,cc,dc,_d))then local ad=ac(self)
+local bd=self.get("handleSize")local cd=self.get("dragMultiplier")local dd=bc(self,dc,_d)
+dd=math.max(1,math.min(ad,dd))local __a=dd- (self.dragOffset or 0)local a_a=
+(__a-1)/ (ad-bd)*100 *cd
+self.set("value",math.min(100,math.max(0,a_a)))self:updateAttachedElement()return true end end
+function _c:mouse_scroll(cc,dc,_d)
+if not self:isInBounds(dc,_d)then return false end;cc=cc>0 and-1 or 1;local ad=self.get("step")
+local bd=self.get("value")local cd=bd-cc*ad
+self.set("value",math.min(100,math.max(0,cd)))self:updateAttachedElement()return true end
+function _c:render()cb.render(self)local _d=ac(self)local ad=self.get("value")
+local bd=self.get("handleSize")local cd=self.get("symbol")local dd=self.get("symbolColor")
+local __a=self.get("symbolBackgroundColor")local a_a=self.get("backgroundSymbol")local b_a=self.get("orientation")==
+"vertical"local c_a=
+math.floor((ad/100)* (_d-bd))+1
+for i=1,_d do
+if b_a then
+self:blit(1,i,a_a,db[self.get("foreground")],db[self.get("background")])else
+self:blit(i,1,a_a,db[self.get("foreground")],db[self.get("background")])end end
+for i=c_a,c_a+bd-1 do if b_a then self:blit(1,i,cd,db[dd],db[__a])else
+self:blit(i,1,cd,db[dd],db[__a])end end end;return _c end
+_b["elements/Display.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("VisualElement")
+local _c=require("libraries/utils").getCenteredPosition;local ac=require("libraries/utils").deepcopy
+local bc=require("libraries/colorHex")local cc=setmetatable({},db)cc.__index=cc;function cc.new()
+local dc=setmetatable({},cc):__init()dc.class=cc;dc.set("width",25)dc.set("height",8)
+dc.set("z",5)return dc end
+function cc:init(dc,_d)
+db.init(self,dc,_d)self.set("type","Display")
+self._window=window.create(_d.getActiveFrame():getTerm(),1,1,self.get("width"),self.get("height"),false)local ad=self._window.reposition;local bd=self._window.blit
+local cd=self._window.write
+self._window.reposition=function(dd,__a,a_a,b_a)self.set("x",dd)self.set("y",__a)
+self.set("width",a_a)self.set("height",b_a)ad(1,1,a_a,b_a)end
+self._window.getPosition=function(dd)return dd.get("x"),dd.get("y")end
+self._window.setVisible=function(dd)self.set("visible",dd)end
+self._window.isVisible=function(dd)return dd.get("visible")end
+self._window.blit=function(dd,__a,a_a,b_a,c_a)bd(dd,__a,a_a,b_a,c_a)
+self:updateRender()end
+self._window.write=function(dd,__a,a_a)cd(dd,__a,a_a)self:updateRender()end
+self:observe("width",function(dd,__a)local a_a=dd._window;if a_a then
+a_a.reposition(1,1,__a,dd.get("height"))end end)
+self:observe("height",function(dd,__a)local a_a=dd._window;if a_a then
+a_a.reposition(1,1,dd.get("width"),__a)end end)end;function cc:getWindow()return self._window end
+function cc:write(dc,_d,ad,bd,cd)local dd=self._window
+if dd then if bd then
+dd.setTextColor(bd)end;if cd then dd.setBackgroundColor(cd)end
+dd.setCursorPos(dc,_d)dd.write(ad)end;self:updateRender()return self end
+function cc:render()db.render(self)local dc=self._window;local _d,ad=dc.getSize()
+if dc then for y=1,ad do
+local bd,cd,dd=dc.getLine(y)self:blit(1,y,bd,cd,dd)end end end;return cc end
+_b["elements/Dropdown.lua"]=function(...)
+local cb=require("elements/VisualElement")local db=require("elements/List")
+local _c=require("libraries/colorHex")local ac=setmetatable({},db)ac.__index=ac
+ac.defineProperty(ac,"isOpen",{default=false,type="boolean",canTriggerRender=true})
+ac.defineProperty(ac,"dropdownHeight",{default=5,type="number"})
+ac.defineProperty(ac,"selectedText",{default="",type="string"})
+ac.defineProperty(ac,"dropSymbol",{default="\31",type="string"})function ac.new()local bc=setmetatable({},ac):__init()
+bc.class=ac;bc.set("width",16)bc.set("height",1)bc.set("z",8)
+return bc end
+function ac:init(bc,cc)
+db.init(self,bc,cc)self.set("type","Dropdown")return self end
+function ac:mouse_click(bc,cc,dc)
+if not cb.mouse_click(self,bc,cc,dc)then return false end;local _d,ad=self:getRelativePosition(cc,dc)
+if ad==1 then self.set("isOpen",not
+self.get("isOpen"))if
+not self.get("isOpen")then self.set("height",1)else
+self.set("height",1 +math.min(self.get("dropdownHeight"),#
+self.get("items")))end
+return true elseif
+self.get("isOpen")and ad>1 and self.get("selectable")then local bd=(ad-1)+self.get("offset")
+local cd=self.get("items")
+if bd<=#cd then local dd=cd[bd]
+if type(dd)=="string"then dd={text=dd}cd[bd]=dd end
+if not self.get("multiSelection")then for __a,a_a in ipairs(cd)do if type(a_a)=="table"then
+a_a.selected=false end end end;dd.selected=not dd.selected
+if dd.callback then dd.callback(self)end;self:fireEvent("select",bd,dd)
+self.set("isOpen",false)self.set("height",1)self:updateRender()return true end end;return false end
+function ac:render()cb.render(self)local bc=self.get("selectedText")
+local cc=self:getSelectedItems()if#cc>0 then local dc=cc[1]bc=dc.text or""
+bc=bc:sub(1,self.get("width")-2)end
+self:blit(1,1,bc..string.rep(" ",self.get("width")-#
+bc-1).. (
+self.get("isOpen")and"\31"or"\17"),string.rep(_c[self.get("foreground")],self.get("width")),string.rep(_c[self.get("background")],self.get("width")))
+if self.get("isOpen")then local dc=self.get("items")
+local _d=self.get("height")-1;local ad=self.get("offset")local bd=self.get("width")
+for i=1,_d do local cd=i+ad
+local dd=dc[cd]
+if dd then if type(dd)=="string"then dd={text=dd}dc[cd]=dd end
+if
+dd.separator then local __a=(dd.text or"-"):sub(1,1)
+local a_a=string.rep(__a,bd)local b_a=dd.foreground or self.get("foreground")local c_a=
+dd.background or self.get("background")self:textBg(1,
+i+1,string.rep(" ",bd),c_a)
+self:textFg(1,i+1,a_a,b_a)else local __a=dd.text;local a_a=dd.selected;__a=__a:sub(1,bd)
+local b_a=a_a and(dd.selectedBackground or
+self.get("selectedBackground"))or(dd.background or
+self.get("background"))
+local c_a=
+a_a and(dd.selectedForeground or self.get("selectedForeground"))or(dd.foreground or self.get("foreground"))self:textBg(1,i+1,string.rep(" ",bd),b_a)self:textFg(1,
+i+1,__a,c_a)end end end end end;return ac end
+_b["elements/LineChart.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("VisualElement")local _c=cb.getElement("Graph")
+local ac=require("libraries/colorHex")local bc=setmetatable({},_c)bc.__index=bc;function bc.new()
+local dc=setmetatable({},bc):__init()dc.class=bc;return dc end
+function bc:init(dc,_d)
+_c.init(self,dc,_d)self.set("type","LineChart")return self end
+local function cc(ad,bd,cd,dd,__a,a_a,b_a,c_a)local d_a=dd-bd;local _aa=__a-cd
+local aaa=math.max(math.abs(d_a),math.abs(_aa))
+for i=0,aaa do local baa=aaa==0 and 0 or i/aaa
+local caa=math.floor(bd+d_a*baa)local daa=math.floor(cd+_aa*baa)
+if
+caa>=1 and
+caa<=ad.get("width")and daa>=1 and daa<=ad.get("height")then ad:blit(caa,daa,a_a,ac[b_a],ac[c_a])end end end
+function bc:render()db.render(self)local dc=self.get("width")
+local _d=self.get("height")local ad=self.get("minValue")local bd=self.get("maxValue")
+local cd=self.get("series")
+for dd,__a in pairs(cd)do
+if(__a.visible)then local a_a,b_a;local c_a=#__a.data
+local d_a=(dc-1)/math.max((c_a-1),1)
+for _aa,aaa in ipairs(__a.data)do
+local baa=math.floor(( (_aa-1)*d_a)+1)local caa=(aaa-ad)/ (bd-ad)
+local daa=math.floor(_d- (caa* (_d-1)))daa=math.max(1,math.min(daa,_d))if a_a then
+cc(self,a_a,b_a,baa,daa,__a.symbol,__a.bgColor,__a.fgColor)end;a_a,b_a=baa,daa end end end end;return bc end
+_b["elements/Switch.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("VisualElement")local _c=setmetatable({},db)_c.__index=_c
+_c.defineProperty(_c,"checked",{default=false,type="boolean",canTriggerRender=true})_c.defineEvent(_c,"mouse_click")
+_c.defineEvent(_c,"mouse_up")function _c.new()local ac=setmetatable({},_c):__init()
+ac.class=_c;ac.set("width",2)ac.set("height",1)ac.set("z",5)
+return ac end;function _c:init(ac,bc)
+db.init(self,ac,bc)self.set("type","Switch")end;function _c:render()
+db.render(self)end;return _c end
+_b["elements/Menu.lua"]=function(...)local cb=require("elements/VisualElement")
+local db=require("elements/List")local _c=require("libraries/colorHex")
+local ac=setmetatable({},db)ac.__index=ac
+ac.defineProperty(ac,"separatorColor",{default=colors.gray,type="color"})
+function ac.new()local bc=setmetatable({},ac):__init()
+bc.class=ac;bc.set("width",30)bc.set("height",1)
+bc.set("background",colors.gray)return bc end
+function ac:init(bc,cc)db.init(self,bc,cc)self.set("type","Menu")return self end
+function ac:setItems(bc)local cc={}local dc=0
+for _d,ad in ipairs(bc)do
+if ad.separator then
+table.insert(cc,{text=ad.text or"|",selectable=false})dc=dc+1 else local bd=" "..ad.text.." "ad.text=bd
+table.insert(cc,ad)dc=dc+#bd end end;self.set("width",dc)return db.setItems(self,cc)end
+function ac:render()cb.render(self)local bc=1
+for cc,dc in ipairs(self.get("items"))do if type(dc)==
+"string"then dc={text=" "..dc.." "}
+self.get("items")[cc]=dc end;local _d=dc.selected
+local ad=
+dc.selectable==false and self.get("separatorColor")or(_d and(dc.selectedForeground or
+self.get("selectedForeground"))or(dc.foreground or
+self.get("foreground")))
+local bd=
+_d and(dc.selectedBackground or self.get("selectedBackground"))or(dc.background or self.get("background"))
+self:blit(bc,1,dc.text,string.rep(_c[ad],#dc.text),string.rep(_c[bd],#dc.text))bc=bc+#dc.text end end
+function ac:mouse_click(bc,cc,dc)
+if not cb.mouse_click(self,bc,cc,dc)then return false end
+if(self.get("selectable")==false)then return false end
+local _d=select(1,self:getRelativePosition(cc,dc))local ad=1
+for bd,cd in ipairs(self.get("items"))do
+if
+_d>=ad and _d<ad+#cd.text then
+if cd.selectable~=false then if type(cd)=="string"then cd={text=cd}
+self.get("items")[bd]=cd end
+if
+not self.get("multiSelection")then for dd,__a in ipairs(self.get("items"))do
+if type(__a)=="table"then __a.selected=false end end end;cd.selected=not cd.selected
+if cd.callback then cd.callback(self)end;self:fireEvent("select",bd,cd)end;return true end;ad=ad+#cd.text end;return false end;return ac end
+_b["elements/Slider.lua"]=function(...)
+local cb=require("elements/VisualElement")local db=require("libraries/colorHex")
+local _c=setmetatable({},cb)_c.__index=_c
+_c.defineProperty(_c,"step",{default=1,type="number",canTriggerRender=true})
+_c.defineProperty(_c,"max",{default=100,type="number"})
+_c.defineProperty(_c,"horizontal",{default=true,type="boolean",canTriggerRender=true,setter=function(ac,bc)if bc then ac.set("backgroundEnabled",false)else
+ac.set("backgroundEnabled",true)end end})
+_c.defineProperty(_c,"barColor",{default=colors.gray,type="color",canTriggerRender=true})
+_c.defineProperty(_c,"sliderColor",{default=colors.blue,type="color",canTriggerRender=true})_c.defineEvent(_c,"mouse_click")
+_c.defineEvent(_c,"mouse_drag")_c.defineEvent(_c,"mouse_up")
+_c.defineEvent(_c,"mouse_scroll")
+function _c.new()local ac=setmetatable({},_c):__init()
+ac.class=_c;ac.set("width",8)ac.set("height",1)
+ac.set("backgroundEnabled",false)return ac end
+function _c:init(ac,bc)cb.init(self,ac,bc)self.set("type","Slider")end
+function _c:getValue()local ac=self.get("step")local bc=self.get("max")
+local cc=
+self.get("horizontal")and self.get("width")or self.get("height")return math.floor((ac-1)* (bc/ (cc-1)))end
+function _c:mouse_click(ac,bc,cc)
+if self:isInBounds(bc,cc)then
+local dc,_d=self:getRelativePosition(bc,cc)
+local ad=self.get("horizontal")and dc or _d;local bd=self.get("horizontal")and self.get("width")or
+self.get("height")
+self.set("step",math.min(bd,math.max(1,ad)))self:updateRender()return true end;return false end;_c.mouse_drag=_c.mouse_click
+function _c:mouse_scroll(ac,bc,cc)
+if self:isInBounds(bc,cc)then
+local dc=self.get("step")local _d=self.get("horizontal")and self.get("width")or
+self.get("height")
+self.set("step",math.min(_d,math.max(1,
+dc+ac)))self:updateRender()return true end;return false end
+function _c:render()cb.render(self)local ac=self.get("width")
+local bc=self.get("height")local cc=self.get("horizontal")local dc=self.get("step")local _d=
+cc and"\140"or" "
+local ad=string.rep(_d,cc and ac or bc)
+if cc then self:textFg(1,1,ad,self.get("barColor"))
+self:textBg(dc,1," ",self.get("sliderColor"))else local bd=self.get("background")
+for y=1,bc do self:textBg(1,y," ",bd)end
+self:textBg(1,dc," ",self.get("sliderColor"))end end;return _c end
+_b["elements/Frame.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("VisualElement")local _c=cb.getElement("Container")local ac=setmetatable({},_c)
+ac.__index=ac
+ac.defineProperty(ac,"draggable",{default=false,type="boolean",setter=function(bc,cc)
+if cc then bc:listenEvent("mouse_click",true)
+bc:listenEvent("mouse_up",true)bc:listenEvent("mouse_drag",true)end;return cc end})
+ac.defineProperty(ac,"draggingMap",{default={{x=1,y=1,width="width",height=1}},type="table"})
+function ac.new()local bc=setmetatable({},ac):__init()
+bc.class=ac;bc.set("width",12)bc.set("height",6)
+bc.set("background",colors.gray)bc.set("z",10)return bc end;function ac:init(bc,cc)_c.init(self,bc,cc)self.set("type","Frame")
+return self end
+function ac:mouse_click(bc,cc,dc)
+if
+db.mouse_click(self,bc,cc,dc)then
+if self.get("draggable")then local _d,ad=self:getRelativePosition(cc,dc)
+local bd=self.get("draggingMap")
+for cd,dd in ipairs(bd)do local __a=dd.width or 1;local a_a=dd.height or 1;if
+type(__a)=="string"and __a=="width"then __a=self.get("width")elseif
+type(__a)=="function"then __a=__a(self)end
+if
+type(a_a)=="string"and a_a=="height"then
+a_a=self.get("height")elseif type(a_a)=="function"then a_a=a_a(self)end;local b_a=dd.y or 1
+if
+_d>=dd.x and _d<=dd.x+__a-1 and ad>=b_a and ad<=b_a+a_a-1 then
+self.dragStartX=cc-self.get("x")self.dragStartY=dc-self.get("y")self.dragging=true
+return true end end end;return _c.mouse_click(self,bc,cc,dc)end;return false end
+function ac:mouse_up(bc,cc,dc)self.dragging=false;self.dragStartX=nil;self.dragStartY=nil;return
+_c.mouse_up(self,bc,cc,dc)end
+function ac:mouse_drag(bc,cc,dc)
+if self.get("clicked")and self.dragging then
+local _d=cc-self.dragStartX;local ad=dc-self.dragStartY;self.set("x",_d)
+self.set("y",ad)return true end
+if not self.dragging then return _c.mouse_drag(self,bc,cc,dc)end;return false end;return ac end
+_b["elements/Flexbox.lua"]=function(...)local bc=require("elementManager")
+local cc=bc.getElement("Container")local dc=setmetatable({},cc)dc.__index=dc
+dc.defineProperty(dc,"flexDirection",{default="row",type="string"})
+dc.defineProperty(dc,"flexSpacing",{default=1,type="number"})
+dc.defineProperty(dc,"flexJustifyContent",{default="flex-start",type="string",setter=function(__a,a_a)if not a_a:match("^flex%-")then
+a_a="flex-"..a_a end;return a_a end})
+dc.defineProperty(dc,"flexAlignItems",{default="flex-start",type="string",setter=function(__a,a_a)if
+not a_a:match("^flex%-")and a_a~="stretch"then a_a="flex-"..a_a end;return a_a end})
+dc.defineProperty(dc,"flexCrossPadding",{default=0,type="number"})
+dc.defineProperty(dc,"flexWrap",{default=false,type="boolean"})
+dc.defineProperty(dc,"flexUpdateLayout",{default=false,type="boolean"})
+local _d={getHeight=function(__a)return 0 end,getWidth=function(__a)return 0 end,getZ=function(__a)return 1 end,getPosition=function(__a)return 0,0 end,getSize=function(__a)
+return 0,0 end,isType=function(__a)return false end,getType=function(__a)return"lineBreak"end,getName=function(__a)
+return"lineBreak"end,setPosition=function(__a)end,setParent=function(__a)end,setSize=function(__a)end,getFlexGrow=function(__a)return 0 end,getFlexShrink=function(__a)return 0 end,getFlexBasis=function(__a)return
+0 end,init=function(__a)end,getVisible=function(__a)return true end}
+local function ad(__a,a_a,b_a,c_a)local d_a={}local _aa={}local aaa=0
+for caa,daa in pairs(__a.get("children"))do if daa.get("visible")then
+table.insert(_aa,daa)if daa~=_d then aaa=aaa+1 end end end;if aaa==0 then return d_a end
+if not c_a then d_a[1]={offset=1}
+for caa,daa in ipairs(_aa)do if daa==_d then
+local _ba=#d_a+1;if d_a[_ba]==nil then d_a[_ba]={offset=1}end else
+table.insert(d_a[#d_a],daa)end end else
+local caa=a_a=="row"and __a.get("width")or __a.get("height")local daa={{}}local _ba=1
+for aba,bba in ipairs(_aa)do if bba==_d then _ba=_ba+1;daa[_ba]={}else
+table.insert(daa[_ba],bba)end end
+for aba,bba in ipairs(daa)do
+if#bba==0 then d_a[#d_a+1]={offset=1}else local cba={}local dba={}local _ca=0
+for aca,bca in
+ipairs(bba)do local cca=0
+local dca=a_a=="row"and bca.get("width")or bca.get("height")local _da=false
+if a_a=="row"then
+local cda,dda=pcall(function()return bca.get("intrinsicWidth")end)if cda and dda then cca=dda;_da=true end else
+local cda,dda=pcall(function()
+return bca.get("intrinsicHeight")end)if cda and dda then cca=dda;_da=true end end;local ada=_da and cca or dca;local bda=ada
+if#dba>0 then bda=bda+b_a end
+if _ca+bda<=caa or#dba==0 then table.insert(dba,bca)
+_ca=_ca+bda else table.insert(cba,dba)dba={bca}_ca=ada end end;if#dba>0 then table.insert(cba,dba)end;for aca,bca in ipairs(cba)do
+d_a[#d_a+1]={offset=1}
+for cca,dca in ipairs(bca)do table.insert(d_a[#d_a],dca)end end end end end;local baa={}for caa,daa in ipairs(d_a)do
+if#daa>0 then table.insert(baa,daa)end end;return baa end
+local function bd(__a,a_a,b_a,c_a)local dca={}for bcb,ccb in ipairs(a_a)do
+if ccb~=_d then table.insert(dca,ccb)end end;if#dca==0 then return end
+local _da=__a.get("width")local ada=__a.get("height")local bda=__a.get("flexAlignItems")
+local cda=__a.get("flexCrossPadding")local dda=__a.get("flexWrap")if _da<=0 then return end
+local __b=ada- (cda*2)if __b<1 then __b=ada;cda=0 end;local a_b=math.max;local b_b=math.min
+local c_b=math.floor;local d_b=math.ceil;local _ab=0;local aab=0;local bab={}local cab={}local dab={}
+for bcb,ccb in ipairs(dca)do local dcb=
+ccb.get("flexGrow")or 0
+local _db=ccb.get("flexShrink")or 0;local adb=ccb.get("width")cab[ccb]=dcb;dab[ccb]=_db;bab[ccb]=adb;if
+dcb>0 then aab=aab+dcb else _ab=_ab+adb end end;local _bb=#dca
+local abb=(_bb>1)and( (_bb-1)*b_a)or 0;local bbb=_da-_ab-abb
+if bbb>0 and aab>0 then
+for bcb,ccb in ipairs(dca)do local dcb=cab[ccb]if dcb>0 then
+local _db=bab[ccb]local adb=c_b((dcb/aab)*bbb)
+ccb.set("width",a_b(adb,1))end end elseif bbb<0 then local bcb=0;local ccb={}
+for dcb,_db in ipairs(dca)do local adb=dab[_db]if adb>0 then bcb=bcb+adb
+table.insert(ccb,_db)end end
+if bcb>0 and#ccb>0 then local dcb=-bbb;for _db,adb in ipairs(ccb)do local bdb=adb.get("width")
+local cdb=dab[adb]local ddb=cdb/bcb;local __c=d_b(dcb*ddb)
+adb.set("width",a_b(1,bdb-__c))end end;_ab=0
+for dcb,_db in ipairs(dca)do _ab=_ab+_db.get("width")end
+if aab>0 then local dcb={}local _db=0
+for adb,bdb in ipairs(dca)do if cab[bdb]>0 then table.insert(dcb,bdb)_db=
+_db+bdb.get("width")end end
+if#dcb>0 and _db>0 then local adb=a_b(c_b(_da*0.2),#dcb)
+local bdb=b_b(adb,_da-abb)
+for cdb,ddb in ipairs(dcb)do local __c=cab[ddb]local a_c=__c/aab
+local b_c=a_b(1,c_b(bdb*a_c))ddb.set("width",b_c)end end end end;local cbb=1
+for bcb,ccb in ipairs(dca)do ccb.set("x",cbb)
+if not dda then
+if bda=="stretch"then
+ccb.set("height",__b)ccb.set("y",1 +cda)else local _db=ccb.get("height")local adb=1
+if
+bda=="flex-end"then adb=ada-_db+1 elseif bda=="flex-center"or bda=="center"then adb=c_b(
+(ada-_db)/2)+1 end;ccb.set("y",a_b(1,adb))end end
+local dcb=ccb.get("y")+ccb.get("height")-1;if
+dcb>ada and(ccb.get("flexShrink")or 0)>0 then
+ccb.set("height",a_b(1,ada-ccb.get("y")+1))end;cbb=
+cbb+ccb.get("width")+b_a end;local dbb=dca[#dca]local _cb=0;if dbb then
+_cb=dbb.get("x")+dbb.get("width")-1 end;local acb=_da-_cb
+if acb>0 then
+if c_a=="flex-end"then for bcb,ccb in ipairs(dca)do ccb.set("x",
+ccb.get("x")+acb)end elseif c_a==
+"flex-center"or c_a=="center"then local bcb=c_b(acb/2)for ccb,dcb in ipairs(dca)do dcb.set("x",
+dcb.get("x")+bcb)end end end end
+local function cd(__a,a_a,b_a,c_a)local dca={}for bcb,ccb in ipairs(a_a)do
+if ccb~=_d then table.insert(dca,ccb)end end;if#dca==0 then return end
+local _da=__a.get("width")local ada=__a.get("height")local bda=__a.get("flexAlignItems")
+local cda=__a.get("flexCrossPadding")local dda=__a.get("flexWrap")if ada<=0 then return end
+local __b=_da- (cda*2)if __b<1 then __b=_da;cda=0 end;local a_b=math.max;local b_b=math.min
+local c_b=math.floor;local d_b=math.ceil;local _ab=0;local aab=0;local bab={}local cab={}local dab={}
+for bcb,ccb in ipairs(dca)do local dcb=
+ccb.get("flexGrow")or 0
+local _db=ccb.get("flexShrink")or 0;local adb=ccb.get("height")cab[ccb]=dcb;dab[ccb]=_db;bab[ccb]=adb;if
+dcb>0 then aab=aab+dcb else _ab=_ab+adb end end;local _bb=#dca
+local abb=(_bb>1)and( (_bb-1)*b_a)or 0;local bbb=ada-_ab-abb
+if bbb>0 and aab>0 then
+for bcb,ccb in ipairs(dca)do local dcb=cab[ccb]if dcb>0 then
+local _db=bab[ccb]local adb=c_b((dcb/aab)*bbb)
+ccb.set("height",a_b(adb,1))end end elseif bbb<0 then local bcb=0;local ccb={}
+for dcb,_db in ipairs(dca)do local adb=dab[_db]if adb>0 then bcb=bcb+adb
+table.insert(ccb,_db)end end
+if bcb>0 and#ccb>0 then local dcb=-bbb
+for _db,adb in ipairs(ccb)do local bdb=adb.get("height")
+local cdb=dab[adb]local ddb=cdb/bcb;local __c=d_b(dcb*ddb)
+adb.set("height",a_b(1,bdb-__c))end end;_ab=0
+for dcb,_db in ipairs(dca)do _ab=_ab+_db.get("height")end
+if aab>0 then local dcb={}local _db=0;for adb,bdb in ipairs(dca)do
+if cab[bdb]>0 then table.insert(dcb,bdb)_db=
+_db+bdb.get("height")end end
+if#dcb>0 and _db>0 then local adb=a_b(c_b(ada*
+0.2),#dcb)local bdb=b_b(adb,ada-abb)for cdb,ddb in
+ipairs(dcb)do local __c=cab[ddb]local a_c=__c/aab;local b_c=a_b(1,c_b(bdb*a_c))
+ddb.set("height",b_c)end end end end;local cbb=1
+for bcb,ccb in ipairs(dca)do ccb.set("y",cbb)
+if not dda then
+if bda=="stretch"then
+ccb.set("width",__b)ccb.set("x",1 +cda)else local _db=ccb.get("width")local adb=1
+if
+bda=="flex-end"then adb=_da-_db+1 elseif bda=="flex-center"or bda=="center"then adb=c_b(
+(_da-_db)/2)+1 end;ccb.set("x",a_b(1,adb))end end
+local dcb=ccb.get("x")+ccb.get("width")-1;if
+dcb>_da and(ccb.get("flexShrink")or 0)>0 then
+ccb.set("width",a_b(1,_da-ccb.get("x")+1))end;cbb=
+cbb+ccb.get("height")+b_a end;local dbb=dca[#dca]local _cb=0;if dbb then
+_cb=dbb.get("y")+dbb.get("height")-1 end;local acb=ada-_cb
+if acb>0 then
+if c_a=="flex-end"then for bcb,ccb in ipairs(dca)do ccb.set("y",
+ccb.get("y")+acb)end elseif c_a==
+"flex-center"or c_a=="center"then local bcb=c_b(acb/2)for ccb,dcb in ipairs(dca)do dcb.set("y",
+dcb.get("y")+bcb)end end end end
+local function dd(__a,a_a,b_a,c_a,d_a)if
+__a.get("width")<=0 or __a.get("height")<=0 then return end;a_a=
+(a_a=="row"or a_a=="column")and a_a or"row"
+local _aa,aaa=__a.get("width"),__a.get("height")
+local baa=_aa~=__a._lastLayoutWidth or aaa~=__a._lastLayoutHeight;__a._lastLayoutWidth=_aa;__a._lastLayoutHeight=aaa
+if
+d_a and baa and(
+_aa>__a._lastLayoutWidth or aaa>__a._lastLayoutHeight)then
+for _ba,aba in pairs(__a.get("children"))do
+if
+aba~=_d and aba:getVisible()and
+aba.get("flexGrow")and aba.get("flexGrow")>0 then
+if a_a=="row"then
+local bba,cba=pcall(function()return aba.get("intrinsicWidth")end)if bba and cba then aba.set("width",cba)end else
+local bba,cba=pcall(function()return
+aba.get("intrinsicHeight")end)if bba and cba then aba.set("height",cba)end end end end end;local caa=ad(__a,a_a,b_a,d_a)if#caa==0 then return end
+local daa=a_a=="row"and bd or cd
+if a_a=="row"and d_a then local _ba=1
+for aba,bba in ipairs(caa)do
+if#bba>0 then for dba,_ca in ipairs(bba)do if _ca~=_d then
+_ca.set("y",_ba)end end
+daa(__a,bba,b_a,c_a)local cba=0;for dba,_ca in ipairs(bba)do if _ca~=_d then
+cba=math.max(cba,_ca.get("height"))end end;if aba<
+#caa then _ba=_ba+cba+b_a else _ba=_ba+cba end end end elseif a_a=="column"and d_a then local _ba=1
+for aba,bba in ipairs(caa)do
+if#bba>0 then for dba,_ca in ipairs(bba)do if _ca~=_d then
+_ca.set("x",_ba)end end
+daa(__a,bba,b_a,c_a)local cba=0;for dba,_ca in ipairs(bba)do if _ca~=_d then
+cba=math.max(cba,_ca.get("width"))end end;if
+aba<#caa then _ba=_ba+cba+b_a else _ba=_ba+cba end end end else for _ba,aba in ipairs(caa)do daa(__a,aba,b_a,c_a)end end;__a:sortChildren()
+__a.set("childrenEventsSorted",false)__a.set("flexUpdateLayout",false)end
+function dc.new()local __a=setmetatable({},dc):__init()
+__a.class=dc;__a.set("width",12)__a.set("height",6)
+__a.set("background",colors.blue)__a.set("z",10)__a._lastLayoutWidth=0;__a._lastLayoutHeight=0
+__a:observe("width",function()
+__a.set("flexUpdateLayout",true)end)
+__a:observe("height",function()__a.set("flexUpdateLayout",true)end)
+__a:observe("flexDirection",function()__a.set("flexUpdateLayout",true)end)
+__a:observe("flexSpacing",function()__a.set("flexUpdateLayout",true)end)
+__a:observe("flexWrap",function()__a.set("flexUpdateLayout",true)end)
+__a:observe("flexJustifyContent",function()__a.set("flexUpdateLayout",true)end)
+__a:observe("flexAlignItems",function()__a.set("flexUpdateLayout",true)end)
+__a:observe("flexCrossPadding",function()__a.set("flexUpdateLayout",true)end)return __a end;function dc:init(__a,a_a)cc.init(self,__a,a_a)self.set("type","Flexbox")return
+self end
+function dc:addChild(__a)
+cc.addChild(self,__a)
+if(__a~=_d)then
+__a:instanceProperty("flexGrow",{default=0,type="number"})
+__a:instanceProperty("flexShrink",{default=0,type="number"})
+__a:instanceProperty("flexBasis",{default=0,type="number"})
+__a:instanceProperty("intrinsicWidth",{default=__a.get("width"),type="number"})
+__a:instanceProperty("intrinsicHeight",{default=__a.get("height"),type="number"})
+__a:observe("flexGrow",function()self.set("flexUpdateLayout",true)end)
+__a:observe("flexShrink",function()self.set("flexUpdateLayout",true)end)
+__a:observe("width",function(a_a,b_a,c_a)if __a.get("flexGrow")==0 then
+__a.set("intrinsicWidth",b_a)end
+self.set("flexUpdateLayout",true)end)
+__a:observe("height",function(a_a,b_a,c_a)if __a.get("flexGrow")==0 then
+__a.set("intrinsicHeight",b_a)end
+self.set("flexUpdateLayout",true)end)end;self.set("flexUpdateLayout",true)return self end
+function dc:removeChild(__a)cc.removeChild(self,__a)
+if(__a~=_d)then __a.setFlexGrow=nil;__a.setFlexShrink=
+nil;__a.setFlexBasis=nil;__a.getFlexGrow=nil
+__a.getFlexShrink=nil;__a.getFlexBasis=nil;__a.set("flexGrow",nil)
+__a.set("flexShrink",nil)__a.set("flexBasis",nil)end;self.set("flexUpdateLayout",true)return self end;function dc:addLineBreak()self:addChild(_d)return self end
+function dc:render()
+if
+(self.get("flexUpdateLayout"))then
+dd(self,self.get("flexDirection"),self.get("flexSpacing"),self.get("flexJustifyContent"),self.get("flexWrap"))end;cc.render(self)end;return dc end
+_b["elements/Timer.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("BaseElement")local _c=setmetatable({},db)_c.__index=_c
+_c.defineProperty(_c,"interval",{default=1,type="number"})
+_c.defineProperty(_c,"action",{default=function()end,type="function"})
+_c.defineProperty(_c,"running",{default=false,type="boolean"})
+_c.defineProperty(_c,"amount",{default=-1,type="number"})_c.defineEvent(_c,"timer")function _c.new()
+local ac=setmetatable({},_c):__init()ac.class=_c;return ac end;function _c:init(ac,bc)
+db.init(self,ac,bc)self.set("type","Timer")end
+function _c:start()if
+not self.running then self.running=true;local ac=self.get("interval")
+self.timerId=os.startTimer(ac)end;return self end
+function _c:stop()if self.running then self.running=false
+os.cancelTimer(self.timerId)end;return self end
+function _c:dispatchEvent(ac,...)db.dispatchEvent(self,ac,...)
+if ac=="timer"then
+local bc=select(1,...)
+if bc==self.timerId then self.action()local cc=self.get("amount")if cc>0 then self.set("amount",
+cc-1)end;if cc~=0 then
+self.timerId=os.startTimer(self.get("interval"))end end end end;return _c end
+_b["elements/VisualElement.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("BaseElement")local _c=require("libraries/colorHex")
+local ac=setmetatable({},db)ac.__index=ac
+ac.defineProperty(ac,"x",{default=1,type="number",canTriggerRender=true})
+ac.defineProperty(ac,"y",{default=1,type="number",canTriggerRender=true})
+ac.defineProperty(ac,"z",{default=1,type="number",canTriggerRender=true,setter=function(dc,_d)
+if dc.parent then dc.parent:sortChildren()end;return _d end})
+ac.defineProperty(ac,"width",{default=1,type="number",canTriggerRender=true})
+ac.defineProperty(ac,"height",{default=1,type="number",canTriggerRender=true})
+ac.defineProperty(ac,"background",{default=colors.black,type="color",canTriggerRender=true})
+ac.defineProperty(ac,"foreground",{default=colors.white,type="color",canTriggerRender=true})
+ac.defineProperty(ac,"clicked",{default=false,type="boolean"})
+ac.defineProperty(ac,"hover",{default=false,type="boolean"})
+ac.defineProperty(ac,"backgroundEnabled",{default=true,type="boolean",canTriggerRender=true})
+ac.defineProperty(ac,"focused",{default=false,type="boolean",setter=function(dc,_d,ad)local bd=dc.get("focused")
+if _d==bd then return _d end;if _d then dc:focus()else dc:blur()end;if not ad and dc.parent then
+if _d then
+dc.parent:setFocusedChild(dc)else dc.parent:setFocusedChild(nil)end end;return _d end})
+ac.defineProperty(ac,"visible",{default=true,type="boolean",canTriggerRender=true,setter=function(dc,_d)
+if(dc.parent~=nil)then
+dc.parent.set("childrenSorted",false)dc.parent.set("childrenEventsSorted",false)end;if(_d==false)then dc.set("clicked",false)end;return _d end})
+ac.defineProperty(ac,"ignoreOffset",{default=false,type="boolean"})ac.combineProperties(ac,"position","x","y")
+ac.combineProperties(ac,"size","width","height")
+ac.combineProperties(ac,"color","foreground","background")ac.defineEvent(ac,"focus")
+ac.defineEvent(ac,"blur")
+ac.registerEventCallback(ac,"Click","mouse_click","mouse_up")
+ac.registerEventCallback(ac,"ClickUp","mouse_up","mouse_click")
+ac.registerEventCallback(ac,"Drag","mouse_drag","mouse_click","mouse_up")
+ac.registerEventCallback(ac,"Scroll","mouse_scroll")
+ac.registerEventCallback(ac,"Enter","mouse_enter","mouse_move")
+ac.registerEventCallback(ac,"Leave","mouse_leave","mouse_move")ac.registerEventCallback(ac,"Focus","focus","blur")
+ac.registerEventCallback(ac,"Blur","blur","focus")ac.registerEventCallback(ac,"Key","key","key_up")
+ac.registerEventCallback(ac,"Char","char")ac.registerEventCallback(ac,"KeyUp","key_up","key")
+local bc,cc=math.max,math.min;function ac.new()local dc=setmetatable({},ac):__init()
+dc.class=ac;return dc end
+function ac:init(dc,_d)
+db.init(self,dc,_d)self.set("type","VisualElement")end
+function ac:multiBlit(_d,ad,bd,cd,dd,__a,a_a)local b_a,c_a=self:calculatePosition()_d=_d+b_a-1
+ad=ad+c_a-1;self.parent:multiBlit(_d,ad,bd,cd,dd,__a,a_a)end
+function ac:textFg(dc,_d,ad,bd)local cd,dd=self:calculatePosition()dc=dc+cd-1
+_d=_d+dd-1;self.parent:textFg(dc,_d,ad,bd)end
+function ac:textBg(dc,_d,ad,bd)local cd,dd=self:calculatePosition()dc=dc+cd-1
+_d=_d+dd-1;self.parent:textBg(dc,_d,ad,bd)end
+function ac:drawText(dc,_d,ad)local bd,cd=self:calculatePosition()dc=dc+bd-1
+_d=_d+cd-1;self.parent:drawText(dc,_d,ad)end
+function ac:drawFg(dc,_d,ad)local bd,cd=self:calculatePosition()dc=dc+bd-1
+_d=_d+cd-1;self.parent:drawFg(dc,_d,ad)end
+function ac:drawBg(dc,_d,ad)local bd,cd=self:calculatePosition()dc=dc+bd-1
+_d=_d+cd-1;self.parent:drawBg(dc,_d,ad)end
+function ac:blit(dc,_d,ad,bd,cd)local dd,__a=self:calculatePosition()dc=dc+dd-1
+_d=_d+__a-1;self.parent:blit(dc,_d,ad,bd,cd)end
+function ac:isInBounds(dc,_d)local ad,bd=self.get("x"),self.get("y")
+local cd,dd=self.get("width"),self.get("height")if(self.get("ignoreOffset"))then
+if(self.parent)then
+dc=dc-self.parent.get("offsetX")_d=_d-self.parent.get("offsetY")end end;return
+dc>=ad and dc<=
+ad+cd-1 and _d>=bd and _d<=bd+dd-1 end
+function ac:mouse_click(dc,_d,ad)if self:isInBounds(_d,ad)then self.set("clicked",true)
+self:fireEvent("mouse_click",dc,self:getRelativePosition(_d,ad))return true end;return
+false end
+function ac:mouse_up(dc,_d,ad)if self:isInBounds(_d,ad)then self.set("clicked",false)
+self:fireEvent("mouse_up",dc,self:getRelativePosition(_d,ad))return true end;return
+false end
+function ac:mouse_release(dc,_d,ad)
+self:fireEvent("mouse_release",dc,self:getRelativePosition(_d,ad))self.set("clicked",false)end
+function ac:mouse_move(dc,_d,ad)if(_d==nil)or(ad==nil)then return end
+local bd=self.get("hover")
+if(self:isInBounds(_d,ad))then if(not bd)then self.set("hover",true)
+self:fireEvent("mouse_enter",self:getRelativePosition(_d,ad))end;return true else if(bd)then
+self.set("hover",false)
+self:fireEvent("mouse_leave",self:getRelativePosition(_d,ad))end end;return false end
+function ac:mouse_scroll(dc,_d,ad)if(self:isInBounds(_d,ad))then
+self:fireEvent("mouse_scroll",dc,self:getRelativePosition(_d,ad))return true end;return false end
+function ac:mouse_drag(dc,_d,ad)if(self.get("clicked"))then
+self:fireEvent("mouse_drag",dc,self:getRelativePosition(_d,ad))return true end;return false end;function ac:focus()self:fireEvent("focus")end;function ac:blur()
+self:fireEvent("blur")self:setCursor(1,1,false)end
+function ac:key(dc,_d)if
+(self.get("focused"))then self:fireEvent("key",dc,_d)end end;function ac:key_up(dc)
+if(self.get("focused"))then self:fireEvent("key_up",dc)end end;function ac:char(dc)if(self.get("focused"))then
+self:fireEvent("char",dc)end end
+function ac:calculatePosition()
+local dc,_d=self.get("x"),self.get("y")
+if not self.get("ignoreOffset")then if self.parent~=nil then
+local ad,bd=self.parent.get("offsetX"),self.parent.get("offsetY")dc=dc-ad;_d=_d-bd end end;return dc,_d end
+function ac:getAbsolutePosition(dc,_d)local ad,bd=self.get("x"),self.get("y")if(dc~=nil)then
+ad=ad+dc-1 end;if(_d~=nil)then bd=bd+_d-1 end;local cd=self.parent
+while cd do
+local dd,__a=cd.get("x"),cd.get("y")ad=ad+dd-1;bd=bd+__a-1;cd=cd.parent end;return ad,bd end
+function ac:getRelativePosition(dc,_d)if(dc==nil)or(_d==nil)then
+dc,_d=self.get("x"),self.get("y")end;local ad,bd=1,1;if self.parent then
+ad,bd=self.parent:getRelativePosition()end
+local cd,dd=self.get("x"),self.get("y")return dc- (cd-1)- (ad-1),_d- (dd-1)- (bd-1)end
+function ac:setCursor(dc,_d,ad,bd)
+if self.parent then local cd,dd=self:calculatePosition()
+if
+(dc+cd-1 <1)or(
+dc+cd-1 >self.parent.get("width"))or(_d+dd-1 <1)or(_d+dd-1 >
+self.parent.get("height"))then return self.parent:setCursor(
+dc+cd-1,_d+dd-1,false)end
+return self.parent:setCursor(dc+cd-1,_d+dd-1,ad,bd)end;return self end
+function ac:prioritize()
+if(self.parent)then local dc=self.parent;dc:removeChild(self)
+dc:addChild(self)self:updateRender()end;return self end
+function ac:render()
+if(not self.get("backgroundEnabled"))then return end;local dc,_d=self.get("width"),self.get("height")
+self:multiBlit(1,1,dc,_d," ",_c[self.get("foreground")],_c[self.get("background")])end;function ac:postRender()end;return ac end
+_b["elements/Graph.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("VisualElement")local _c=require("libraries/colorHex")
+local ac=setmetatable({},db)ac.__index=ac
+ac.defineProperty(ac,"minValue",{default=0,type="number",canTriggerRender=true})
+ac.defineProperty(ac,"maxValue",{default=100,type="number",canTriggerRender=true})
+ac.defineProperty(ac,"series",{default={},type="table",canTriggerRender=true})function ac.new()local bc=setmetatable({},ac):__init()
+bc.class=ac;return bc end;function ac:init(bc,cc)
+db.init(self,bc,cc)self.set("type","Graph")self.set("width",20)
+self.set("height",10)return self end
+function ac:addSeries(bc,cc,dc,_d,ad)
+local bd=self.get("series")
+table.insert(bd,{name=bc,symbol=cc or" ",bgColor=dc or colors.white,fgColor=_d or colors.black,pointCount=ad or self.get("width"),data={},visible=true})self:updateRender()return self end
+function ac:removeSeries(bc)local cc=self.get("series")for dc,_d in ipairs(cc)do if _d.name==bc then
+table.remove(cc,dc)break end end
+self:updateRender()return self end
+function ac:getSeries(bc)local cc=self.get("series")for dc,_d in ipairs(cc)do
+if _d.name==bc then return _d end end;return nil end
+function ac:changeSeriesVisibility(bc,cc)local dc=self.get("series")for _d,ad in ipairs(dc)do if ad.name==bc then
+ad.visible=cc;break end end
+self:updateRender()return self end
+function ac:addPoint(bc,cc)local dc=self.get("series")
+for _d,ad in ipairs(dc)do if ad.name==bc then
+table.insert(ad.data,cc)
+while#ad.data>ad.pointCount do table.remove(ad.data,1)end;break end end;self:updateRender()return self end
+function ac:focusSeries(bc)local cc=self.get("series")
+for dc,_d in ipairs(cc)do if _d.name==bc then
+table.remove(cc,dc)table.insert(cc,_d)break end end;self:updateRender()return self end
+function ac:setSeriesPointCount(bc,cc)local dc=self.get("series")
+for _d,ad in ipairs(dc)do if ad.name==bc then
+ad.pointCount=cc;while#ad.data>cc do table.remove(ad.data,1)end
+break end end;self:updateRender()return self end
+function ac:clear(bc)local cc=self.get("series")
+if bc then for dc,_d in ipairs(cc)do
+if _d.name==bc then _d.data={}break end end else for dc,_d in ipairs(cc)do _d.data={}end end;return self end
+function ac:render()db.render(self)local bc=self.get("width")
+local cc=self.get("height")local dc=self.get("minValue")local _d=self.get("maxValue")
+local ad=self.get("series")
+for bd,cd in pairs(ad)do
+if(cd.visible)then local dd=#cd.data
+local __a=(bc-1)/math.max((dd-1),1)
+for a_a,b_a in ipairs(cd.data)do
+local c_a=math.floor(( (a_a-1)*__a)+1)local d_a=(b_a-dc)/ (_d-dc)
+local _aa=math.floor(cc- (d_a* (cc-1)))_aa=math.max(1,math.min(_aa,cc))
+self:blit(c_a,_aa,cd.symbol,_c[cd.bgColor],_c[cd.fgColor])end end end end;return ac end
+_b["elements/BigFont.lua"]=function(...)local dc=require("libraries/colorHex")
+local _d={{"\32\32\32\137\156\148\158\159\148\135\135\144\159\139\32\136\157\32\159\139\32\32\143\32\32\143\32\32\32\32\32\32\32\32\147\148\150\131\148\32\32\32\151\140\148\151\140\147","\32\32\32\149\132\149\136\156\149\144\32\133\139\159\129\143\159\133\143\159\133\138\32\133\138\32\133\32\32\32\32\32\32\150\150\129\137\156\129\32\32\32\133\131\129\133\131\132","\32\32\32\130\131\32\130\131\32\32\129\32\32\32\32\130\131\32\130\131\32\32\32\32\143\143\143\32\32\32\32\32\32\130\129\32\130\135\32\32\32\32\131\32\32\131\32\131","\139\144\32\32\143\148\135\130\144\149\32\149\150\151\149\158\140\129\32\32\32\135\130\144\135\130\144\32\149\32\32\139\32\159\148\32\32\32\32\159\32\144\32\148\32\147\131\132","\159\135\129\131\143\149\143\138\144\138\32\133\130\149\149\137\155\149\159\143\144\147\130\132\32\149\32\147\130\132\131\159\129\139\151\129\148\32\32\139\131\135\133\32\144\130\151\32","\32\32\32\32\32\32\130\135\32\130\32\129\32\129\129\131\131\32\130\131\129\140\141\132\32\129\32\32\129\32\32\32\32\32\32\32\131\131\129\32\32\32\32\32\32\32\32\32","\32\32\32\32\149\32\159\154\133\133\133\144\152\141\132\133\151\129\136\153\32\32\154\32\159\134\129\130\137\144\159\32\144\32\148\32\32\32\32\32\32\32\32\32\32\32\151\129","\32\32\32\32\133\32\32\32\32\145\145\132\141\140\132\151\129\144\150\146\129\32\32\32\138\144\32\32\159\133\136\131\132\131\151\129\32\144\32\131\131\129\32\144\32\151\129\32","\32\32\32\32\129\32\32\32\32\130\130\32\32\129\32\129\32\129\130\129\129\32\32\32\32\130\129\130\129\32\32\32\32\32\32\32\32\133\32\32\32\32\32\129\32\129\32\32","\150\156\148\136\149\32\134\131\148\134\131\148\159\134\149\136\140\129\152\131\32\135\131\149\150\131\148\150\131\148\32\148\32\32\148\32\32\152\129\143\143\144\130\155\32\134\131\148","\157\129\149\32\149\32\152\131\144\144\131\148\141\140\149\144\32\149\151\131\148\32\150\32\150\131\148\130\156\133\32\144\32\32\144\32\130\155\32\143\143\144\32\152\129\32\134\32","\130\131\32\131\131\129\131\131\129\130\131\32\32\32\129\130\131\32\130\131\32\32\129\32\130\131\32\130\129\32\32\129\32\32\133\32\32\32\129\32\32\32\130\32\32\32\129\32","\150\140\150\137\140\148\136\140\132\150\131\132\151\131\148\136\147\129\136\147\129\150\156\145\138\143\149\130\151\32\32\32\149\138\152\129\149\32\32\157\152\149\157\144\149\150\131\148","\149\143\142\149\32\149\149\32\149\149\32\144\149\32\149\149\32\32\149\32\32\149\32\149\149\32\149\32\149\32\144\32\149\149\130\148\149\32\32\149\32\149\149\130\149\149\32\149","\130\131\129\129\32\129\131\131\32\130\131\32\131\131\32\131\131\129\129\32\32\130\131\32\129\32\129\130\131\32\130\131\32\129\32\129\131\131\129\129\32\129\129\32\129\130\131\32","\136\140\132\150\131\148\136\140\132\153\140\129\131\151\129\149\32\149\149\32\149\149\32\149\137\152\129\137\152\129\131\156\133\149\131\32\150\32\32\130\148\32\152\137\144\32\32\32","\149\32\32\149\159\133\149\32\149\144\32\149\32\149\32\149\32\149\150\151\129\138\155\149\150\130\148\32\149\32\152\129\32\149\32\32\32\150\32\32\149\32\32\32\32\32\32\32","\129\32\32\130\129\129\129\32\129\130\131\32\32\129\32\130\131\32\32\129\32\129\32\129\129\32\129\32\129\32\131\131\129\130\131\32\32\32\129\130\131\32\32\32\32\140\140\132","\32\154\32\159\143\32\149\143\32\159\143\32\159\144\149\159\143\32\159\137\145\159\143\144\149\143\32\32\145\32\32\32\145\149\32\144\32\149\32\143\159\32\143\143\32\159\143\32","\32\32\32\152\140\149\151\32\149\149\32\145\149\130\149\157\140\133\32\149\32\154\143\149\151\32\149\32\149\32\144\32\149\149\153\32\32\149\32\149\133\149\149\32\149\149\32\149","\32\32\32\130\131\129\131\131\32\130\131\32\130\131\129\130\131\129\32\129\32\140\140\129\129\32\129\32\129\32\137\140\129\130\32\129\32\130\32\129\32\129\129\32\129\130\131\32","\144\143\32\159\144\144\144\143\32\159\143\144\159\138\32\144\32\144\144\32\144\144\32\144\144\32\144\144\32\144\143\143\144\32\150\129\32\149\32\130\150\32\134\137\134\134\131\148","\136\143\133\154\141\149\151\32\129\137\140\144\32\149\32\149\32\149\154\159\133\149\148\149\157\153\32\154\143\149\159\134\32\130\148\32\32\149\32\32\151\129\32\32\32\32\134\32","\133\32\32\32\32\133\129\32\32\131\131\32\32\130\32\130\131\129\32\129\32\130\131\129\129\32\129\140\140\129\131\131\129\32\130\129\32\129\32\130\129\32\32\32\32\32\129\32","\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32","\32\32\32\32\32\32\32\32\32\32\32\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\32\32\32\32\32\32\32\32\32\32\32","\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32\32","\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32\32\32\32\32\149\32\32\149\32\32\32\32","\32\32\32\32\32\32\32\32\32\32\32\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\32\32\32\32\32\32\32\32\32\32\32","\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32\32\149\32","\32\32\32\32\145\32\159\139\32\151\131\132\155\143\132\134\135\145\32\149\32\158\140\129\130\130\32\152\147\155\157\134\32\32\144\144\32\32\32\32\32\32\152\131\155\131\131\129","\32\32\32\32\149\32\149\32\145\148\131\32\149\32\149\140\157\132\32\148\32\137\155\149\32\32\32\149\154\149\137\142\32\153\153\32\131\131\149\131\131\129\149\135\145\32\32\32","\32\32\32\32\129\32\130\135\32\131\131\129\134\131\132\32\129\32\32\129\32\131\131\32\32\32\32\130\131\129\32\32\32\32\129\129\32\32\32\32\32\32\130\131\129\32\32\32","\150\150\32\32\148\32\134\32\32\132\32\32\134\32\32\144\32\144\150\151\149\32\32\32\32\32\32\145\32\32\152\140\144\144\144\32\133\151\129\133\151\129\132\151\129\32\145\32","\130\129\32\131\151\129\141\32\32\142\32\32\32\32\32\149\32\149\130\149\149\32\143\32\32\32\32\142\132\32\154\143\133\157\153\132\151\150\148\151\158\132\151\150\148\144\130\148","\32\32\32\140\140\132\32\32\32\32\32\32\32\32\32\151\131\32\32\129\129\32\32\32\32\134\32\32\32\32\32\32\32\129\129\32\129\32\129\129\130\129\129\32\129\130\131\32","\156\143\32\159\141\129\153\140\132\153\137\32\157\141\32\159\142\32\150\151\129\150\131\132\140\143\144\143\141\145\137\140\148\141\141\144\157\142\32\159\140\32\151\134\32\157\141\32","\157\140\149\157\140\149\157\140\149\157\140\149\157\140\149\157\140\149\151\151\32\154\143\132\157\140\32\157\140\32\157\140\32\157\140\32\32\149\32\32\149\32\32\149\32\32\149\32","\129\32\129\129\32\129\129\32\129\129\32\129\129\32\129\129\32\129\129\131\129\32\134\32\131\131\129\131\131\129\131\131\129\131\131\129\130\131\32\130\131\32\130\131\32\130\131\32","\151\131\148\152\137\145\155\140\144\152\142\145\153\140\132\153\137\32\154\142\144\155\159\132\150\156\148\147\32\144\144\130\145\136\137\32\146\130\144\144\130\145\130\136\32\151\140\132","\151\32\149\151\155\149\149\32\149\149\32\149\149\32\149\149\32\149\149\32\149\152\137\144\157\129\149\149\32\149\149\32\149\149\32\149\149\32\149\130\150\32\32\157\129\149\32\149","\131\131\32\129\32\129\130\131\32\130\131\32\130\131\32\130\131\32\130\131\32\32\32\32\130\131\32\130\131\32\130\131\32\130\131\32\130\131\32\32\129\32\130\131\32\133\131\32","\156\143\32\159\141\129\153\140\132\153\137\32\157\141\32\159\142\32\159\159\144\152\140\144\156\143\32\159\141\129\153\140\132\157\141\32\130\145\32\32\147\32\136\153\32\130\146\32","\152\140\149\152\140\149\152\140\149\152\140\149\152\140\149\152\140\149\149\157\134\154\143\132\157\140\133\157\140\133\157\140\133\157\140\133\32\149\32\32\149\32\32\149\32\32\149\32","\130\131\129\130\131\129\130\131\129\130\131\129\130\131\129\130\131\129\130\130\131\32\134\32\130\131\129\130\131\129\130\131\129\130\131\129\32\129\32\32\129\32\32\129\32\32\129\32","\159\134\144\137\137\32\156\143\32\159\141\129\153\140\132\153\137\32\157\141\32\32\132\32\159\143\32\147\32\144\144\130\145\136\137\32\146\130\144\144\130\145\130\138\32\146\130\144","\149\32\149\149\32\149\149\32\149\149\32\149\149\32\149\149\32\149\149\32\149\131\147\129\138\134\149\149\32\149\149\32\149\149\32\149\149\32\149\154\143\149\32\157\129\154\143\149","\130\131\32\129\32\129\130\131\32\130\131\32\130\131\32\130\131\32\130\131\32\32\32\32\130\131\32\130\131\129\130\131\129\130\131\129\130\131\129\140\140\129\130\131\32\140\140\129"},{"000110000110110000110010101000000010000000100101","000000110110000000000010101000000010000000100101","000000000000000000000000000000000000000000000000","100010110100000010000110110000010100000100000110","000000110000000010110110000110000000000000110000","000000000000000000000000000000000000000000000000","000000110110000010000000100000100000000000000010","000000000110110100010000000010000000000000000100","000000000000000000000000000000000000000000000000","010000000000100110000000000000000000000110010000","000000000000000000000000000010000000010110000000","000000000000000000000000000000000000000000000000","011110110000000100100010110000000100000000000000","000000000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","110000110110000000000000000000010100100010000000","000010000000000000110110000000000100010010000000","000000000000000000000000000000000000000000000000","010110010110100110110110010000000100000110110110","000000000000000000000110000000000110000000000000","000000000000000000000000000000000000000000000000","010100010110110000000000000000110000000010000000","110110000000000000110000110110100000000010000000","000000000000000000000000000000000000000000000000","000100011111000100011111000100011111000100011111","000000000000100100100100011011011011111111111111","000000000000000000000000000000000000000000000000","000100011111000100011111000100011111000100011111","000000000000100100100100011011011011111111111111","100100100100100100100100100100100100100100100100","000000110100110110000010000011110000000000011000","000000000100000000000010000011000110000000001000","000000000000000000000000000000000000000000000000","010000100100000000000000000100000000010010110000","000000000000000000000000000000110110110110110000","000000000000000000000000000000000000000000000000","110110110110110110000000110110110110110110110110","000000000000000000000110000000000000000000000000","000000000000000000000000000000000000000000000000","000000000000110110000110010000000000000000010010","000010000000000000000000000000000000000000000000","000000000000000000000000000000000000000000000000","110110110110110110110000110110110110000000000000","000000000000000000000110000000000000000000000000","000000000000000000000000000000000000000000000000","110110110110110110110000110000000000000000010000","000000000000000000000000100000000000000110000110","000000000000000000000000000000000000000000000000"}}local ad={}local bd={}
+do local c_a=0;local d_a=#_d[1]local _aa=#_d[1][1]
+for i=1,d_a,3 do
+for j=1,_aa,3 do
+local aaa=string.char(c_a)local baa={}baa[1]=_d[1][i]:sub(j,j+2)baa[2]=_d[1][i+1]:sub(j,
+j+2)
+baa[3]=_d[1][i+2]:sub(j,j+2)local caa={}caa[1]=_d[2][i]:sub(j,j+2)caa[2]=_d[2][i+1]:sub(j,
+j+2)
+caa[3]=_d[2][i+2]:sub(j,j+2)bd[aaa]={baa,caa}c_a=c_a+1 end end;ad[1]=bd end
+local function cd(c_a,d_a)local _aa={["0"]="1",["1"]="0"}if c_a<=#ad then return true end
+for f=#ad+1,c_a do
+local aaa={}local baa=ad[f-1]
+for char=0,255 do local caa=string.char(char)local daa={}local _ba={}
+local aba=baa[caa][1]local bba=baa[caa][2]
+for i=1,#aba do local cba,dba,_ca,aca,bca,cca={},{},{},{},{},{}
+for j=1,#aba[1]do
+local dca=bd[aba[i]:sub(j,j)][1]table.insert(cba,dca[1])
+table.insert(dba,dca[2])table.insert(_ca,dca[3])
+local _da=bd[aba[i]:sub(j,j)][2]
+if bba[i]:sub(j,j)=="1"then
+table.insert(aca,(_da[1]:gsub("[01]",_aa)))
+table.insert(bca,(_da[2]:gsub("[01]",_aa)))
+table.insert(cca,(_da[3]:gsub("[01]",_aa)))else table.insert(aca,_da[1])
+table.insert(bca,_da[2])table.insert(cca,_da[3])end end;table.insert(daa,table.concat(cba))
+table.insert(daa,table.concat(dba))table.insert(daa,table.concat(_ca))
+table.insert(_ba,table.concat(aca))table.insert(_ba,table.concat(bca))
+table.insert(_ba,table.concat(cca))end;aaa[caa]={daa,_ba}if d_a then d_a="Font"..f.."Yeld"..char
+os.queueEvent(d_a)os.pullEvent(d_a)end end;ad[f]=aaa end;return true end
+local function dd(c_a,d_a,_aa,aaa,baa)
+if not type(d_a)=="string"then error("Not a String",3)end
+local daa=
+type(_aa)=="string"and _aa:sub(1,1)or dc[_aa]or error("Wrong Front Color",3)
+local _ba=
+type(aaa)=="string"and aaa:sub(1,1)or dc[aaa]or error("Wrong Back Color",3)if(ad[c_a]==nil)then cd(3,false)end;local aba=ad[c_a]or
+error("Wrong font size selected",3)if d_a==""then
+return{{""},{""},{""}}end;local bba={}
+for dca in d_a:gmatch('.')do table.insert(bba,dca)end;local cba={}local dba=#aba[bba[1]][1]
+for nLine=1,dba do local dca={}for i=1,#bba do
+dca[i]=
+aba[bba[i]]and aba[bba[i]][1][nLine]or""end;cba[nLine]=table.concat(dca)end;local _ca={}local aca={}local bca={["0"]=daa,["1"]=_ba}
+local cca={["0"]=_ba,["1"]=daa}
+for nLine=1,dba do local dca={}local _da={}
+for i=1,#bba do local ada=
+aba[bba[i]]and aba[bba[i]][2][nLine]or""
+dca[i]=ada:gsub("[01]",baa and
+{["0"]=_aa:sub(i,i),["1"]=aaa:sub(i,i)}or bca)
+_da[i]=ada:gsub("[01]",
+baa and{["0"]=aaa:sub(i,i),["1"]=_aa:sub(i,i)}or cca)end;_ca[nLine]=table.concat(dca)
+aca[nLine]=table.concat(_da)end;return{cba,_ca,aca}end;local __a=require("elementManager")
+local a_a=__a.getElement("VisualElement")local b_a=setmetatable({},a_a)b_a.__index=b_a
+b_a.defineProperty(b_a,"text",{default="BigFont",type="string",canTriggerRender=true,setter=function(c_a,d_a)
+c_a.bigfontText=dd(c_a.get("fontSize"),d_a,c_a.get("foreground"),c_a.get("background"))return d_a end})
+b_a.defineProperty(b_a,"fontSize",{default=1,type="number",canTriggerRender=true,setter=function(c_a,d_a)
+c_a.bigfontText=dd(d_a,c_a.get("text"),c_a.get("foreground"),c_a.get("background"))return d_a end})
+function b_a.new()local c_a=setmetatable({},b_a):__init()
+c_a.class=b_a;c_a.set("width",16)c_a.set("height",3)
+c_a.set("z",5)return c_a end
+function b_a:init(c_a,d_a)a_a.init(self,c_a,d_a)
+self.set("type","BigFont")
+self:observe("background",function(_aa,aaa)
+_aa.bigfontText=dd(_aa.get("fontSize"),_aa.get("text"),_aa.get("foreground"),aaa)end)
+self:observe("foreground",function(_aa,aaa)
+_aa.bigfontText=dd(_aa.get("fontSize"),_aa.get("text"),aaa,_aa.get("background"))end)end
+function b_a:render()a_a.render(self)
+if(self.bigfontText)then
+local c_a,d_a=self.get("x"),self.get("y")
+for i=1,#self.bigfontText[1]do
+local _aa=self.bigfontText[1][i]:sub(1,self.get("width"))
+local aaa=self.bigfontText[2][i]:sub(1,self.get("width"))
+local baa=self.bigfontText[3][i]:sub(1,self.get("width"))self:blit(c_a,d_a+i-1,_aa,aaa,baa)end end end;return b_a end
+_b["elements/BaseFrame.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("Container")local _c=require("errorManager")local ac=require("render")
+local bc=setmetatable({},db)bc.__index=bc
+local function cc(dc)
+local _d,ad=pcall(function()return peripheral.getType(dc)end)if _d then return true end;return false end
+bc.defineProperty(bc,"term",{default=nil,type="table",setter=function(dc,_d)dc._peripheralName=nil;if
+dc.basalt.getActiveFrame(dc._values.term)==dc then
+dc.basalt.setActiveFrame(dc,false)end;if
+_d==nil or _d.setCursorPos==nil then return _d end;if(cc(_d))then
+dc._peripheralName=peripheral.getName(_d)end;dc._values.term=_d
+if
+dc.basalt.getActiveFrame(_d)==nil then dc.basalt.setActiveFrame(dc)end;dc._render=ac.new(_d)dc._renderUpdate=true;local ad,bd=_d.getSize()
+dc.set("width",ad)dc.set("height",bd)return _d end})function bc.new()local dc=setmetatable({},bc):__init()
+dc.class=bc;return dc end;function bc:init(dc,_d)
+db.init(self,dc,_d)self.set("term",term.current())
+self.set("type","BaseFrame")return self end
+function bc:multiBlit(_d,ad,bd,cd,dd,__a,a_a)if
+(_d<1)then bd=bd+_d-1;_d=1 end;if(ad<1)then cd=cd+ad-1;ad=1 end
+self._render:multiBlit(_d,ad,bd,cd,dd,__a,a_a)end;function bc:textFg(dc,_d,ad,bd)if dc<1 then ad=string.sub(ad,1 -dc)dc=1 end
+self._render:textFg(dc,_d,ad,bd)end;function bc:textBg(dc,_d,ad,bd)if dc<1 then ad=string.sub(ad,1 -
+dc)dc=1 end
+self._render:textBg(dc,_d,ad,bd)end;function bc:drawText(dc,_d,ad)if dc<1 then ad=string.sub(ad,
+1 -dc)dc=1 end
+self._render:text(dc,_d,ad)end
+function bc:drawFg(dc,_d,ad)if dc<1 then
+ad=string.sub(ad,1 -dc)dc=1 end;self._render:fg(dc,_d,ad)end;function bc:drawBg(dc,_d,ad)if dc<1 then ad=string.sub(ad,1 -dc)dc=1 end
+self._render:bg(dc,_d,ad)end
+function bc:blit(dc,_d,ad,bd,cd)
+if dc<1 then
+ad=string.sub(ad,1 -dc)bd=string.sub(bd,1 -dc)cd=string.sub(cd,1 -dc)dc=1 end;self._render:blit(dc,_d,ad,bd,cd)end;function bc:setCursor(dc,_d,ad,bd)local cd=self.get("term")
+self._render:setCursor(dc,_d,ad,bd)end
+function bc:monitor_touch(dc,_d,ad)
+local bd=self.get("term")if bd==nil then return end
+if(cc(bd))then if self._peripheralName==dc then
+self:mouse_click(1,_d,ad)
+self.basalt.schedule(function()sleep(0.1)self:mouse_up(1,_d,ad)end)end end end;function bc:mouse_click(dc,_d,ad)db.mouse_click(self,dc,_d,ad)
+self.basalt.setFocus(self)end
+function bc:mouse_up(dc,_d,ad)
+db.mouse_up(self,dc,_d,ad)db.mouse_release(self,dc,_d,ad)end
+function bc:term_resize()local dc,_d=self.get("term").getSize()
+if(dc==
+self.get("width")and _d==self.get("height"))then return end;self.set("width",dc)self.set("height",_d)
+self._render:setSize(dc,_d)self._renderUpdate=true end
+function bc:key(dc)self:fireEvent("key",dc)db.key(self,dc)end
+function bc:key_up(dc)self:fireEvent("key_up",dc)db.key_up(self,dc)end
+function bc:char(dc)self:fireEvent("char",dc)db.char(self,dc)end
+function bc:dispatchEvent(dc,...)local _d=self.get("term")if _d==nil then return end;if(cc(_d))then if
+dc=="mouse_click"then return end end
+db.dispatchEvent(self,dc,...)end;function bc:render()
+if(self._renderUpdate)then if self._render~=nil then db.render(self)
+self._render:render()self._renderUpdate=false end end end
+return bc end
+_b["elements/Checkbox.lua"]=function(...)
+local cb=require("elements/VisualElement")local db=setmetatable({},cb)db.__index=db
+db.defineProperty(db,"checked",{default=false,type="boolean",canTriggerRender=true})
+db.defineProperty(db,"text",{default=" ",type="string",canTriggerRender=true,setter=function(_c,ac)local bc=_c.get("checkedText")
+local cc=math.max(#ac,#bc)if(_c.get("autoSize"))then _c.set("width",cc)end;return ac end})
+db.defineProperty(db,"checkedText",{default="x",type="string",canTriggerRender=true,setter=function(_c,ac)local bc=_c.get("text")
+local cc=math.max(#ac,#bc)if(_c.get("autoSize"))then _c.set("width",cc)end;return ac end})
+db.defineProperty(db,"autoSize",{default=true,type="boolean"})db.defineEvent(db,"mouse_click")
+db.defineEvent(db,"mouse_up")
+function db.new()local _c=setmetatable({},db):__init()
+_c.class=db;_c.set("backgroundEnabled",false)return _c end
+function db:init(_c,ac)cb.init(self,_c,ac)self.set("type","Checkbox")end
+function db:mouse_click(_c,ac,bc)if cb.mouse_click(self,_c,ac,bc)then
+self.set("checked",not self.get("checked"))return true end;return false end
+function db:render()cb.render(self)local _c=self.get("checked")
+local ac=self.get("text")local bc=self.get("checkedText")
+local cc=string.sub(_c and bc or ac,1,self.get("width"))self:textFg(1,1,cc,self.get("foreground"))end;return db end
+_b["elements/Container.lua"]=function(...)local bc=require("elementManager")
+local cc=require("errorManager")local dc=bc.getElement("VisualElement")
+local _d=require("libraries/expect")local ad=require("libraries/utils").split
+local bd=setmetatable({},dc)bd.__index=bd
+bd.defineProperty(bd,"children",{default={},type="table"})
+bd.defineProperty(bd,"childrenSorted",{default=true,type="boolean"})
+bd.defineProperty(bd,"childrenEventsSorted",{default=true,type="boolean"})
+bd.defineProperty(bd,"childrenEvents",{default={},type="table"})
+bd.defineProperty(bd,"eventListenerCount",{default={},type="table"})
+bd.defineProperty(bd,"focusedChild",{default=nil,type="table",allowNil=true,setter=function(__a,a_a,b_a)local c_a=__a._values.focusedChild
+if a_a==c_a then return a_a end
+if c_a then
+if c_a:isType("Container")then c_a.set("focusedChild",nil,true)end;c_a.set("focused",false,true)end
+if a_a and not b_a then a_a.set("focused",true,true)if __a.parent then
+__a.parent:setFocusedChild(__a)end end;return a_a end})
+bd.defineProperty(bd,"visibleChildren",{default={},type="table"})
+bd.defineProperty(bd,"visibleChildrenEvents",{default={},type="table"})
+bd.defineProperty(bd,"offsetX",{default=0,type="number",canTriggerRender=true,setter=function(__a,a_a)__a.set("childrenSorted",false)
+__a.set("childrenEventsSorted",false)return a_a end})
+bd.defineProperty(bd,"offsetY",{default=0,type="number",canTriggerRender=true,setter=function(__a,a_a)__a.set("childrenSorted",false)
+__a.set("childrenEventsSorted",false)return a_a end})
+bd.combineProperties(bd,"offset","offsetX","offsetY")
+for __a,a_a in pairs(bc:getElementList())do local b_a=__a:sub(1,1):upper()..
+__a:sub(2)
+if b_a~="BaseFrame"then
+bd["add"..b_a]=function(c_a,...)
+_d(1,c_a,"table")local d_a=c_a.basalt.create(__a,...)c_a:addChild(d_a)
+d_a:postInit()return d_a end
+bd["addDelayed"..b_a]=function(c_a,d_a)_d(1,c_a,"table")
+local _aa=c_a.basalt.create(__a,d_a,true,c_a)return _aa end end end;function bd.new()local __a=setmetatable({},bd):__init()
+__a.class=bd;return __a end
+function bd:init(__a,a_a)
+dc.init(self,__a,a_a)self.set("type","Container")
+self:observe("width",function()
+self.set("childrenSorted",false)self.set("childrenEventsSorted",false)end)
+self:observe("height",function()self.set("childrenSorted",false)
+self.set("childrenEventsSorted",false)end)end
+function bd:isChildVisible(__a)
+if not __a:isType("VisualElement")then return false end;if(__a.get("visible")==false)then return false end;if
+(__a._destroyed)then return false end
+local c_a,d_a=self.get("width"),self.get("height")local _aa,aaa=self.get("offsetX"),self.get("offsetY")
+local baa,caa=__a.get("x"),__a.get("y")local daa,_ba=__a.get("width"),__a.get("height")local aba;local bba
+if
+(__a.get("ignoreOffset"))then aba=baa;bba=caa else aba=baa-_aa;bba=caa-aaa end;return
+(aba+daa>0)and(aba<=c_a)and(bba+_ba>0)and(bba<=d_a)end
+function bd:addChild(__a)
+if __a==self then error("Cannot add container to itself")end
+if(__a~=nil)then
+table.insert(self._values.children,__a)__a.parent=self;__a:postInit()
+self.set("childrenSorted",false)self:registerChildrenEvents(__a)end;return self end
+local function cd(__a,a_a)local b_a={}
+for c_a,d_a in ipairs(a_a)do if
+__a:isChildVisible(d_a)and d_a.get("visible")then table.insert(b_a,d_a)end end
+for i=2,#b_a do local c_a=b_a[i]local d_a=c_a.get("z")local _aa=i-1;while _aa>0 do
+local aaa=b_a[_aa].get("z")
+if aaa>d_a then b_a[_aa+1]=b_a[_aa]_aa=_aa-1 else break end end;b_a[_aa+1]=c_a end;return b_a end
+function bd:clear()self.set("children",{})
+self.set("childrenEvents",{})self.set("visibleChildren",{})
+self.set("visibleChildrenEvents",{})self.set("childrenSorted",true)
+self.set("childrenEventsSorted",true)return self end
+function bd:sortChildren()
+self.set("visibleChildren",cd(self,self._values.children))self.set("childrenSorted",true)return self end
+function bd:sortChildrenEvents(__a)if self._values.childrenEvents[__a]then
+self._values.visibleChildrenEvents[__a]=cd(self,self._values.childrenEvents[__a])end
+self.set("childrenEventsSorted",true)return self end
+function bd:registerChildrenEvents(__a)if(__a._registeredEvents==nil)then return end
+for a_a in
+pairs(__a._registeredEvents)do self:registerChildEvent(__a,a_a)end;return self end
+function bd:registerChildEvent(__a,a_a)
+if not self._values.childrenEvents[a_a]then
+self._values.childrenEvents[a_a]={}self._values.eventListenerCount[a_a]=0;if self.parent then
+self.parent:registerChildEvent(self,a_a)end end;for b_a,c_a in ipairs(self._values.childrenEvents[a_a])do if c_a==__a then
+return self end end
+self.set("childrenEventsSorted",false)
+table.insert(self._values.childrenEvents[a_a],__a)self._values.eventListenerCount[a_a]=
+self._values.eventListenerCount[a_a]+1;return self end
+function bd:removeChildrenEvents(__a)
+if __a~=nil then
+if(__a._registeredEvents==nil)then return self end;for a_a in pairs(__a._registeredEvents)do
+self:unregisterChildEvent(__a,a_a)end end;return self end
+function bd:unregisterChildEvent(__a,a_a)
+if self._values.childrenEvents[a_a]then
+for b_a,c_a in
+ipairs(self._values.childrenEvents[a_a])do
+if c_a.get("id")==__a.get("id")then
+table.remove(self._values.childrenEvents[a_a],b_a)self._values.eventListenerCount[a_a]=
+self._values.eventListenerCount[a_a]-1
+if
+self._values.eventListenerCount[a_a]<=0 then
+self._values.childrenEvents[a_a]=nil;self._values.eventListenerCount[a_a]=nil;if self.parent then
+self.parent:unregisterChildEvent(self,a_a)end end;self.set("childrenEventsSorted",false)
+self:updateRender()break end end end;return self end
+function bd:removeChild(__a)if __a==nil then return self end
+for a_a,b_a in ipairs(self._values.children)do if
+b_a.get("id")==__a.get("id")then
+table.remove(self._values.children,a_a)__a.parent=nil;break end end;self:removeChildrenEvents(__a)
+self:updateRender()self.set("childrenSorted",false)return self end
+function bd:getChild(__a)
+if type(__a)=="string"then local a_a=ad(__a,"/")
+for b_a,c_a in
+pairs(self._values.children)do if c_a.get("name")==a_a[1]then
+if#a_a==1 then return c_a else if(c_a:isType("Container"))then return
+c_a:find(table.concat(a_a,"/",2))end end end end end;return nil end
+local function dd(__a,a_a,...)local b_a={...}
+if a_a then
+if a_a:find("mouse_")then local c_a,d_a,_aa=...
+local aaa,baa=__a.get("offsetX"),__a.get("offsetY")local caa,daa=__a:getRelativePosition(d_a+aaa,_aa+baa)
+b_a={c_a,caa,daa}end end;return b_a end
+function bd:callChildrenEvent(__a,a_a,...)local b_a=__a and self.get("visibleChildrenEvents")or
+self.get("childrenEvents")
+if
+b_a[a_a]then local c_a=b_a[a_a]for i=#c_a,1,-1 do local d_a=c_a[i]
+if(d_a:dispatchEvent(a_a,...))then return true,d_a end end end
+if(b_a["*"])then local c_a=b_a["*"]for i=#c_a,1,-1 do local d_a=c_a[i]if(d_a:dispatchEvent(a_a,...))then
+return true,d_a end end end;return false end;function bd:handleEvent(__a,...)dc.handleEvent(self,__a,...)
+local a_a=dd(self,__a,...)
+return self:callChildrenEvent(false,__a,table.unpack(a_a))end
+function bd:mouse_click(__a,a_a,b_a)
+if
+dc.mouse_click(self,__a,a_a,b_a)then local c_a=dd(self,"mouse_click",__a,a_a,b_a)
+local d_a,_aa=self:callChildrenEvent(true,"mouse_click",table.unpack(c_a))
+if(d_a)then self.set("focusedChild",_aa)return true end;self.set("focusedChild",nil)return true end;return false end
+function bd:mouse_up(__a,a_a,b_a)
+if dc.mouse_up(self,__a,a_a,b_a)then
+local c_a=dd(self,"mouse_up",__a,a_a,b_a)
+local d_a,_aa=self:callChildrenEvent(true,"mouse_up",table.unpack(c_a))if(d_a)then return true end end;return false end
+function bd:mouse_release(__a,a_a,b_a)dc.mouse_release(self,__a,a_a,b_a)
+local c_a=dd(self,"mouse_release",__a,a_a,b_a)
+self:callChildrenEvent(false,"mouse_release",table.unpack(c_a))end
+function bd:mouse_move(__a,a_a,b_a)
+if dc.mouse_move(self,__a,a_a,b_a)then
+local c_a=dd(self,"mouse_move",__a,a_a,b_a)
+local d_a,_aa=self:callChildrenEvent(true,"mouse_move",table.unpack(c_a))if(d_a)then return true end end;return false end
+function bd:mouse_drag(__a,a_a,b_a)
+if dc.mouse_drag(self,__a,a_a,b_a)then
+local c_a=dd(self,"mouse_drag",__a,a_a,b_a)
+local d_a,_aa=self:callChildrenEvent(true,"mouse_drag",table.unpack(c_a))if(d_a)then return true end end;return false end
+function bd:mouse_scroll(__a,a_a,b_a)local c_a=dd(self,"mouse_scroll",__a,a_a,b_a)
+local d_a,_aa=self:callChildrenEvent(true,"mouse_scroll",table.unpack(c_a))if(d_a)then return true end
+if(dc.mouse_scroll(self,__a,a_a,b_a))then return true end;return false end;function bd:key(__a)if self.get("focusedChild")then return
+self.get("focusedChild"):dispatchEvent("key",__a)end;return
+true end
+function bd:char(__a)if
+self.get("focusedChild")then
+return self.get("focusedChild"):dispatchEvent("char",__a)end;return true end;function bd:key_up(__a)
+if self.get("focusedChild")then return
+self.get("focusedChild"):dispatchEvent("key_up",__a)end;return true end
+function bd:multiBlit(__a,a_a,b_a,c_a,d_a,_aa,aaa)
+local baa,caa=self.get("width"),self.get("height")b_a=__a<1 and math.min(b_a+__a-1,baa)or
+math.min(b_a,math.max(0,baa-__a+1))c_a=
+a_a<1 and math.min(c_a+a_a-1,caa)or
+math.min(c_a,math.max(0,caa-a_a+1))if
+b_a<=0 or c_a<=0 then return self end
+dc.multiBlit(self,math.max(1,__a),math.max(1,a_a),b_a,c_a,d_a,_aa,aaa)return self end
+function bd:textFg(__a,a_a,b_a,c_a)local d_a,_aa=self.get("width"),self.get("height")if a_a<1 or
+a_a>_aa then return self end
+local aaa=__a<1 and(2 -__a)or 1
+local baa=math.min(#b_a-aaa+1,d_a-math.max(1,__a)+1)if baa<=0 then return self end
+dc.textFg(self,math.max(1,__a),math.max(1,a_a),b_a:sub(aaa,aaa+
+baa-1),c_a)return self end
+function bd:textBg(__a,a_a,b_a,c_a)local d_a,_aa=self.get("width"),self.get("height")if a_a<1 or
+a_a>_aa then return self end
+local aaa=__a<1 and(2 -__a)or 1
+local baa=math.min(#b_a-aaa+1,d_a-math.max(1,__a)+1)if baa<=0 then return self end
+dc.textBg(self,math.max(1,__a),math.max(1,a_a),b_a:sub(aaa,aaa+
+baa-1),c_a)return self end
+function bd:drawText(__a,a_a,b_a)local c_a,d_a=self.get("width"),self.get("height")if a_a<1 or a_a>
+d_a then return self end
+local _aa=__a<1 and(2 -__a)or 1
+local aaa=math.min(#b_a-_aa+1,c_a-math.max(1,__a)+1)if aaa<=0 then return self end
+dc.drawText(self,math.max(1,__a),math.max(1,a_a),b_a:sub(_aa,_aa+
+aaa-1))return self end
+function bd:drawFg(__a,a_a,b_a)local c_a,d_a=self.get("width"),self.get("height")if a_a<1 or
+a_a>d_a then return self end
+local _aa=__a<1 and(2 -__a)or 1
+local aaa=math.min(#b_a-_aa+1,c_a-math.max(1,__a)+1)if aaa<=0 then return self end
+dc.drawFg(self,math.max(1,__a),math.max(1,a_a),b_a:sub(_aa,_aa+
+aaa-1))return self end
+function bd:drawBg(__a,a_a,b_a)local c_a,d_a=self.get("width"),self.get("height")if a_a<1 or
+a_a>d_a then return self end
+local _aa=__a<1 and(2 -__a)or 1
+local aaa=math.min(#b_a-_aa+1,c_a-math.max(1,__a)+1)if aaa<=0 then return self end
+dc.drawBg(self,math.max(1,__a),math.max(1,a_a),b_a:sub(_aa,_aa+
+aaa-1))return self end
+function bd:blit(__a,a_a,b_a,c_a,d_a)local aaa,baa=self.get("width"),self.get("height")if a_a<1 or
+a_a>baa then return self end
+local caa=__a<1 and(2 -__a)or 1
+local daa=math.min(#b_a-caa+1,aaa-math.max(1,__a)+1)
+local _ba=math.min(#c_a-caa+1,aaa-math.max(1,__a)+1)
+local aba=math.min(#d_a-caa+1,aaa-math.max(1,__a)+1)if daa<=0 then return self end;local bba=b_a:sub(caa,caa+daa-1)local cba=c_a:sub(caa,
+caa+_ba-1)
+local dba=d_a:sub(caa,caa+aba-1)
+dc.blit(self,math.max(1,__a),math.max(1,a_a),bba,cba,dba)return self end
+function bd:render()dc.render(self)if not self.get("childrenSorted")then
+self:sortChildren()end
+if
+not self.get("childrenEventsSorted")then for __a in pairs(self._values.childrenEvents)do
+self:sortChildrenEvents(__a)end end
+for __a,a_a in ipairs(self.get("visibleChildren"))do if a_a==self then
+cc.error("CIRCULAR REFERENCE DETECTED!")return end;a_a:render()
+a_a:postRender()end end
+function bd:destroy()
+if not self:isType("BaseFrame")then for __a,a_a in
+ipairs(self.get("children"))do a_a:destroy()end
+self.set("childrenSorted",false)dc.destroy(self)return self else cc.header="Basalt Error"
+cc.error("Cannot destroy a BaseFrame.")end end;return bd end
+_b["elements/List.lua"]=function(...)local cb=require("elements/VisualElement")
+local db=setmetatable({},cb)db.__index=db
+db.defineProperty(db,"items",{default={},type="table",canTriggerRender=true})
+db.defineProperty(db,"selectable",{default=true,type="boolean"})
+db.defineProperty(db,"multiSelection",{default=false,type="boolean"})
+db.defineProperty(db,"offset",{default=0,type="number",canTriggerRender=true})
+db.defineProperty(db,"selectedBackground",{default=colors.blue,type="color"})
+db.defineProperty(db,"selectedForeground",{default=colors.white,type="color"})db.defineEvent(db,"mouse_click")
+db.defineEvent(db,"mouse_scroll")
+function db.new()local _c=setmetatable({},db):__init()
+_c.class=db;_c.set("width",16)_c.set("height",8)_c.set("z",5)
+_c.set("background",colors.gray)return _c end
+function db:init(_c,ac)cb.init(self,_c,ac)self.set("type","List")return self end;function db:addItem(_c)local ac=self.get("items")table.insert(ac,_c)
+self:updateRender()return self end
+function db:removeItem(_c)
+local ac=self.get("items")table.remove(ac,_c)self:updateRender()return self end
+function db:clear()self.set("items",{})self:updateRender()return self end
+function db:getSelectedItems()local _c={}for ac,bc in ipairs(self.get("items"))do
+if type(bc)=="table"and
+bc.selected then local cc=bc;cc.index=ac;table.insert(_c,cc)end end;return _c end
+function db:getSelectedItem()local _c=self.get("items")
+for ac,bc in ipairs(_c)do if type(bc)=="table"and
+bc.selected then return bc end end;return nil end
+function db:mouse_click(_c,ac,bc)
+if
+self:isInBounds(ac,bc)and self.get("selectable")then local cc,dc=self:getRelativePosition(ac,bc)
+local _d=dc+self.get("offset")local ad=self.get("items")
+if _d<=#ad then local bd=ad[_d]if type(bd)=="string"then
+bd={text=bd}ad[_d]=bd end;if
+not self.get("multiSelection")then
+for cd,dd in ipairs(ad)do if type(dd)=="table"then dd.selected=false end end end
+bd.selected=not bd.selected;if bd.callback then bd.callback(self)end
+self:fireEvent("mouse_click",_c,ac,bc)self:fireEvent("select",_d,bd)self:updateRender()end;return true end;return false end
+function db:mouse_scroll(_c,ac,bc)
+if self:isInBounds(ac,bc)then local cc=self.get("offset")
+local dc=math.max(0,#
+self.get("items")-self.get("height"))cc=math.min(dc,math.max(0,cc+_c))
+self.set("offset",cc)self:fireEvent("mouse_scroll",_c,ac,bc)return true end;return false end
+function db:selectItem(_c)local ac=self.get("items")if
+not self.get("multiSelection")then
+for cc,dc in ipairs(ac)do if type(dc)=="table"then dc.selected=false end end end;local bc=ac[_c]if
+type(bc)=="string"then bc={text=bc}ac[_c]=bc end
+bc.selected=true;if bc.callback then bc.callback(self)end
+self:fireEvent("select",_c,bc)self:updateRender()return self end
+function db:onSelect(_c)self:registerCallback("select",_c)return self end
+function db:scrollToBottom()
+local _c=math.max(0,#self.get("items")-self.get("height"))self.set("offset",_c)return self end
+function db:scrollToTop()self.set("offset",0)return self end
+function db:render()cb.render(self)local _c=self.get("items")
+local ac=self.get("height")local bc=self.get("offset")local cc=self.get("width")
+for i=1,ac do local dc=i+bc
+local _d=_c[dc]
+if _d then if type(_d)=="string"then _d={text=_d}_c[dc]=_d end
+if
+_d.separator then local ad=(_d.text or"-"):sub(1,1)
+local bd=string.rep(ad,cc)local cd=_d.foreground or self.get("foreground")local dd=
+_d.background or self.get("background")
+self:textBg(1,i,string.rep(" ",cc),dd)self:textFg(1,i,bd:sub(1,cc),cd)else local ad=_d.text
+local bd=_d.selected
+local cd=
+bd and(_d.selectedBackground or self.get("selectedBackground"))or(_d.background or self.get("background"))
+local dd=
+bd and(_d.selectedForeground or self.get("selectedForeground"))or(_d.foreground or self.get("foreground"))self:textBg(1,i,string.rep(" ",cc),cd)
+self:textFg(1,i,ad:sub(1,cc),dd)end end end end;return db end
+_b["elements/ProgressBar.lua"]=function(...)
+local cb=require("elements/VisualElement")local db=require("libraries/colorHex")
+local _c=setmetatable({},cb)_c.__index=_c
+_c.defineProperty(_c,"progress",{default=0,type="number",canTriggerRender=true})
+_c.defineProperty(_c,"showPercentage",{default=false,type="boolean"})
+_c.defineProperty(_c,"progressColor",{default=colors.black,type="color"})
+_c.defineProperty(_c,"direction",{default="right",type="string"})
+function _c.new()local ac=setmetatable({},_c):__init()
+ac.class=_c;ac.set("width",25)ac.set("height",3)return ac end;function _c:init(ac,bc)cb.init(self,ac,bc)
+self.set("type","ProgressBar")end
+function _c:render()cb.render(self)
+local ac=self.get("width")local bc=self.get("height")
+local cc=math.min(100,math.max(0,self.get("progress")))local dc=math.floor((ac*cc)/100)
+local _d=math.floor((bc*cc)/100)local ad=self.get("direction")
+local bd=self.get("progressColor")
+if ad=="right"then
+self:multiBlit(1,1,dc,bc," ",db[self.get("foreground")],db[bd])elseif ad=="left"then
+self:multiBlit(ac-dc+1,1,dc,bc," ",db[self.get("foreground")],db[bd])elseif ad=="up"then
+self:multiBlit(1,bc-_d+1,ac,_d," ",db[self.get("foreground")],db[bd])elseif ad=="down"then
+self:multiBlit(1,1,ac,_d," ",db[self.get("foreground")],db[bd])end
+if self.get("showPercentage")then local cd=tostring(cc).."%"local dd=math.floor(
+(ac-#cd)/2)+1
+local __a=math.floor((bc-1)/2)+1
+self:textFg(dd,__a,cd,self.get("foreground"))end end;return _c end
+_b["elements/Program.lua"]=function(...)local _c=require("elementManager")
+local ac=_c.getElement("VisualElement")local bc=require("errorManager")local cc=setmetatable({},ac)
+cc.__index=cc
+cc.defineProperty(cc,"program",{default=nil,type="table"})
+cc.defineProperty(cc,"path",{default="",type="string"})
+cc.defineProperty(cc,"running",{default=false,type="boolean"})
+cc.defineProperty(cc,"errorCallback",{default=nil,type="function"})
+cc.defineProperty(cc,"doneCallback",{default=nil,type="function"})cc.defineEvent(cc,"*")local dc={}dc.__index=dc
+local _d=dofile("rom/modules/main/cc/require.lua").make
+function dc.new(bd,cd,dd)local __a=setmetatable({},dc)__a.env=cd or{}__a.args={}__a.addEnvironment=
+dd==nil and true or dd;__a.program=bd;return __a end;function dc:setArgs(...)self.args={...}end
+local function ad(bd)
+local cd={shell=shell,multishell=multishell}cd.require,cd.package=_d(cd,bd)return cd end
+function dc:run(bd,cd,dd)
+self.window=window.create(self.program:getBaseFrame():getTerm(),1,1,cd,dd,false)
+local __a=shell.resolveProgram(bd)or fs.exists(bd)and bd or nil
+if(__a~=nil)then
+if(fs.exists(__a))then local a_a=fs.open(__a,"r")
+local b_a=a_a.readAll()a_a.close()
+local c_a=setmetatable(ad(fs.getDir(bd)),{__index=_ENV})c_a.term=self.window;c_a.term.current=term.current
+c_a.term.redirect=term.redirect;c_a.term.native=function()return self.window end
+if
+(self.addEnvironment)then for baa,caa in pairs(self.env)do c_a[baa]=caa end else c_a=self.env end
+self.coroutine=coroutine.create(function()local baa=load(b_a,"@/"..bd,nil,c_a)if baa then
+local caa=baa(table.unpack(self.args))return caa end end)local d_a=term.current()term.redirect(self.window)
+local _aa,aaa=coroutine.resume(self.coroutine)term.redirect(d_a)
+if not _aa then
+local baa=self.program.get("doneCallback")if baa then baa(self.program,_aa,aaa)end
+local caa=self.program.get("errorCallback")
+if caa then local daa=debug.traceback(self.coroutine,aaa)
+local _ba=caa(self.program,aaa,daa:gsub(aaa,""))if(_ba==false)then self.filter=nil;return _aa,aaa end end;bc.header="Basalt Program Error "..bd;bc.error(aaa)end
+if coroutine.status(self.coroutine)=="dead"then
+self.program.set("running",false)self.program.set("program",nil)
+local baa=self.program.get("doneCallback")if baa then baa(self.program,_aa,aaa)end end else bc.header="Basalt Program Error "..bd
+bc.error("File not found")end else bc.header="Basalt Program Error"
+bc.error("Program "..bd.." not found")end end;function dc:resize(bd,cd)self.window.reposition(1,1,bd,cd)
+self:resume("term_resize",bd,cd)end
+function dc:resume(bd,...)local cd={...}if
+(bd:find("mouse_"))then
+cd[2],cd[3]=self.program:getRelativePosition(cd[2],cd[3])end;if self.coroutine==nil or
+coroutine.status(self.coroutine)=="dead"then
+self.program.set("running",false)return end
+if
+(self.filter~=nil)then if(bd~=self.filter)then return end;self.filter=nil end;local dd=term.current()term.redirect(self.window)
+local __a,a_a=coroutine.resume(self.coroutine,bd,table.unpack(cd))term.redirect(dd)
+if __a then self.filter=a_a
+if
+coroutine.status(self.coroutine)=="dead"then
+self.program.set("running",false)self.program.set("program",nil)
+local b_a=self.program.get("doneCallback")if b_a then b_a(self.program,__a,a_a)end end else local b_a=self.program.get("doneCallback")if b_a then
+b_a(self.program,__a,a_a)end
+local c_a=self.program.get("errorCallback")
+if c_a then local d_a=debug.traceback(self.coroutine,a_a)d_a=
+d_a==nil and""or d_a;a_a=a_a or"Unknown error"
+local _aa=c_a(self.program,a_a,d_a:gsub(a_a,""))if(_aa==false)then self.filter=nil;return __a,a_a end end;bc.header="Basalt Program Error"bc.error(a_a)end;return __a,a_a end
+function dc:stop()if self.coroutine==nil or
+coroutine.status(self.coroutine)=="dead"then
+self.program.set("running",false)return end
+coroutine.close(self.coroutine)self.coroutine=nil end;function cc.new()local bd=setmetatable({},cc):__init()
+bd.class=cc;bd.set("z",5)bd.set("width",30)bd.set("height",12)
+return bd end
+function cc:init(bd,cd)
+ac.init(self,bd,cd)self.set("type","Program")
+self:observe("width",function(dd,__a)
+local a_a=dd.get("program")
+if a_a then a_a:resize(__a,dd.get("height"))end end)
+self:observe("height",function(dd,__a)local a_a=dd.get("program")if a_a then
+a_a:resize(dd.get("width"),__a)end end)return self end
+function cc:execute(bd,cd,dd,...)self.set("path",bd)self.set("running",true)
+local __a=dc.new(self,cd,dd)self.set("program",__a)__a:setArgs(...)
+__a:run(bd,self.get("width"),self.get("height"),...)self:updateRender()return self end;function cc:stop()local bd=self.get("program")if bd then bd:stop()
+self.set("running",false)self.set("program",nil)end
+return self end;function cc:sendEvent(bd,...)
+self:dispatchEvent(bd,...)return self end;function cc:onError(bd)
+self.set("errorCallback",bd)return self end;function cc:onDone(bd)
+self.set("doneCallback",bd)return self end
+function cc:dispatchEvent(bd,...)
+local cd=self.get("program")local dd=ac.dispatchEvent(self,bd,...)
+if cd then cd:resume(bd,...)
+if
+(self.get("focused"))then local __a=cd.window.getCursorBlink()
+local a_a,b_a=cd.window.getCursorPos()
+self:setCursor(a_a,b_a,__a,cd.window.getTextColor())end;self:updateRender()end;return dd end
+function cc:focus()
+if(ac.focus(self))then local bd=self.get("program")if bd then
+local cd=bd.window.getCursorBlink()local dd,__a=bd.window.getCursorPos()
+self:setCursor(dd,__a,cd,bd.window.getTextColor())end end end
+function cc:render()ac.render(self)local bd=self.get("program")
+if bd then
+local cd,dd=bd.window.getSize()for y=1,dd do local __a,a_a,b_a=bd.window.getLine(y)if __a then
+self:blit(1,y,__a,a_a,b_a)end end end end;return cc end
+_b["elements/Tree.lua"]=function(...)local cb=require("elements/VisualElement")
+local db=string.sub;local _c=setmetatable({},cb)_c.__index=_c
+_c.defineProperty(_c,"nodes",{default={},type="table",canTriggerRender=true,setter=function(bc,cc)if#cc>0 then
+bc.get("expandedNodes")[cc[1]]=true end;return cc end})
+_c.defineProperty(_c,"selectedNode",{default=nil,type="table",canTriggerRender=true})
+_c.defineProperty(_c,"expandedNodes",{default={},type="table",canTriggerRender=true})
+_c.defineProperty(_c,"scrollOffset",{default=0,type="number",canTriggerRender=true})
+_c.defineProperty(_c,"horizontalOffset",{default=0,type="number",canTriggerRender=true})
+_c.defineProperty(_c,"nodeColor",{default=colors.white,type="color"})
+_c.defineProperty(_c,"selectedColor",{default=colors.lightBlue,type="color"})_c.defineEvent(_c,"mouse_click")
+_c.defineEvent(_c,"mouse_scroll")function _c.new()local bc=setmetatable({},_c):__init()
+bc.class=_c;bc.set("width",30)bc.set("height",10)bc.set("z",5)
+return bc end
+function _c:init(bc,cc)
+cb.init(self,bc,cc)self.set("type","Tree")return self end;function _c:expandNode(bc)self.get("expandedNodes")[bc]=true
+self:updateRender()return self end
+function _c:collapseNode(bc)self.get("expandedNodes")[bc]=
+nil;self:updateRender()return self end;function _c:toggleNode(bc)if self.get("expandedNodes")[bc]then
+self:collapseNode(bc)else self:expandNode(bc)end
+return self end
+local function ac(bc,cc,dc,_d)_d=_d or{}dc=
+dc or 0;for ad,bd in ipairs(bc)do table.insert(_d,{node=bd,level=dc})
+if
+cc[bd]and bd.children then ac(bd.children,cc,dc+1,_d)end end;return _d end
+function _c:mouse_click(bc,cc,dc)
+if cb.mouse_click(self,bc,cc,dc)then
+local _d,ad=self:getRelativePosition(cc,dc)
+local bd=ac(self.get("nodes"),self.get("expandedNodes"))local cd=ad+self.get("scrollOffset")
+if bd[cd]then local dd=bd[cd]
+local __a=dd.node
+if _d<=dd.level*2 +2 then self:toggleNode(__a)end;self.set("selectedNode",__a)
+self:fireEvent("node_select",__a)end;return true end;return false end
+function _c:onSelect(bc)self:registerCallback("node_select",bc)return self end
+function _c:mouse_scroll(bc,cc,dc)
+if cb.mouse_scroll(self,bc,cc,dc)then
+local _d=ac(self.get("nodes"),self.get("expandedNodes"))
+local ad=math.max(0,#_d-self.get("height"))
+local bd=math.min(ad,math.max(0,self.get("scrollOffset")+bc))self.set("scrollOffset",bd)return true end;return false end
+function _c:getNodeSize()local bc,cc=0,0
+local dc=ac(self.get("nodes"),self.get("expandedNodes"))for _d,ad in ipairs(dc)do
+bc=math.max(bc,ad.level+#ad.node.text)end;cc=#dc;return bc,cc end
+function _c:render()cb.render(self)
+local bc=ac(self.get("nodes"),self.get("expandedNodes"))local cc=self.get("height")local dc=self.get("selectedNode")
+local _d=self.get("expandedNodes")local ad=self.get("scrollOffset")
+local bd=self.get("horizontalOffset")
+for y=1,cc do local cd=bc[y+ad]
+if cd then local dd=cd.node;local __a=cd.level
+local a_a=string.rep("  ",__a)local b_a=" "if dd.children and#dd.children>0 then
+b_a=_d[dd]and"\31"or"\16"end
+local c_a=
+dd==dc and self.get("selectedColor")or self.get("background")
+local d_a=a_a..b_a.." ".. (dd.text or"Node")local _aa=db(d_a,bd+1,bd+self.get("width"))
+self:textFg(1,y,
+_aa..string.rep(" ",self.get("width")-#_aa),self.get("foreground"))else
+self:textFg(1,y,string.rep(" ",self.get("width")),self.get("foreground"),self.get("background"))end end end;return _c end
+_b["elements/Image.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("VisualElement")local _c=require("libraries/colorHex")
+local ac=setmetatable({},db)ac.__index=ac
+ac.defineProperty(ac,"bimg",{default={{}},type="table",canTriggerRender=true})
+ac.defineProperty(ac,"currentFrame",{default=1,type="number",canTriggerRender=true})
+ac.defineProperty(ac,"autoResize",{default=false,type="boolean"})
+ac.defineProperty(ac,"offsetX",{default=0,type="number",canTriggerRender=true})
+ac.defineProperty(ac,"offsetY",{default=0,type="number",canTriggerRender=true})
+ac.combineProperties(ac,"offset","offsetX","offsetY")
+function ac.new()local dc=setmetatable({},ac):__init()
+dc.class=ac;dc.set("width",12)dc.set("height",6)
+dc.set("background",colors.black)dc.set("z",5)return dc end;function ac:init(dc,_d)db.init(self,dc,_d)self.set("type","Image")
+return self end
+function ac:resizeImage(dc,_d)
+local ad=self.get("bimg")
+for bd,cd in ipairs(ad)do local dd={}
+for y=1,_d do local __a=string.rep(" ",dc)
+local a_a=string.rep("f",dc)local b_a=string.rep("0",dc)
+if cd[y]and cd[y][1]then local c_a=cd[y][1]
+local d_a=cd[y][2]local _aa=cd[y][3]
+__a=(c_a..string.rep(" ",dc)):sub(1,dc)
+a_a=(d_a..string.rep("f",dc)):sub(1,dc)
+b_a=(_aa..string.rep("0",dc)):sub(1,dc)end;dd[y]={__a,a_a,b_a}end;ad[bd]=dd end;self:updateRender()return self end
+function ac:getImageSize()local dc=self.get("bimg")if not dc[1]or not dc[1][1]then
+return 0,0 end;return#dc[1][1][1],#dc[1]end
+function ac:getPixelData(dc,_d)
+local bd=self.get("bimg")[self.get("currentFrame")]if not bd or not bd[_d]then return end;local cd=bd[_d][1]
+local dd=bd[_d][2]local __a=bd[_d][3]
+if not cd or not dd or not __a then return end;local a_a=tonumber(dd:sub(dc,dc),16)
+local b_a=tonumber(__a:sub(dc,dc),16)local c_a=cd:sub(dc,dc)return a_a,b_a,c_a end
+local function bc(dc,_d)
+local ad=dc.get("bimg")[dc.get("currentFrame")]if not ad then ad={}
+dc.get("bimg")[dc.get("currentFrame")]=ad end
+if not ad[_d]then ad[_d]={"","",""}end;return ad end
+local function cc(dc,_d,ad)if not dc.get("autoResize")then return end
+local bd=dc.get("bimg")local cd=_d;local dd=ad
+for __a,a_a in ipairs(bd)do for b_a,c_a in pairs(a_a)do cd=math.max(cd,#c_a[1])
+dd=math.max(dd,b_a)end end
+for __a,a_a in ipairs(bd)do
+for y=1,dd do if not a_a[y]then a_a[y]={"","",""}end;local b_a=a_a[y]while#
+b_a[1]<cd do b_a[1]=b_a[1].." "end;while#b_a[2]<cd do b_a[2]=
+b_a[2].."f"end;while#b_a[3]<cd do
+b_a[3]=b_a[3].."0"end end end end
+function ac:setText(dc,_d,ad)if
+type(ad)~="string"or#ad<1 or dc<1 or _d<1 then return self end
+if
+not self.get("autoResize")then local dd,__a=self:getImageSize()if _d>__a then return self end end;local bd=bc(self,_d)if self.get("autoResize")then
+cc(self,dc+#ad-1,_d)else local dd=#bd[_d][1]if dc>dd then return self end
+ad=ad:sub(1,dd-dc+1)end
+local cd=bd[_d][1]
+bd[_d][1]=cd:sub(1,dc-1)..ad..cd:sub(dc+#ad)self:updateRender()return self end
+function ac:getText(dc,_d,ad)if not dc or not _d then return""end
+local bd=self.get("bimg")[self.get("currentFrame")]if not bd or not bd[_d]then return""end;local cd=bd[_d][1]if not cd then
+return""end
+if ad then return cd:sub(dc,dc+ad-1)else return cd:sub(dc,dc)end end
+function ac:setFg(dc,_d,ad)if
+type(ad)~="string"or#ad<1 or dc<1 or _d<1 then return self end
+if
+not self.get("autoResize")then local dd,__a=self:getImageSize()if _d>__a then return self end end;local bd=bc(self,_d)if self.get("autoResize")then
+cc(self,dc+#ad-1,_d)else local dd=#bd[_d][2]if dc>dd then return self end
+ad=ad:sub(1,dd-dc+1)end
+local cd=bd[_d][2]
+bd[_d][2]=cd:sub(1,dc-1)..ad..cd:sub(dc+#ad)self:updateRender()return self end
+function ac:getFg(dc,_d,ad)if not dc or not _d then return""end
+local bd=self.get("bimg")[self.get("currentFrame")]if not bd or not bd[_d]then return""end;local cd=bd[_d][2]if not cd then
+return""end
+if ad then return cd:sub(dc,dc+ad-1)else return cd:sub(dc)end end
+function ac:setBg(dc,_d,ad)if
+type(ad)~="string"or#ad<1 or dc<1 or _d<1 then return self end
+if
+not self.get("autoResize")then local dd,__a=self:getImageSize()if _d>__a then return self end end;local bd=bc(self,_d)if self.get("autoResize")then
+cc(self,dc+#ad-1,_d)else local dd=#bd[_d][3]if dc>dd then return self end
+ad=ad:sub(1,dd-dc+1)end
+local cd=bd[_d][3]
+bd[_d][3]=cd:sub(1,dc-1)..ad..cd:sub(dc+#ad)self:updateRender()return self end
+function ac:getBg(dc,_d,ad)if not dc or not _d then return""end
+local bd=self.get("bimg")[self.get("currentFrame")]if not bd or not bd[_d]then return""end;local cd=bd[_d][3]if not cd then
+return""end
+if ad then return cd:sub(dc,dc+ad-1)else return cd:sub(dc)end end
+function ac:setPixel(dc,_d,ad,bd,cd)if ad then self:setText(dc,_d,ad)end;if bd then
+self:setFg(dc,_d,bd)end;if cd then self:setBg(dc,_d,cd)end;return self end
+function ac:nextFrame()
+if not self.get("bimg").animation then return self end;local dc=self.get("bimg")local _d=self.get("currentFrame")
+local ad=_d+1;if ad>#dc then ad=1 end;self.set("currentFrame",ad)return self end
+function ac:addFrame()local _d=self.get("bimg")
+local ad=_d.width or#_d[1][1][1]local bd=_d.height or#_d[1]local cd={}local dd=string.rep(" ",ad)
+local __a=string.rep("f",ad)local a_a=string.rep("0",ad)
+for y=1,bd do cd[y]={dd,__a,a_a}end;table.insert(_d,cd)return self end;function ac:updateFrame(dc,_d)local ad=self.get("bimg")ad[dc]=_d
+self:updateRender()return self end;function ac:getFrame(dc)
+local _d=self.get("bimg")
+return _d[dc or self.get("currentFrame")]end
+function ac:getMetadata()local dc={}
+local _d=self.get("bimg")
+for ad,bd in pairs(_d)do if(type(bd)=="string")then dc[ad]=bd end end;return dc end
+function ac:setMetadata(dc,_d)if(type(dc)=="table")then
+for bd,cd in pairs(dc)do self:setMetadata(bd,cd)end;return self end
+local ad=self.get("bimg")if(type(_d)=="string")then ad[dc]=_d end;return self end
+function ac:render()db.render(self)
+local dc=self.get("bimg")[self.get("currentFrame")]if not dc then return end;local _d=self.get("offsetX")
+local ad=self.get("offsetY")local bd=self.get("width")local cd=self.get("height")
+for y=1,cd do local dd=y+ad
+local __a=dc[dd]
+if __a then local a_a=__a[1]local b_a=__a[2]local c_a=__a[3]
+if a_a and b_a and c_a then local d_a=bd-
+math.max(0,_d)
+if d_a>0 then
+if _d<0 then local _aa=math.abs(_d)+1
+a_a=a_a:sub(_aa)b_a=b_a:sub(_aa)c_a=c_a:sub(_aa)end;a_a=a_a:sub(1,d_a)b_a=b_a:sub(1,d_a)c_a=c_a:sub(1,d_a)self:blit(math.max(1,
+1 +_d),y,a_a,b_a,c_a)end end end end end;return ac end
+_b["elements/Label.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("VisualElement")local _c=require("libraries/utils").wrapText
+local ac=setmetatable({},db)ac.__index=ac
+ac.defineProperty(ac,"text",{default="Label",type="string",canTriggerRender=true,setter=function(bc,cc)
+if(type(cc)=="function")then cc=cc()end
+if(bc.get("autoSize"))then bc.set("width",#cc)else bc.set("height",#
+_c(cc,bc.get("width")))end;return cc end})
+ac.defineProperty(ac,"autoSize",{default=true,type="boolean",canTriggerRender=true,setter=function(bc,cc)if(cc)then
+bc.set("width",#bc.get("text"))else
+bc.set("height",#_c(bc.get("text"),bc.get("width")))end;return cc end})
+function ac.new()local bc=setmetatable({},ac):__init()
+bc.class=ac;bc.set("z",3)bc.set("foreground",colors.black)
+bc.set("backgroundEnabled",false)return bc end
+function ac:init(bc,cc)db.init(self,bc,cc)if(self.parent)then
+self.set("background",self.parent.get("background"))
+self.set("foreground",self.parent.get("foreground"))end
+self.set("type","Label")return self end;function ac:getWrappedText()local bc=self.get("text")
+local cc=_c(bc,self.get("width"))return cc end
+function ac:render()
+db.render(self)local bc=self.get("text")
+if(self.get("autoSize"))then
+self:textFg(1,1,bc,self.get("foreground"))else local cc=_c(bc,self.get("width"))for dc,_d in ipairs(cc)do
+self:textFg(1,dc,_d,self.get("foreground"))end end end;return ac end
+_b["elements/Input.lua"]=function(...)
+local cb=require("elements/VisualElement")local db=require("libraries/colorHex")
+local _c=setmetatable({},cb)_c.__index=_c
+_c.defineProperty(_c,"text",{default="",type="string",canTriggerRender=true})
+_c.defineProperty(_c,"cursorPos",{default=1,type="number"})
+_c.defineProperty(_c,"viewOffset",{default=0,type="number",canTriggerRender=true})
+_c.defineProperty(_c,"maxLength",{default=nil,type="number"})
+_c.defineProperty(_c,"placeholder",{default="...",type="string"})
+_c.defineProperty(_c,"placeholderColor",{default=colors.gray,type="color"})
+_c.defineProperty(_c,"focusedBackground",{default=colors.blue,type="color"})
+_c.defineProperty(_c,"focusedForeground",{default=colors.white,type="color"})
+_c.defineProperty(_c,"pattern",{default=nil,type="string"})
+_c.defineProperty(_c,"cursorColor",{default=nil,type="number"})
+_c.defineProperty(_c,"replaceChar",{default=nil,type="string",canTriggerRender=true})_c.defineEvent(_c,"mouse_click")
+_c.defineEvent(_c,"key")_c.defineEvent(_c,"char")
+_c.defineEvent(_c,"paste")
+function _c.new()local ac=setmetatable({},_c):__init()
+ac.class=_c;ac.set("width",8)ac.set("z",3)return ac end;function _c:init(ac,bc)cb.init(self,ac,bc)self.set("type","Input")
+return self end
+function _c:setCursor(ac,bc,cc,dc)
+ac=math.min(self.get("width"),math.max(1,ac))return cb.setCursor(self,ac,bc,cc,dc)end
+function _c:char(ac)if not self.get("focused")then return false end
+local bc=self.get("text")local cc=self.get("cursorPos")local dc=self.get("maxLength")
+local _d=self.get("pattern")if dc and#bc>=dc then return false end;if _d and not ac:match(_d)then return
+false end
+self.set("text",bc:sub(1,cc-1)..ac..bc:sub(cc))self.set("cursorPos",cc+1)self:updateViewport()local ad=
+self.get("cursorPos")-self.get("viewOffset")
+self:setCursor(ad,1,true,
+self.get("cursorColor")or self.get("foreground"))cb.char(self,ac)return true end
+function _c:key(ac,bc)if not self.get("focused")then return false end
+local cc=self.get("cursorPos")local dc=self.get("text")local _d=self.get("viewOffset")
+local ad=self.get("width")
+if ac==keys.left then if cc>1 then self.set("cursorPos",cc-1)
+if cc-1 <=_d then self.set("viewOffset",math.max(0,
+cc-2))end end elseif ac==keys.right then if cc<=#dc then self.set("cursorPos",
+cc+1)if cc-_d>=ad then
+self.set("viewOffset",cc-ad+1)end end elseif
+ac==keys.backspace then if cc>1 then
+self.set("text",dc:sub(1,cc-2)..dc:sub(cc))self.set("cursorPos",cc-1)self:updateRender()
+self:updateViewport()end end
+local bd=self.get("cursorPos")-self.get("viewOffset")
+self:setCursor(bd,1,true,self.get("cursorColor")or self.get("foreground"))cb.key(self,ac,bc)return true end
+function _c:mouse_click(ac,bc,cc)
+if cb.mouse_click(self,ac,bc,cc)then
+local dc,_d=self:getRelativePosition(bc,cc)local ad=self.get("text")local bd=self.get("viewOffset")
+local cd=#ad+1;local dd=math.min(cd,bd+dc)self.set("cursorPos",dd)
+local __a=dd-bd
+self:setCursor(__a,1,true,self.get("cursorColor")or self.get("foreground"))return true end;return false end
+function _c:updateViewport()local ac=self.get("width")
+local bc=self.get("cursorPos")local cc=self.get("viewOffset")
+local dc=#self.get("text")
+if bc-cc>=ac then self.set("viewOffset",bc-ac+1)elseif bc<=cc then self.set("viewOffset",
+bc-1)end
+self.set("viewOffset",math.max(0,math.min(self.get("viewOffset"),dc-ac+1)))return self end
+function _c:focus()cb.focus(self)
+self:setCursor(self.get("cursorPos")-
+self.get("viewOffset"),1,true,self.get("cursorColor")or self.get("foreground"))self:updateRender()end
+function _c:blur()cb.blur(self)
+self:setCursor(1,1,false,self.get("cursorColor")or
+self.get("foreground"))self:updateRender()end
+function _c:paste(ac)if not self.get("focused")then return false end
+local bc=self.get("text")local cc=self.get("cursorPos")local dc=self.get("maxLength")
+local _d=self.get("pattern")local ad=bc:sub(1,cc-1)..ac..bc:sub(cc)if
+dc and#ad>dc then ad=ad:sub(1,dc)end;if _d and not ad:match(_d)then
+return false end;self.set("text",ad)
+self.set("cursorPos",cc+#ac)self:updateViewport()end
+function _c:render()local cc=self.get("text")local dc=self.get("viewOffset")
+local _d=self.get("width")local ad=self.get("placeholder")
+local bd=self.get("focusedBackground")local cd=self.get("focusedForeground")
+local dd=self.get("focused")local __a,a_a=self.get("width"),self.get("height")
+local b_a=self.get("replaceChar")
+self:multiBlit(1,1,__a,a_a," ",db[dd and cd or self.get("foreground")],db[
+dd and bd or self.get("background")])if
+#cc==0 and#ad~=0 and self.get("focused")==false then
+self:textFg(1,1,ad:sub(1,__a),self.get("placeholderColor"))return end;if(dd)then
+self:setCursor(
+self.get("cursorPos")-dc,1,true,self.get("cursorColor")or self.get("foreground"))end
+local c_a=cc:sub(dc+1,dc+__a)if b_a and#b_a>0 then c_a=b_a:rep(#c_a)end
+self:textFg(1,1,c_a,self.get("foreground"))end;return _c end
+_b["elements/BarChart.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("VisualElement")local _c=cb.getElement("Graph")
+local ac=require("libraries/colorHex")local bc=setmetatable({},_c)bc.__index=bc;function bc.new()
+local cc=setmetatable({},bc):__init()cc.class=bc;return cc end
+function bc:init(cc,dc)
+_c.init(self,cc,dc)self.set("type","BarChart")return self end
+function bc:render()db.render(self)local ad=self.get("width")
+local bd=self.get("height")local cd=self.get("minValue")local dd=self.get("maxValue")
+local __a=self.get("series")local a_a=0;local b_a={}
+for aaa,baa in pairs(__a)do if(baa.visible)then if#baa.data>0 then a_a=a_a+1
+table.insert(b_a,baa)end end end;local c_a=a_a;local d_a=1
+local _aa=math.min(b_a[1]and b_a[1].pointCount or 0,math.floor((
+ad+d_a)/ (c_a+d_a)))
+for groupIndex=1,_aa do local aaa=( (groupIndex-1)* (c_a+d_a))+1
+for baa,caa in
+ipairs(b_a)do local daa=caa.data[groupIndex]
+if daa then local _ba=aaa+ (baa-1)
+local aba=(daa-cd)/ (dd-cd)local bba=math.floor(bd- (aba* (bd-1)))
+bba=math.max(1,math.min(bba,bd))for barY=bba,bd do
+self:blit(_ba,barY,caa.symbol,ac[caa.fgColor],ac[caa.bgColor])end end end end end;return bc end
+_b["elements/Button.lua"]=function(...)local cb=require("elementManager")
+local db=cb.getElement("VisualElement")
+local _c=require("libraries/utils").getCenteredPosition;local ac=setmetatable({},db)ac.__index=ac
+ac.defineProperty(ac,"text",{default="Button",type="string",canTriggerRender=true})ac.defineEvent(ac,"mouse_click")
+ac.defineEvent(ac,"mouse_up")function ac.new()local bc=setmetatable({},ac):__init()
+bc.class=ac;bc.set("width",10)bc.set("height",3)bc.set("z",5)
+return bc end;function ac:init(bc,cc)
+db.init(self,bc,cc)self.set("type","Button")end
+function ac:render()
+db.render(self)local bc=self.get("text")
+bc=bc:sub(1,self.get("width"))
+local cc,dc=_c(bc,self.get("width"),self.get("height"))
+self:textFg(cc,dc,bc,self.get("foreground"))end;return ac end
+_b["elements/BaseElement.lua"]=function(...)local cb=require("propertySystem")
+local db=require("libraries/utils").uuid;local _c=require("errorManager")local ac=setmetatable({},cb)
+ac.__index=ac
+ac.defineProperty(ac,"type",{default={"BaseElement"},type="string",setter=function(bc,cc)if type(cc)=="string"then
+table.insert(bc._values.type,1,cc)return bc._values.type end;return cc end,getter=function(bc,cc,dc)if
+dc~=nil and dc<1 then return bc._values.type end;return bc._values.type[
+dc or 1]end})
+ac.defineProperty(ac,"id",{default="",type="string",readonly=true})
+ac.defineProperty(ac,"name",{default="",type="string"})
+ac.defineProperty(ac,"eventCallbacks",{default={},type="table"})
+ac.defineProperty(ac,"enabled",{default=true,type="boolean"})
+function ac.defineEvent(bc,cc,dc)
+if not rawget(bc,'_eventConfigs')then bc._eventConfigs={}end;bc._eventConfigs[cc]={requires=dc and dc or cc}end
+function ac.registerEventCallback(bc,cc,...)
+local dc=cc:match("^on")and cc or"on"..cc;local _d={...}local ad=_d[1]
+bc[dc]=function(bd,...)
+for cd,dd in ipairs(_d)do if not bd._registeredEvents[dd]then
+bd:listenEvent(dd,true)end end;bd:registerCallback(ad,...)return bd end end;function ac.new()local bc=setmetatable({},ac):__init()
+bc.class=ac;return bc end
+function ac:init(bc,cc)
+if self._initialized then return self end;self._initialized=true;self._props=bc;self._values.id=db()
+self.basalt=cc;self._registeredEvents={}local dc=getmetatable(self).__index
+local _d={}dc=self.class
+while dc do
+if type(dc)=="table"and dc._eventConfigs then for ad,bd in
+pairs(dc._eventConfigs)do if not _d[ad]then _d[ad]=bd end end end
+dc=getmetatable(dc)and getmetatable(dc).__index end
+for ad,bd in pairs(_d)do self._registeredEvents[bd.requires]=true end;if self._callbacks then
+for ad,bd in pairs(self._callbacks)do self[bd]=function(cd,...)
+cd:registerCallback(ad,...)return cd end end end
+return self end
+function ac:postInit()if self._postInitialized then return self end
+self._postInitialized=true;if(self._props)then
+for bc,cc in pairs(self._props)do self.set(bc,cc)end end;self._props=nil;return self end;function ac:isType(bc)
+for cc,dc in ipairs(self._values.type)do if dc==bc then return true end end;return false end
+function ac:listenEvent(bc,cc)cc=
+cc~=false
+if
+cc~= (self._registeredEvents[bc]or false)then
+if cc then self._registeredEvents[bc]=true;if self.parent then
+self.parent:registerChildEvent(self,bc)end else self._registeredEvents[bc]=nil
+if
+self.parent then self.parent:unregisterChildEvent(self,bc)end end end;return self end
+function ac:registerCallback(bc,cc)if not self._registeredEvents[bc]then
+self:listenEvent(bc,true)end
+if
+not self._values.eventCallbacks[bc]then self._values.eventCallbacks[bc]={}end
+table.insert(self._values.eventCallbacks[bc],cc)return self end
+function ac:fireEvent(bc,...)
+if self.get("eventCallbacks")[bc]then for cc,dc in
+ipairs(self.get("eventCallbacks")[bc])do local _d=dc(self,...)return _d end end;return self end
+function ac:dispatchEvent(bc,...)
+if self.get("enabled")==false then return false end;if self[bc]then return self[bc](self,...)end;return
+self:handleEvent(bc,...)end;function ac:handleEvent(bc,...)return false end;function ac:onChange(bc,cc)
+self:observe(bc,cc)return self end
+function ac:getBaseFrame()if self.parent then return
+self.parent:getBaseFrame()end;return self end
+function ac:destroy()self._destroyed=true;self:removeAllObservers()
+self:setFocused(false)
+for bc in pairs(self._registeredEvents)do self:listenEvent(bc,false)end
+if(self.parent)then self.parent:removeChild(self)end end
+function ac:updateRender()if(self.parent)then self.parent:updateRender()else
+self._renderUpdate=true end;return self end;return ac end
+_b["elements/TextBox.lua"]=function(...)
+local _c=require("elements/VisualElement")local ac=require("libraries/colorHex")
+local bc=setmetatable({},_c)bc.__index=bc
+bc.defineProperty(bc,"lines",{default={""},type="table",canTriggerRender=true})
+bc.defineProperty(bc,"cursorX",{default=1,type="number"})
+bc.defineProperty(bc,"cursorY",{default=1,type="number"})
+bc.defineProperty(bc,"scrollX",{default=0,type="number",canTriggerRender=true})
+bc.defineProperty(bc,"scrollY",{default=0,type="number",canTriggerRender=true})
+bc.defineProperty(bc,"editable",{default=true,type="boolean"})
+bc.defineProperty(bc,"syntaxPatterns",{default={},type="table"})
+bc.defineProperty(bc,"cursorColor",{default=nil,type="color"})bc.defineEvent(bc,"mouse_click")
+bc.defineEvent(bc,"key")bc.defineEvent(bc,"char")
+bc.defineEvent(bc,"mouse_scroll")bc.defineEvent(bc,"paste")
+function bc.new()
+local bd=setmetatable({},bc):__init()bd.class=bc;bd.set("width",20)bd.set("height",10)return bd end;function bc:init(bd,cd)_c.init(self,bd,cd)self.set("type","TextBox")
+return self end;function bc:addSyntaxPattern(bd,cd)
+table.insert(self.get("syntaxPatterns"),{pattern=bd,color=cd})return self end
+local function cc(bd,cd)
+local dd=bd.get("lines")local __a=bd.get("cursorX")local a_a=bd.get("cursorY")
+local b_a=dd[a_a]
+dd[a_a]=b_a:sub(1,__a-1)..cd..b_a:sub(__a)bd.set("cursorX",__a+1)bd:updateViewport()
+bd:updateRender()end
+local function dc(bd)local cd=bd.get("lines")local dd=bd.get("cursorX")
+local __a=bd.get("cursorY")local a_a=cd[__a]local b_a=a_a:sub(dd)cd[__a]=a_a:sub(1,dd-1)table.insert(cd,
+__a+1,b_a)bd.set("cursorX",1)
+bd.set("cursorY",__a+1)bd:updateViewport()bd:updateRender()end
+local function _d(bd)local cd=bd.get("lines")local dd=bd.get("cursorX")
+local __a=bd.get("cursorY")local a_a=cd[__a]
+if dd>1 then
+cd[__a]=a_a:sub(1,dd-2)..a_a:sub(dd)bd.set("cursorX",dd-1)elseif __a>1 then local b_a=cd[__a-1]
+bd.set("cursorX",#b_a+1)bd.set("cursorY",__a-1)cd[__a-1]=b_a..a_a
+table.remove(cd,__a)end;bd:updateViewport()bd:updateRender()end
+function bc:updateViewport()local bd=self.get("cursorX")
+local cd=self.get("cursorY")local dd=self.get("scrollX")local __a=self.get("scrollY")
+local a_a=self.get("width")local b_a=self.get("height")
+if bd-dd>a_a then
+self.set("scrollX",bd-a_a)elseif bd-dd<1 then self.set("scrollX",bd-1)end;if cd-__a>b_a then self.set("scrollY",cd-b_a)elseif cd-__a<1 then self.set("scrollY",
+cd-1)end;return
+self end
+function bc:char(bd)if
+not self.get("editable")or not self.get("focused")then return false end;cc(self,bd)return true end
+function bc:key(bd)if
+not self.get("editable")or not self.get("focused")then return false end
+local cd=self.get("lines")local dd=self.get("cursorX")local __a=self.get("cursorY")
+if bd==
+keys.enter then dc(self)elseif bd==keys.backspace then _d(self)elseif bd==keys.left then
+if dd>1 then self.set("cursorX",
+dd-1)elseif __a>1 then self.set("cursorY",__a-1)self.set("cursorX",
+#cd[__a-1]+1)end elseif bd==keys.right then
+if dd<=#cd[__a]then self.set("cursorX",dd+1)elseif
+__a<#cd then self.set("cursorY",__a+1)self.set("cursorX",1)end elseif bd==keys.up and __a>1 then self.set("cursorY",__a-1)
+self.set("cursorX",math.min(dd,
+#cd[__a-1]+1))elseif bd==keys.down and __a<#cd then self.set("cursorY",__a+1)
+self.set("cursorX",math.min(dd,
+#cd[__a+1]+1))end;self:updateRender()self:updateViewport()return true end
+function bc:mouse_scroll(bd,cd,dd)
+if self:isInBounds(cd,dd)then local __a=self.get("scrollY")
+local a_a=self.get("height")local b_a=self.get("lines")
+local c_a=math.max(0,#b_a-a_a+2)local d_a=math.max(0,math.min(c_a,__a+bd))
+self.set("scrollY",d_a)self:updateRender()return true end;return false end
+function bc:mouse_click(bd,cd,dd)
+if _c.mouse_click(self,bd,cd,dd)then
+local __a,a_a=self:getRelativePosition(cd,dd)local b_a=self.get("scrollX")local c_a=self.get("scrollY")
+local d_a=a_a+c_a;local _aa=self.get("lines")if d_a<=#_aa then
+self.set("cursorY",d_a)
+self.set("cursorX",math.min(__a+b_a,#_aa[d_a]+1))end
+self:updateRender()return true end;return false end
+function bc:paste(bd)if
+not self.get("editable")or not self.get("focused")then return false end;for cd in bd:gmatch(".")do if cd=="\n"then
+dc(self)else cc(self,cd)end end;return
+true end
+function bc:setText(bd)local cd={}
+if bd==""then cd={""}else for dd in(bd.."\n"):gmatch("([^\n]*)\n")do
+table.insert(cd,dd)end end;self.set("lines",cd)return self end
+function bc:getText()return table.concat(self.get("lines"),"\n")end
+local function ad(bd,cd)local dd=cd
+local __a=string.rep(ac[bd.get("foreground")],#dd)local a_a=bd.get("syntaxPatterns")
+for b_a,c_a in ipairs(a_a)do local d_a=1
+while true do
+local _aa,aaa=dd:find(c_a.pattern,d_a)if not _aa then break end
+__a=__a:sub(1,_aa-1)..
+string.rep(ac[c_a.color],aaa-_aa+1)..__a:sub(aaa+1)d_a=aaa+1 end end;return dd,__a end
+function bc:render()_c.render(self)local bd=self.get("lines")
+local cd=self.get("scrollX")local dd=self.get("scrollY")local __a=self.get("width")
+local a_a=self.get("height")local b_a=ac[self.get("foreground")]
+local c_a=ac[self.get("background")]
+for y=1,a_a do local d_a=y+dd;local _aa=bd[d_a]or""local aaa=_aa:sub(cd+1,cd+__a)
+if#
+aaa<__a then aaa=aaa..string.rep(" ",__a-#aaa)end;local baa,caa=ad(self,aaa)
+self:blit(1,y,baa,caa,string.rep(c_a,#aaa))end
+if self.get("focused")then local d_a=self.get("cursorX")-cd;local _aa=
+self.get("cursorY")-dd;if d_a>=1 and d_a<=__a and _aa>=1 and
+_aa<=a_a then
+self:setCursor(d_a,_aa,true,self.get("cursorColor")or
+self.get("foreground"))end end end;return bc end
+_b["elements/Table.lua"]=function(...)
+local cb=require("elements/VisualElement")local db=require("libraries/colorHex")
+local _c=setmetatable({},cb)_c.__index=_c
+_c.defineProperty(_c,"columns",{default={},type="table",canTriggerRender=true,setter=function(ac,bc)local cc={}
+for dc,_d in ipairs(bc)do
+if type(_d)=="string"then cc[dc]={name=_d,width=
+#_d+1}elseif type(_d)=="table"then cc[dc]={name=_d.name or"",width=_d.width or#
+_d.name+1}end end;return cc end})
+_c.defineProperty(_c,"data",{default={},type="table",canTriggerRender=true})
+_c.defineProperty(_c,"selectedRow",{default=nil,type="number",canTriggerRender=true})
+_c.defineProperty(_c,"headerColor",{default=colors.blue,type="color"})
+_c.defineProperty(_c,"selectedColor",{default=colors.lightBlue,type="color"})
+_c.defineProperty(_c,"gridColor",{default=colors.gray,type="color"})
+_c.defineProperty(_c,"sortColumn",{default=nil,type="number"})
+_c.defineProperty(_c,"sortDirection",{default="asc",type="string"})
+_c.defineProperty(_c,"scrollOffset",{default=0,type="number",canTriggerRender=true})_c.defineEvent(_c,"mouse_click")
+_c.defineEvent(_c,"mouse_scroll")function _c.new()local ac=setmetatable({},_c):__init()
+ac.class=_c;ac.set("width",30)ac.set("height",10)ac.set("z",5)
+return ac end
+function _c:init(ac,bc)
+cb.init(self,ac,bc)self.set("type","Table")return self end
+function _c:addColumn(ac,bc)local cc=self.get("columns")
+table.insert(cc,{name=ac,width=bc})self.set("columns",cc)return self end;function _c:addData(...)local ac=self.get("data")table.insert(ac,{...})
+self.set("data",ac)return self end
+function _c:sortData(ac,bc)
+local cc=self.get("data")local dc=self.get("sortDirection")
+if not bc then
+table.sort(cc,function(_d,ad)if dc=="asc"then return
+_d[ac]<ad[ac]else return _d[ac]>ad[ac]end end)else
+table.sort(cc,function(_d,ad)return bc(_d[ac],ad[ac])end)end;return self end
+function _c:mouse_click(ac,bc,cc)
+if not cb.mouse_click(self,ac,bc,cc)then return false end;local dc,_d=self:getRelativePosition(bc,cc)
+if _d==1 then local ad=1
+for bd,cd in
+ipairs(self.get("columns"))do
+if dc>=ad and dc<ad+cd.width then
+if self.get("sortColumn")==bd then
+self.set("sortDirection",
+self.get("sortDirection")=="asc"and"desc"or"asc")else self.set("sortColumn",bd)
+self.set("sortDirection","asc")end;self:sortData(bd)break end;ad=ad+cd.width end end
+if _d>1 then local ad=_d-2 +self.get("scrollOffset")if ad>=0 and ad<#
+self.get("data")then local bd=ad+1
+self.set("selectedRow",bd)
+self:fireEvent("select",bd,self.get("data")[bd])end end;return true end
+function _c:onSelect(ac)self:registerCallback("select",ac)return self end
+function _c:mouse_scroll(ac,bc,cc)
+if(cb.mouse_scroll(self,ac,bc,cc))then local dc=self.get("data")
+local _d=self.get("height")local ad=_d-2;local bd=math.max(0,#dc-ad+1)
+local cd=math.min(bd,math.max(0,
+self.get("scrollOffset")+ac))self.set("scrollOffset",cd)return true end;return false end
+function _c:render()cb.render(self)local ac=self.get("columns")
+local bc=self.get("data")local cc=self.get("selectedRow")
+local dc=self.get("sortColumn")local _d=self.get("scrollOffset")local ad=self.get("height")
+local bd=self.get("width")local cd=1
+for dd,__a in ipairs(ac)do local a_a=__a.name;if dd==dc then
+a_a=a_a.. (
+self.get("sortDirection")=="asc"and"\30"or"\31")end
+self:textFg(cd,1,a_a:sub(1,__a.width),self.get("headerColor"))cd=cd+__a.width end
+for y=2,ad do local dd=y-2 +_d;local __a=bc[dd+1]
+if __a and(dd+1)<=#bc then cd=1
+local a_a=(dd+1)==cc and
+self.get("selectedColor")or self.get("background")
+for b_a,c_a in ipairs(ac)do local d_a=tostring(__a[b_a]or"")local _aa=d_a..
+string.rep(" ",c_a.width-#d_a)if b_a<#ac then _aa=
+string.sub(_aa,1,c_a.width-1).." "end
+local aaa=string.sub(_aa,1,c_a.width)
+local baa=string.rep(db[self.get("foreground")],#aaa)local caa=string.rep(db[a_a],#aaa)
+self:blit(cd,y,aaa,baa,caa)cd=cd+c_a.width end else
+self:blit(1,y,string.rep(" ",self.get("width")),string.rep(db[self.get("foreground")],self.get("width")),string.rep(db[self.get("background")],self.get("width")))end end end;return _c end
+_b["log.lua"]=function(...)local cb={}cb._logs={}cb._enabled=false;cb._logToFile=false
+cb._logFile="basalt.log"fs.delete(cb._logFile)
+cb.LEVEL={DEBUG=1,INFO=2,WARN=3,ERROR=4}
+local db={[cb.LEVEL.DEBUG]="Debug",[cb.LEVEL.INFO]="Info",[cb.LEVEL.WARN]="Warn",[cb.LEVEL.ERROR]="Error"}
+local _c={[cb.LEVEL.DEBUG]=colors.lightGray,[cb.LEVEL.INFO]=colors.white,[cb.LEVEL.WARN]=colors.yellow,[cb.LEVEL.ERROR]=colors.red}function cb.setLogToFile(cc)cb._logToFile=cc end
+function cb.setEnabled(cc)cb._enabled=cc end;local function ac(cc)
+if cb._logToFile then local dc=io.open(cb._logFile,"a")if dc then
+dc:write(cc.."\n")dc:close()end end end
+local function bc(cc,...)if
+not cb._enabled then return end;local _d=os.date("%H:%M:%S")
+local ad=debug.getinfo(3,"Sl")local bd=ad.source:match("@?(.*)")local cd=ad.currentline
+local dd=string.format("[%s:%d]",bd:match("([^/\\]+)%.lua$"),cd)local __a="["..db[cc].."]"local a_a=""
+for c_a,d_a in ipairs(table.pack(...))do if
+c_a>1 then a_a=a_a.." "end;a_a=a_a..tostring(d_a)end;local b_a=string.format("%s %s%s %s",_d,dd,__a,a_a)
+ac(b_a)
+table.insert(cb._logs,{time=_d,level=cc,message=a_a})end;function cb.debug(...)bc(cb.LEVEL.DEBUG,...)end;function cb.info(...)
+bc(cb.LEVEL.INFO,...)end
+function cb.warn(...)bc(cb.LEVEL.WARN,...)end;function cb.error(...)bc(cb.LEVEL.ERROR,...)end;return cb end
+_b["elementManager.lua"]=function(...)local ad=table.pack(...)
+local bd=fs.getDir(ad[2]or"basalt")local cd=ad[1]if(bd==nil)then
+error("Unable to find directory "..
+ad[2].." please report this bug to our discord.")end
+local dd=require("log")local __a=package.path;local a_a="path;/path/?.lua;/path/?/init.lua;"
+local b_a=a_a:gsub("path",bd)local c_a={}c_a._elements={}c_a._plugins={}c_a._APIs={}
+local d_a=fs.combine(bd,"elements")local _aa=fs.combine(bd,"plugins")
+dd.info("Loading elements from "..d_a)
+if fs.exists(d_a)then
+for aaa,baa in ipairs(fs.list(d_a))do
+local caa=baa:match("(.+).lua")
+if caa then dd.debug("Found element: "..caa)c_a._elements[caa]={class=
+nil,plugins={},loaded=false}end end end;dd.info("Loading plugins from ".._aa)
+if
+fs.exists(_aa)then
+for aaa,baa in ipairs(fs.list(_aa))do local caa=baa:match("(.+).lua")
+if caa then dd.debug(
+"Found plugin: "..caa)
+local daa=require(fs.combine("plugins",caa))
+if type(daa)=="table"then
+for _ba,aba in pairs(daa)do
+if(_ba~="API")then if(c_a._plugins[_ba]==nil)then
+c_a._plugins[_ba]={}end
+table.insert(c_a._plugins[_ba],aba)else c_a._APIs[caa]=aba end end end end end end
+if(ba)then if(ca==nil)then
+error("Unable to find minified_elementDirectory please report this bug to our discord.")end
+for aaa,baa in pairs(ca)do c_a._elements[aaa:gsub(".lua","")]={class=
+nil,plugins={},loaded=false}end;if(da==nil)then
+error("Unable to find minified_pluginDirectory please report this bug to our discord.")end
+for aaa,baa in pairs(da)do
+local caa=aaa:gsub(".lua","")local daa=require(fs.combine("plugins",caa))
+if type(daa)==
+"table"then
+for _ba,aba in pairs(daa)do
+if(_ba~="API")then if(c_a._plugins[_ba]==nil)then
+c_a._plugins[_ba]={}end
+table.insert(c_a._plugins[_ba],aba)else c_a._APIs[caa]=aba end end end end end
+function c_a.loadElement(aaa)
+if not c_a._elements[aaa].loaded then
+package.path=b_a.."rom/?"local baa=require(fs.combine("elements",aaa))
+package.path=__a
+c_a._elements[aaa]={class=baa,plugins=baa.plugins,loaded=true}dd.debug("Loaded element: "..aaa)
+if(
+c_a._plugins[aaa]~=nil)then
+for caa,daa in pairs(c_a._plugins[aaa])do
+if(daa.setup)then daa.setup(baa)end
+if(daa.hooks)then
+for _ba,aba in pairs(daa.hooks)do local bba=baa[_ba]if(type(bba)~="function")then
+error("Element "..aaa..
+" does not have a method ".._ba)end
+if(type(aba)=="function")then
+baa[_ba]=function(cba,...)
+local dba=bba(cba,...)local _ca=aba(cba,...)return _ca==nil and dba or _ca end elseif(type(aba)=="table")then
+baa[_ba]=function(cba,...)if aba.pre then aba.pre(cba,...)end
+local dba=bba(cba,...)if aba.post then aba.post(cba,...)end;return dba end end end end;for _ba,aba in pairs(daa)do
+if _ba~="setup"and _ba~="hooks"then baa[_ba]=aba end end end end end end;function c_a.getElement(aaa)if not c_a._elements[aaa].loaded then
+c_a.loadElement(aaa)end
+return c_a._elements[aaa].class end;function c_a.getElementList()return
+c_a._elements end
+function c_a.getAPI(aaa)return c_a._APIs[aaa]end;return c_a end
+_b["propertySystem.lua"]=function(...)
+local cb=require("libraries/utils").deepCopy;local db=require("libraries/expect")
+local _c=require("errorManager")local ac={}ac.__index=ac;ac._properties={}local bc={}ac._setterHooks={}function ac.addSetterHook(dc)
+table.insert(ac._setterHooks,dc)end;local function cc(dc,_d,ad,bd)for cd,dd in ipairs(ac._setterHooks)do
+local __a=dd(dc,_d,ad,bd)if __a~=nil then ad=__a end end
+return ad end
+function ac.defineProperty(dc,_d,ad)
+if
+not rawget(dc,'_properties')then dc._properties={}end
+dc._properties[_d]={type=ad.type,default=ad.default,canTriggerRender=ad.canTriggerRender,getter=ad.getter,setter=ad.setter,allowNil=ad.allowNil}local bd=_d:sub(1,1):upper().._d:sub(2)
+dc[
+"get"..bd]=function(cd,...)db(1,cd,"element")local dd=cd._values[_d]
+if type(dd)==
+"function"and ad.type~="function"then dd=dd(cd)end
+return ad.getter and ad.getter(cd,dd,...)or dd end
+dc["set"..bd]=function(cd,dd,...)db(1,cd,"element")dd=cc(cd,_d,dd,ad)if
+type(dd)~="function"then
+if ad.type=="table"then if dd==nil then
+if not ad.allowNil then db(2,dd,ad.type)end end else db(2,dd,ad.type)end end;if
+ad.setter then dd=ad.setter(cd,dd,...)end
+cd:_updateProperty(_d,dd)return cd end end
+function ac.combineProperties(dc,_d,...)local ad={...}for cd,dd in pairs(ad)do
+if not dc._properties[dd]then _c.error("Property not found: "..
+dd)end end;local bd=
+_d:sub(1,1):upper().._d:sub(2)
+dc["get"..bd]=function(cd)
+db(1,cd,"element")local dd={}
+for __a,a_a in pairs(ad)do table.insert(dd,cd.get(a_a))end;return table.unpack(dd)end
+dc["set"..bd]=function(cd,...)db(1,cd,"element")local dd={...}for __a,a_a in pairs(ad)do
+cd.set(a_a,dd[__a])end;return cd end end
+function ac.blueprint(dc,_d,ad,bd)
+if not bc[dc]then
+local dd={basalt=ad,__isBlueprint=true,_values=_d or{},_events={},render=function()end,dispatchEvent=function()end,init=function()end}
+dd.loaded=function(a_a,b_a)a_a.loadedCallback=b_a;return dd end
+dd.create=function(a_a)local b_a=dc.new()b_a:init({},a_a.basalt)for c_a,d_a in
+pairs(a_a._values)do b_a._values[c_a]=d_a end
+for c_a,d_a in
+pairs(a_a._events)do for _aa,aaa in ipairs(d_a)do b_a[c_a](b_a,aaa)end end;if(bd~=nil)then bd:addChild(b_a)end
+b_a:updateRender()a_a.loadedCallback(b_a)b_a:postInit()return b_a end;local __a=dc
+while __a do
+if rawget(__a,'_properties')then
+for a_a,b_a in pairs(__a._properties)do if type(b_a.default)==
+"table"then dd._values[a_a]=cb(b_a.default)else
+dd._values[a_a]=b_a.default end end end
+__a=getmetatable(__a)and rawget(getmetatable(__a),'__index')end;bc[dc]=dd end;local cd={_values={},_events={},loadedCallback=function()end}
+cd.get=function(dd)
+local __a=cd._values[dd]local a_a=dc._properties[dd]if type(__a)=="function"and
+a_a.type~="function"then __a=__a(cd)end
+return __a end
+cd.set=function(dd,__a)cd._values[dd]=__a;return cd end
+setmetatable(cd,{__index=function(dd,__a)
+if __a:match("^on%u")then return
+function(a_a,b_a)
+dd._events[__a]=dd._events[__a]or{}table.insert(dd._events[__a],b_a)return dd end end
+if __a:match("^get%u")then
+local a_a=__a:sub(4,4):lower()..__a:sub(5)return function()return dd._values[a_a]end end;if __a:match("^set%u")then
+local a_a=__a:sub(4,4):lower()..__a:sub(5)
+return function(b_a,c_a)dd._values[a_a]=c_a;return dd end end;return
+bc[dc][__a]end})return cd end
+function ac.createFromBlueprint(dc,_d,ad)local bd=dc.new({},ad)
+for cd,dd in pairs(_d._values)do if type(dd)=="table"then
+bd._values[cd]=cb(dd)else bd._values[cd]=dd end end;return bd end
+function ac:__init()self._values={}self._observers={}
+self.set=function(cd,dd,...)
+local __a=self._values[cd]local a_a=self._properties[cd]
+if(a_a~=nil)then if(a_a.setter)then
+dd=a_a.setter(self,dd,...)end
+if a_a.canTriggerRender then self:updateRender()end;self._values[cd]=cc(self,cd,dd,a_a)if __a~=dd and
+self._observers[cd]then
+for b_a,c_a in ipairs(self._observers[cd])do c_a(self,dd,__a)end end end end
+self.get=function(cd,...)local dd=self._values[cd]local __a=self._properties[cd]
+if
+(__a==nil)then _c.error("Property not found: "..cd)return end;if type(dd)=="function"and __a.type~="function"then
+dd=dd(self)end;return
+__a.getter and __a.getter(self,dd,...)or dd end;local dc={}local _d=getmetatable(self).__index
+while _d do if
+rawget(_d,'_properties')then
+for cd,dd in pairs(_d._properties)do if not dc[cd]then dc[cd]=dd end end end;_d=getmetatable(_d)and
+rawget(getmetatable(_d),'__index')end;self._properties=dc;local ad=getmetatable(self)local bd=ad.__index
+setmetatable(self,{__index=function(cd,dd)
+local __a=self._properties[dd]if __a then local a_a=self._values[dd]if type(a_a)=="function"and
+__a.type~="function"then a_a=a_a(self)end
+return a_a end;if
+type(bd)=="function"then return bd(cd,dd)else return bd[dd]end end,__newindex=function(cd,dd,__a)
+local a_a=self._properties[dd]
+if a_a then if a_a.setter then __a=a_a.setter(self,__a)end
+__a=cc(self,dd,__a,a_a)self:_updateProperty(dd,__a)else rawset(cd,dd,__a)end end,__tostring=function(cd)return
+string.format("Object: %s (id: %s)",cd._values.type,cd.id)end})
+for cd,dd in pairs(dc)do if self._values[cd]==nil then
+if type(dd.default)=="table"then
+self._values[cd]=cb(dd.default)else self._values[cd]=dd.default end end end;return self end
+function ac:_updateProperty(dc,_d)local ad=self._values[dc]
+if type(ad)=="function"then ad=ad(self)end;self._values[dc]=_d
+local bd=type(_d)=="function"and _d(self)or _d
+if ad~=bd then
+if self._properties[dc].canTriggerRender then self:updateRender()end
+if self._observers[dc]then for cd,dd in ipairs(self._observers[dc])do
+dd(self,bd,ad)end end end;return self end
+function ac:observe(dc,_d)
+self._observers[dc]=self._observers[dc]or{}table.insert(self._observers[dc],_d)return self end
+function ac:removeObserver(dc,_d)
+if self._observers[dc]then
+for ad,bd in ipairs(self._observers[dc])do if bd==_d then
+table.remove(self._observers[dc],ad)
+if#self._observers[dc]==0 then self._observers[dc]=nil end;break end end end;return self end;function ac:removeAllObservers(dc)
+if dc then self._observers[dc]=nil else self._observers={}end;return self end
+function ac:instanceProperty(dc,_d)
+ac.defineProperty(self,dc,_d)self._values[dc]=_d.default;return self end
+function ac:removeProperty(dc)self._values[dc]=nil;self._properties[dc]=nil;self._observers[dc]=
+nil
+local _d=dc:sub(1,1):upper()..dc:sub(2)self["get".._d]=nil;self["set".._d]=nil;return self end
+function ac:getPropertyConfig(dc)return self._properties[dc]end;return ac end
+_b["init.lua"]=function(...)local bc={...}local cc=fs.getDir(bc[2])local dc=package.path
+local _d="path;/path/?.lua;/path/?/init.lua;"local ad=_d:gsub("path",cc)package.path=ad.."rom/?;"..dc
+local function bd(__a)package.path=
+ad.."rom/?"local a_a=require("errorManager")
+package.path=dc;a_a.header="Basalt Loading Error"a_a.error(__a)end;local cd,dd=pcall(require,"main")package.loaded.log=nil
+package.path=dc;if not cd then bd(dd)else return dd end end
+_b["errorManager.lua"]=function(...)local cb=require("log")
+local db={tracebackEnabled=true,header="Basalt Error"}local function _c(ac,bc)term.setTextColor(bc)print(ac)
+term.setTextColor(colors.white)end
+function db.error(ac)
+if db.errorHandled then error()end;term.setBackgroundColor(colors.black)
+term.clear()term.setCursorPos(1,1)
+_c(db.header..":",colors.red)print()local bc=2;local cc;while true do local cd=debug.getinfo(bc,"Sl")
+if not cd then break end;cc=cd;bc=bc+1 end;local dc=cc or
+debug.getinfo(2,"Sl")local _d=dc.source:sub(2)
+local ad=dc.currentline;local bd=ac
+if(db.tracebackEnabled)then local cd=debug.traceback()
+if cd then
+for dd in cd:gmatch("[^\r\n]+")do
+local __a,a_a=dd:match("([^:]+):(%d+):")
+if __a and a_a then term.setTextColor(colors.lightGray)
+term.write(__a)term.setTextColor(colors.gray)term.write(":")
+term.setTextColor(colors.lightBlue)term.write(a_a)term.setTextColor(colors.gray)dd=dd:gsub(
+__a..":"..a_a,"")end;_c(dd,colors.gray)end;print()end end
+if _d and ad then term.setTextColor(colors.red)
+term.write("Error in ")term.setTextColor(colors.white)term.write(_d)
+term.setTextColor(colors.red)term.write(":")
+term.setTextColor(colors.lightBlue)term.write(ad)term.setTextColor(colors.red)
+term.write(": ")
+if bd then bd=string.gsub(bd,"stack traceback:.*","")
+if bd~=""then
+_c(bd,colors.red)else _c("Error message not available",colors.gray)end else _c("Error message not available",colors.gray)end;local cd=fs.open(_d,"r")
+if cd then local dd=""local __a=1
+repeat dd=cd.readLine()if
+__a==tonumber(ad)then _c("\149Line "..ad,colors.cyan)
+_c(dd,colors.lightGray)break end;__a=__a+1 until not dd;cd.close()end end;term.setBackgroundColor(colors.black)
+cb.error(ac)db.errorHandled=true;error()end;return db end;return _b["main.lua"]() end
+modules["elements.TabView"] = function() local _a=require("libraries.basalt")local aa=_a.LOGGER
+local ba={LEFT=1,RIGHT=2}local ca={}ca.__index=ca
+function ca:new(da,_b,ab,bb,cb,db,_c,ac,bc)local cc=setmetatable({},ca)cc.frame=da;self.selectedTab=
+nil;self.firstTab=nil;self.lastTab=nil;cc.leftIcon="\17"
+cc.rightIcon="\16"cc.vSep="|"cc.tabs={}cc.vSepLabel={}cc.firstTabidx=1
+cc.tabBg=db or colors.black;cc.tabFg=_c or colors.white
+cc.bottomFrameBg=ac or colors.lightGray;cc.bottomFrameFg=bc or colors.white
+cc.frame:setPosition(_b,ab):setSize(bb,cb):setBackground(cc.tabBg):setForeground(cc.tabFg)
+cc.topFrame=cc.frame:addFrame():setPosition(1,1):setSize(da:getWidth(),1):setBackground(cc.tabBg):setForeground(cc.tabFg)
+cc.leftIconLabel=cc.topFrame:addLabel():setText(cc.leftIcon):setPosition(1,1):setBackground(cc.tabBg):setForeground(cc.tabFg):setBackgroundEnabled(true):setAutoSize(true):onClick(function()
+cc:updateTabBar(
+cc.lastTab and cc.lastTab.idx or 0,ba.LEFT)end)
+cc.rightIconLabel=cc.topFrame:addLabel():setText(cc.rightIcon):setPosition(cc.topFrame:getWidth(),1):setBackground(cc.tabBg):setForeground(cc.tabFg):setAutoSize(true):setBackgroundEnabled(true):onClick(function()
+cc:updateTabBar(
+cc.firstTab and cc.firstTab.idx or 0,ba.RIGHT)end)
+cc.bottomFrame=cc.frame:addFrame():setPosition(1,2):setSize(da:getWidth(),
+da:getHeight()-1):setBackground(cc.bottomFrameBg):setForeground(cc.bottomFrameFg)return cc end
+function ca:selectTab(da)if da.selected then
+aa.debug("Tab "..da.name.." is already selected.")return end
+for _b,ab in ipairs(self.tabs)do
+if ab.selected then
+ab.selected=false;ab.label:setBackground(self.tabBg)
+ab.label:setForeground(self.tabFg)ab.frame:setVisible(false)end end
+if da then self.selectedTab=da;da.selected=true
+da.label:setBackground(self.bottomFrameBg)da.label:setForeground(self.bottomFrameFg)
+da.frame:setVisible(true)end end
+function ca:createTab(da)aa.debug("Creating tab: "..da)local _b={}
+_b.name=da;_b.idx=#self.tabs+1;_b.selected=false
+_b.label=self.topFrame:addLabel():setText(
+" "..da.." "):setBackground(self.tabBg):setForeground(self.tabFg):setAutoSize(true):setBackgroundEnabled(true):setVisible(false):onClick(function()
+self:selectTab(_b)end)
+_b.frame=self.bottomFrame:addFrame():setPosition(1,1):setSize(self.bottomFrame:getWidth(),self.bottomFrame:getHeight()):setBackground(self.bottomFrameBg):setForeground(self.bottomFrameFg):setVisible(false)table.insert(self.tabs,_b)
+return self.tabs[#self.tabs]end
+function ca:getVSepLabel(da)
+if not self.vSepLabel[da]then
+self.vSepLabel[da]=self.topFrame:addLabel():setText(self.vSep):setBackground(self.tabBg):setForeground(self.tabFg):setAutoSize(true):setBackgroundEnabled(true)end;return self.vSepLabel[da]end;function ca:nextTab(da)local _b=da+1;if _b>#self.tabs then _b=1 end
+return self.tabs[_b]end
+function ca:prevTab(da)local _b=da-1;if _b<1 then
+_b=#self.tabs end;return self.tabs[_b]end
+function ca:displayTopFrameLabel(da,_b,ab)local bb
+if ab==ba.LEFT then bb=da:getX()-_b:getWidth()else bb=
+da:getX()+da:getWidth()end;local cb=da:getY()
+aa.debug("Setting label position to: "..bb..", "..cb)_b:setPosition(bb,cb)_b:setVisible(true)end
+function ca:updateTabBar(da,_b)
+aa.debug("==================================================")if#self.tabs==0 then return end;for dc,_d in ipairs(self.tabs)do
+_d.label:setVisible(false)end;for dc,_d in pairs(self.vSepLabel)do
+_d:setVisible(false)end;local ab=1;local bb=self:getVSepLabel(ab)
+local cb=(_b==
+ba.LEFT)and self.rightIconLabel or self.leftIconLabel;self:displayTopFrameLabel(cb,bb,_b)local db=0;local _c=da;local ac=
+self.topFrame:getWidth()-2;local bc={}
+for i=1,#self.tabs do
+local dc=(_b==ba.LEFT)and
+self:prevTab(_c)or self:nextTab(_c)if i==1 then
+if _b==ba.RIGHT then self.firstTab=dc else self.lastTab=dc end end;local _d=dc.label:getWidth()+
+bb:getWidth()
+if db+_d<=ac then
+table.insert(bc,dc)db=db+_d
+if _b==ba.LEFT then self.firstTab=dc else self.lastTab=dc end else
+aa.debug("Tab bar is full, hiding tab: "..dc.name)dc.label:setVisible(false)end;_c=dc.idx end;ab=1;bb=self:getVSepLabel(ab)local cc=cb
+for dc,_d in ipairs(bc)do
+_d.label:setVisible(true)self:displayTopFrameLabel(cc,bb,_b)
+self:displayTopFrameLabel(bb,_d.label,_b)ab=ab+1;cc=_d.label;bb=self:getVSepLabel(ab)end;self:displayTopFrameLabel(cc,bb,_b)
+self:displayTopFrameLabel(bb,
+(_b==ba.LEFT)and self.leftIconLabel or self.rightIconLabel,_b)
+aa.debug("firstTab: "..
+(self.firstTab and self.firstTab.name or"nil")..
+" LastTab: ".. (self.lastTab and self.lastTab.name or"nil"))end
+function ca:init()self:updateTabBar(0,ba.RIGHT)if#self.tabs>0 then
+self:selectTab(self.tabs[1])end end;function ca:getTabByName(da)
+for _b,ab in ipairs(self.tabs)do if ab.name==da then return ab end end;return nil end;function ca:getTabByIndex(da)if
+da<1 or da>#self.tabs then return nil end
+return self.tabs[da]end;return ca end
+modules["programs.ae2.crafter.CraftingListTab"] = function() local ca=require("utils.StringUtils")
+local da=require("utils.ContainerLoader")local _b=require("utils.OSUtils")
+local ab=require("utils.Logger")local bb=require("elements.MessageBox")
+local cb={1,2,3,10,11,12,19,20,21}local db={}db.__index=db
+function db:new(_c)local ac=setmetatable({},db)ac.recipes={}
+ac.frame=_c;local bc,cc=next(da.load.trapped_chests())
+ac.patternChest=cc
+ac.list=_c:addList():setPosition(2,2):setSize(15,
+_c:getHeight()-4):setBackground(colors.gray):setForeground(colors.white):onSelect(function(dc,_d,ad)
+if
+ad and ad.mark and ad.mark.nbt then
+local bd=textutils.serialize({input=ad.input,output=ad.output,mark=ad.mark})ac.textBox:setText(bd)else
+ac.textBox:setText("")end end)ab.debug("CraftingListTab: List created")
+ac.textBox=_c:addTextBox():setBackground(colors.gray):setForeground(colors.white):setPosition(
+ac.list:getWidth()+ac.list:getX()+2,2):setSize(
+_c:getWidth()-ac.list:getWidth()-4,_c:getHeight()-2):setText("")
+ac.readBtn=_c:addButton():setText("Read"):setPosition(ac.list:getX(),
+_c:getHeight()-1):setSize(4,1):setBackground(colors.lightBlue):setForeground(colors.white):onClick(function()
+local dc,_d=pcall(function()
+local ad={}local bd=ac.patternChest.getItemDetail(4)if
+not bd or not bd.name then
+ac.messageBox:open("Error","No valid output item found in slot 4.")return end
+local cd=ac.patternChest.getItemDetail(13)if not cd or not cd.name or not cd.nbt then
+ac.messageBox:open("Error","No valid mark item found in slot 13.")return end
+for i=1,9 do
+local a_a=cb[i]local b_a=ac.patternChest.getItemDetail(a_a)
+if
+b_a and b_a.name then
+table.insert(ad,{name=b_a.name,displayName=b_a.displayName or ca.getDisplayName(b_a.name)})else table.insert(ad,false)end end
+local dd={input=ad,output={name=bd.name,displayName=bd.displayName,count=bd.count or 1},mark={name=cd.name,displayName=cd.displayName,nbt=cd.nbt}}local __a=textutils.serialize(dd)
+ac.textBox:setText(__a)end)if not dc then
+ac.messageBox:open("Error","Failed to read recipe: ".._d)return end
+ab.debug("CraftingListTab: Recipe read successfully")end)
+ac.saveBtn=_c:addButton():setText("Save"):setPosition(
+ac.readBtn:getX()+ac.readBtn:getWidth()+2,
+_c:getHeight()-1):setSize(4,1):setBackground(colors.green):setForeground(colors.white):onClick(function()
+local dc=ac.textBox:getText()local _d,ad=pcall(textutils.unserialize,dc)if
+not _d or
+type(ad)~="table"or not ad.mark or not ad.mark.nbt then
+ac.messageBox:open("Error","Invalid recipe format!\n"..dc)return end
+local bd=false
+for cd,dd in ipairs(ac.recipes)do
+if self:isMarkItemInRecipeInputAndOutput(ad.mark,dd)then
+ac.messageBox:open("Error",
+"Mark Item "..
+(ad.mark.displayName or"?").." is in recipe of "..
+(
+dd.output and dd.output.displayName or"?")..". Change MarkItem to save the recipe")return end
+if dd.mark.nbt==ad.mark.nbt then dd.input=ad.input;dd.output=ad.output
+dd.mark=ad.mark;ac:addToMarkTable(ad)bd=true;break end end;if not bd then table.insert(ac.recipes,ad)end
+ac:addToMarkTable(ad)ac:saveRecipes()ac:updateRcipesList()end)
+ac.DelBtn=_c:addButton():setText("Del"):setPosition(
+ac.saveBtn:getX()+ac.saveBtn:getWidth()+2,
+_c:getHeight()-1):setSize(3,1):setBackground(colors.red):setForeground(colors.white):onClick(function()
+local dc=ac.list:getSelectedItem()if not dc then
+ac.messageBox:open("Error","No recipe selected to delete.")return end;ac:removeRecipe(dc)
+ac:updateRcipesList()end)ac.messageBox=bb:new(_c,30,10)return ac end
+function db:isMarkItemInRecipeInputAndOutput(_c,ac)if not _c or not ac then return false end
+for bc,cc in
+ipairs(ac.input)do if cc and cc.name==_c.name then return true end end
+if ac.output and ac.output.name==_c.name then return true end;return false end
+function db:loadRecipes()local _c=_b.loadTable("crafting_recipes.json")if not _c then
+self.recipes={}return end;self.recipes=_c
+for ac,bc in ipairs(self.recipes)do if bc.mark and
+bc.mark.name and bc.mark.nbt then
+self:addToMarkTable(bc)end end end;function db:saveRecipes()
+_b.saveTable("crafting_recipes.json",self.recipes)end
+function db:addToMarkTable(_c)if self.markTables==nil then
+self.markTables={}end
+if
+self.markTables[_c.mark.name]==nil then self.markTables[_c.mark.name]={}end
+self.markTables[_c.mark.name][_c.mark.nbt]=_c end
+function db:removeFromMarkTable(_c)if self.markTables==nil or
+not self.markTables[_c.mark.name]then return end;if
+self.markTables[_c.mark.name][_c.mark.nbt]then
+self.markTables[_c.mark.name][_c.mark.nbt]=nil end
+if
+next(self.markTables[_c.mark.name])==nil then self.markTables[_c.mark.name]=nil end end
+function db:removeRecipe(_c)
+for ac,bc in ipairs(self.recipes)do
+if bc.mark.name==_c.mark.name and bc.mark.nbt==
+_c.mark.nbt then
+table.remove(self.recipes,ac)self:removeFromMarkTable(bc)self:saveRecipes()return end end end
+function db:updateRcipesList()local _c={}
+for ac,bc in ipairs(self.recipes)do
+local cc={input=bc.input,output=bc.output,mark=bc.mark,text=
+ca.ellipsisMiddle(bc.output.displayName,11).."  "..string.sub(bc.mark.nbt,1,3)}
+ab.debug("CraftingListTab: Adding recipe to display list: {}",cc.text)table.insert(_c,cc)end;self.list:setItems(_c)end
+function db:getRecipeByMark(_c)if
+not self.markTables or not self.markTables[_c.name]then return nil end;return
+self.markTables[_c.name][_c.nbt]end;function db:getRecipes()return self.recipes end;function db:getMarkTables()
+return self.markTables end;function db:init()self:loadRecipes()
+self:updateRcipesList()return self end;return db end
+modules["utils.Logger"] = function() local b={currentLevel=1,printFunctions={}}
+b.levels={DEBUG=1,INFO=2,WARN=3,ERROR=4}
+b.addPrintFunction=function(c)table.insert(b.printFunctions,c)end
+b.print=function(c,d,_a,aa,...)
+if c>=b.currentLevel then local ba=b.formatBraces(aa,...)for ca,da in
+ipairs(b.printFunctions)do da(c,d,_a,ba)end end end
+b.custom=function(c,d,...)local _a=debug.getinfo(2,"l").currentline
+local aa=debug.getinfo(2,"S").short_src;b.print(c,aa,_a,d,...)end
+b.debug=function(c,...)local d=debug.getinfo(2,"l").currentline
+local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.DEBUG,_a,d,c,...)end
+b.info=function(c,...)local d=debug.getinfo(2,"l").currentline
+local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.INFO,_a,d,c,...)end
+b.warn=function(c,...)local d=debug.getinfo(2,"l").currentline
+local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.WARN,_a,d,c,...)end
+b.error=function(c,...)local d=debug.getinfo(2,"l").currentline
+local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.ERROR,_a,d,c,...)end
+b.formatBraces=function(c,...)local d={...}local _a=1
+local aa=tostring(c):gsub("{}",function()local ba=d[_a]_a=_a+1
+return tostring(ba)end)return aa end;return b end
+modules["programs.ae2.crafter.TurtleCraft"] = function() local db=require("utils.ContainerLoader")
+local _c=require("utils.OSUtils")local ac,bc=next(db.load.item_vaults())
+local cc,dc=next(db.load.ae2_pattern_providers())local _d,ad=next(db.load.droppers())
+local bd,cd=next(db.load.chests())local dd={}
+local __a={PREPARE_ITEM=1,CHECKING=2,CRAFT=3,DROP_OUTPUT=4,PROVIDER_TAKE_OUTPUT=5}local a_a={1,2,3,5,6,7,9,10,11}
+dd.hasMarkedItems=function(b_a,c_a)for d_a,_aa in pairs(b_a)do
+if c_a[_aa.name]and
+_aa.nbt~=nil and c_a[_aa.name][_aa.nbt]then return true,
+_aa,c_a[_aa.name][_aa.nbt]end end
+return false,nil,nil end
+dd.moveCraftingItemToBuffer=function(b_a,c_a)return bc.moveItem(ad,b_a.name,c_a)end
+dd.moveMarkItemToOutputChest=function(b_a,c_a)return bc.moveItem(cd,b_a.name,c_a)end
+dd.getInputFromBuffer=function(b_a,c_a)turtle.select(b_a)return turtle.suckUp(c_a)end
+dd.prepareItem=function(b_a)
+local c_a,d_a=dd.moveMarkItemToOutputChest(b_a.markItem,b_a.inputAmt)
+if c_a<=0 then return false,
+"Failed to move marked item to output chest: ".. (d_a or"unknown error")end;dd.saveStep(__a.PREPARE_ITEM,b_a)
+for _aa,aaa in
+ipairs(b_a.recipe.input)do
+if aaa and aaa.name then
+local baa,caa=dd.moveCraftingItemToBuffer(aaa,b_a.inputAmt)
+if baa<=0 then return false,
+"Failed to move crafting item to buffer: ".. (caa or"unknown error")end;local daa,_ba=dd.getInputFromBuffer(a_a[_aa],baa)if not daa then
+return false,
+"Failed to get input from buffer: ".. (_ba or"unknown error")end end end end
+dd.checkingInput=function(b_a)dd.saveStep(__a.CHECKING,b_a)
+for c_a,d_a in ipairs(a_a)do
+local _aa=turtle.getItemDetail(d_a)
+if
+b_a.recipe.input[c_a]and b_a.recipe.input[c_a].name then
+if
+not _aa or _aa.name~=b_a.recipe.input[c_a].name or _aa.count~=b_a.inputAmt then
+return false,"Input slot "..c_a..
+" has incorrect item or amount"end end end;return true end
+dd.craft=function(b_a)dd.saveStep(__a.CRAFT,b_a)return turtle.craft()end
+dd.dropOutput=function(b_a)dd.saveStep(__a.DROP_OUTPUT,b_a)
+for i=1,16 do
+local c_a=turtle.getItemDetail(i)if c_a and c_a.count>0 then turtle.select(i)
+local d_a=turtle.drop()
+if not d_a then return false,"Failed to drop item from slot "..i end end end;return true,"Output items dropped successfully"end
+dd.moveOutputItem=function(b_a)local c_a=cd.listItem()local d_a,_aa=nil,nil
+for daa,_ba in pairs(c_a)do if b_a.recipe.output and
+_ba.name==b_a.recipe.output.name then
+d_a=_ba end
+if b_a.recipe.mark and _ba.name==
+b_a.recipe.mark.name and
+_ba.nbt==b_a.recipe.mark.nbt then _aa=_ba end end;local aaa=b_a.inputAmt*b_a.recipe.output.count
+if
+d_a and d_a.count~=aaa then return false,"Output item count mismatch: expected "..
+aaa..", got "..d_a.count end;dd.saveStep(__a.PROVIDER_TAKE_OUTPUT,b_a)local baa=0;local caa=0
+while
+baa<aaa do
+local daa,_ba=dc.moveItem(cd,b_a.recipe.output.name,aaa-baa)if daa<=0 then caa=caa+1 end;if caa>5 then
+return false,"Failed to move output item after multiple attempts: "..
+(_ba or"unknown error")end;baa=baa+daa end
+return true,"Output item moved successfully: "..baa.." items"end
+dd.saveStep=function(b_a,c_a)_c.saveTable("step",{step=b_a,params=c_a})end
+dd.readStep=function()return _c.loadTable("step")end
+dd.clearBuffer=function()local b_a=ad.list()for c_a,d_a in pairs(b_a)do
+bc.takeItem(ad,d_a.name,d_a.count)end end
+dd.clearTurtle=function()
+for i=1,16 do local b_a=turtle.getItemDetail(i)if b_a and b_a.count>0 then
+turtle.select(i)turtle.dropUp()
+bc.takeItem(ad,b_a.name,b_a.count)end end end
+dd.clearOutputChest=function()local b_a=cd.listItem()for c_a,d_a in pairs(b_a)do
+bc.takeItem(cd,d_a.name,d_a.count)end end;dd.clear=function()dd.clearBuffer()dd.clearTurtle()
+dd.clearOutputChest()end
+dd.process=function(b_a,c_a)
+local d_a=0
+if not c_a then b_a.inputAmt=math.min(12,b_a.markItem.count)
+d_a=c_a.step
+if b_a.inputAmt<=0 then return false,"No marked item available for crafting:"end end
+if __a.PREPARE_ITEM>=d_a then local _aa,aaa=dd.prepareItem(b_a)if not _aa then return false,
+"Preparation failed: "..aaa end end
+if __a.CHECKING>=d_a then local _aa,aaa=dd.checkingInput(b_a)if not _aa then return false,
+"Checking input failed: "..aaa end end
+if __a.CRAFT>=d_a then local _aa,aaa=dd.craft(b_a)if not _aa then
+return false,"Crafting failed: "..aaa end end
+if __a.DROP_OUTPUT>=d_a then local _aa,aaa=dd.dropOutput(b_a)if not _aa then return false,"Dropping output failed: "..
+aaa end end;if __a.PROVIDER_TAKE_OUTPUT>=d_a then local _aa,aaa=dd.moveOutputItem(b_a)
+if not _aa then return
+false,"Moving output item failed: "..aaa end end;dd.saveStep(
+nil,nil)return true,"Crafting process completed successfully"end
+dd.hasUnfinishedJob=function()local b_a=dd.readStep()if not b_a or not b_a.step then return false,
+"No unfinished job found"end;if
+b_a.step==__a.PREPARE_ITEM then dd.clear()end
+if b_a.step==__a.CRAFT then
+local c_a,d_a=dd.checkingInput(b_a.params)if not c_a then b_a.step=__a.DROP_OUTPUT
+dd.saveStep(__a.DROP_OUTPUT,b_a.params)return true,b_a end end;return true,b_a end
+dd.listen=function(b_a)
+while true do local c_a=3;local d_a=false;local _aa,aaa=dd.hasUnfinishedJob()
+if _aa then
+dd.process(aaa.params,aaa)c_a=0.2 else local baa=bc.listItem()
+if baa and#baa>0 then local caa=b_a()if caa then
+local daa,_ba,aba=dd.hasMarkedItems(baa,caa)
+if daa then c_a=0.2;dd.process({markItem=_ba,recipe=aba})end end end end;os.sleep(c_a)end end;return dd end
+modules["elements.LogBox"] = function() local _a=require("libraries.basalt")
+local aa=require("utils.StringUtils")local ba={}ba.__index=ba;local function ca(da)if not da or da==""then return 0 end
+local _b,ab=da:gsub("\n","")return ab end
+function ba:new(da,_b,ab,bb,cb,db,_c)
+local ac=setmetatable({},ba)ac.frame=da;ac.text=""ac.logs={}ac.needUpdate=false;ac.maxLines=30
+ac.textBox=ac.frame:addTextBox():setPosition(_b,ab):setSize(bb,cb):setBackground(
+_c or colors.gray):setForeground(
+db or colors.white):setText("")return ac end
+function ba:addLog(da)
+local _b=aa:wrapText(da,self.textBox.getWidth())self.text=self.text.._b.."\n"local ab=ca(self.text)
+if ab>
+self.maxLines then local bb=ab-self.maxLines;local cb=1;for i=1,bb do
+cb=self.text:find("\n",cb)if cb then cb=cb+1 else break end end
+if cb and cb<=
+#self.text then self.text=self.text:sub(cb)end end;self.textBox:setText(self.text)end;function ba:setMaxLines(da)self.maxLines=da or 30 end;function ba:getLineCount()return
+ca(self.text)end;function ba:clear()self.text=""self.logs={}
+self.textBox:setText("")end;return ba end
+modules["utils.StringUtils"] = function() local b={}
+b.split=function(c,d)local _a={}for aa in(c..d):gmatch("(.-)"..d)do
+table.insert(_a,aa)end;return _a end
+b.formatNumber=function(c)
+if c>=1000 then return math.floor(c/1000).."k"elseif c>=1000000 then return math.floor(
+c/1000000).."m"elseif c>=100000000 then return
+math.floor(c/1000000000).."b"elseif c>=1000000000000 then return
+math.floor(c/1000000000000).."t"end;return tostring(c)end
+b.stringContainsIgnoreCase=function(c,d)if c==nil or d==nil then return false end;return
+string.find(string.lower(c),string.lower(d),1,true)~=nil end
+b.wrapText=function(c,d)local _a={}local aa=""for ba in string.gmatch(c,"%S+")do
+if#aa+#ba+1 >d then
+table.insert(_a,aa)aa=ba else if aa~=""then aa=aa.." "end;aa=aa..ba end end;if aa~=""then
+table.insert(_a,aa)end;return table.concat(_a,"\n")end
+b.ellipsisMiddle=function(c,d)if#c<=d then return c end
+if d<=3 then return string.sub(c,1,d)end;local _a=math.floor((d-3)/2)local aa=d-3 -_a;return string.sub(c,1,_a).."..."..string.sub(c,
+-aa)end
+b.getAbbreviation=function(c)local d=""for _a in string.gmatch(c,"%a+")do
+d=d.._a:sub(1,1):upper()end;return d end;return b end
+modules["utils.ContainerLoader"] = function() 
+local db={chest_name="minecraft:chest",barrel_name="minecraft:barrel",hopper_name="minecraft:hopper",dropper_name="minecraft:dropper",dispenser_name="minecraft:dispenser",trapped_chest_name="minecraft:trapped_chest",basin_name="create:basin",depot_name="create:depot",belt_name="create:belt",crushing_wheel_name="create:crushing_wheel",tank_name="create:fluid_tank",millstone_name="create:millstone",deployer_name="create:deployer",spout_name="create:spout",item_vaults_name="create:item_vault",mechanical_crafter_name="create:mechanical_crafter",item_drain_name="create:item_drain",liquid_blaze_burner_name="createaddition:liquid_blaze_burner",rolling_mill_name="createaddition:rolling_mill",double_drawers_name="extended_drawers:double_drawer",quad_drawers_name="extended_drawers:quad_drawer",single_drawers_name="extended_drawers:single_drawer",seared_basin_name="tconstruct:seared_basin",seared_melter_name="tconstruct:seared_melter",seared_ingot_tank_name="tconstruct:seared_ingot_tank",seared_table_name="tconstruct:seared_table",seared_heater_name="tconstruct:seared_heater",scorched_drain_name="tconstruct:scorched_drain",foundry_controller_name="tconstruct:foundry_controller",scorched_fuel_tank_name="tconstruct:scorched_fuel_tank",ae2_interface_name="ae2:interface",ae2_pattern_provider_name="ae2:pattern_provider",ae2_1k_crafting_storage_name="ae2:1k_crafting_storage",ae2_4k_crafting_storage_name="ae2:4k_crafting_storage",solid_canning_machine_name="techreborn:solid_canning_machine",industrial_centrifuge_name="techreborn:industrial_centrifuge",industrial_electrolyzer_name="techreborn:industrial_electrolyzer",compressor_name="techreborn:compressor",basic_tank_unit_name="techreborn:basic_tank_unit",grinder_name="techreborn:grinder",chemical_reactor_name="techreborn:chemical_reactor",thermal_generator_name="techreborn:thermal_generator",cryo_freezer_name="ad_astra:cryo_freezer",custom_machine_block_name="custommachinery:custom_machine_block",diamond_chest_name="reinfchest:diamond_chest",copper_cehst_name="reinfchest:copper_chest",transh_can_name="trashcans:item_trash_can",redrouter_name="redrouter",all_tank_unit_name="tank_unit",centrifuge="yttr:centrifuge"}local _c=peripheral.getNames()
+local ac=function(b_a,c_a)local d_a=nil
+return
+function()local _aa=b_a.listItem()if not
+_aa or#_aa==0 then return nil end
+if d_a~=nil and _aa[d_a]and
+_aa[d_a].name==c_a then return _aa[d_a],d_a end
+for aaa,baa in ipairs(_aa)do if baa.name==c_a then d_a=aaa;return baa,d_a end end;return nil end end
+local bc=function(b_a,c_a)local d_a=nil
+return
+function()local _aa=b_a.tanks()
+if not _aa or#_aa==0 then return nil end;if d_a~=nil and _aa[d_a]and _aa[d_a].name==c_a then return
+_aa[d_a],d_a end;for aaa,baa in ipairs(_aa)do if baa.name==c_a then
+d_a=aaa;return baa,d_a end end;return
+nil end end
+local cc=function(b_a,c_a)local d_a=nil
+return
+function()local _aa=b_a.items()
+if not _aa or#_aa==0 then return nil end
+if
+d_a~=nil and _aa[d_a]and _aa[d_a].technicalName==c_a then local aaa,baa=_aa[d_a],d_a;aaa.displayName=aaa.name
+aaa.name=aaa.technicalName;return aaa,baa end
+for aaa,baa in ipairs(_aa)do if baa.technicalName==c_a then d_a=aaa;baa.displayName=baa.name
+baa.name=baa.technicalName;return baa,d_a end end;return nil end end
+local dc=function(b_a)
+if string.find(b_a.name,"crafting_storage")then
+b_a.listItem=function()local c_a={}local d_a={}
+for _aa,aaa in
+ipairs(b_a.items())do aaa.displayName=aaa.name;aaa.name=aaa.technicalName;local baa=aaa.name
+if not
+c_a[baa]then c_a[baa]=#d_a+1;table.insert(d_a,aaa)else
+local caa=c_a[baa]d_a[caa].count=d_a[caa].count+aaa.count end end;return d_a end elseif b_a.items then b_a.listItem=function()return b_a.items()end elseif
+b_a.list then
+b_a.listItem=function()local c_a={}local d_a={}
+for _aa,aaa in ipairs(b_a.list())do local baa=aaa.name
+if not c_a[baa]then c_a[baa]=
+#d_a+1;table.insert(d_a,aaa)else local caa=c_a[baa]d_a[caa].count=
+d_a[caa].count+aaa.count end end;return d_a end end end
+local _d=function(b_a)
+if b_a.list then
+b_a.moveItem=function(c_a,d_a,_aa)if _aa==nil then _aa=64 end
+if c_a.list then local aaa=0
+for i=1,b_a.size()do
+local baa=b_a.getItemDetail(i)if baa and baa.name==d_a then
+local caa=math.min(_aa-aaa,baa.count)local daa=b_a.pushItems(c_a.id,i,caa)
+if daa==0 then break else aaa=aaa+daa end end end;return aaa end
+if c_a.items then return c_a.pullItem(b_a.name,d_a,_aa)end end
+b_a.takeItem=function(c_a,d_a,_aa)if _aa==nil then _aa=64 end
+if c_a.list then local aaa=0
+for i=1,c_a.size()do
+local baa=c_a.getItemDetail(i)if baa and baa.name==d_a then
+local caa=math.min(_aa-aaa,baa.count)local daa=b_a.pullItems(b_a.id,i,caa)
+if daa==0 then break else aaa=aaa+daa end end end;return aaa end
+if c_a.items then return c_a.pushItem(b_a.name,d_a,_aa)end end end
+if b_a.items then
+b_a.moveItem=function(c_a,d_a,_aa)if _aa==nil then _aa=64 end
+return b_a.pushItem(c_a.name,d_a,_aa)end
+b_a.takeItem=function(c_a,d_a,_aa)if _aa==nil then _aa=64 end
+return b_a.pullItem(c_a.name,d_a,_aa)end end end
+local ad=function(b_a)
+b_a.moveFluid=function(c_a,d_a,_aa)return b_a.pushFluid(c_a.name,d_a,_aa)end
+b_a.takeFluid=function(c_a,d_a,_aa)return b_a.pullFluid(c_a.name,d_a,_aa)end end
+local bd=function(b_a)local c_a={}
+if string.find(b_a.name,"crafting_storage")then
+b_a.getItem=function(d_a)if not c_a[d_a]then
+local aaa=cc(b_a,d_a)c_a[d_a]=aaa end;local _aa=c_a[d_a]()return _aa end;return end
+b_a.getItem=function(d_a)if not c_a[d_a]then c_a[d_a]=ac(b_a,d_a)end;return
+c_a[d_a]()end end
+local cd=function(b_a)local c_a={}
+b_a.getFluid=function(d_a)
+if not c_a[d_a]then c_a[d_a]=bc(b_a,d_a)end;return c_a[d_a]()end end
+local dd=function(b_a,c_a)c_a.id=b_a;c_a.name=b_a
+if c_a.list or c_a.items then dc(c_a)_d(c_a)bd(c_a)end;if c_a.tanks then ad(c_a)cd(c_a)end end
+local __a=function(b_a)local c_a={}
+for d_a,_aa in ipairs(_c)do if string.find(_aa,b_a)then
+local aaa=peripheral.wrap(_aa)c_a[_aa]=aaa;dd(_aa,aaa)end end;return c_a end
+local a_a={chests=function()return __a(db.chest_name)end,barrels=function()
+return __a(db.barrel_name)end,hoppers=function()return __a(db.hopper_name)end,droppers=function()return
+__a(db.dropper_name)end,dispensers=function()return __a(db.dispenser_name)end,trapped_chests=function()return
+__a(db.trapped_chest_name)end,basins=function()return __a(db.basin_name)end,depots=function()return
+__a(db.depot_name)end,belts=function()return __a(db.belt_name)end,crushing_wheels=function()return
+__a(db.crushing_wheel_name)end,tanks=function()return __a(db.tank_name)end,millstones=function()return
+__a(db.millstone_name)end,deployers=function()return __a(db.deployer_name)end,spouts=function()return
+__a(db.spout_name)end,item_vaults=function()return __a(db.item_vaults_name)end,mechanical_crafters=function()return
+__a(db.mechanical_crafter_name)end,item_drain=function()
+return __a(db.item_drain_name)end,liquid_blaze_burners=function()return __a(db.liquid_blaze_burner_name)end,rolling_mills=function()return
+__a(db.rolling_mill_name)end,double_drawers=function()
+return __a(db.double_drawers_name)end,single_drawers=function()return __a(db.single_drawers_name)end,quad_drawers=function()return
+__a(db.quad_drawers_name)end,seared_basins=function()
+return __a(db.seared_basin_name)end,seared_melters=function()return __a(db.seared_melter_name)end,seared_ingot_tanks=function()return
+__a(db.seared_ingot_tank_name)end,seared_tables=function()
+return __a(db.seared_table_name)end,seared_heaters=function()return __a(db.seared_heater_name)end,scorched_drains=function()return
+__a(db.scorched_drain_name)end,foundry_controllers=function()
+return __a(db.foundry_controller_name)end,scorched_fuel_tanks=function()
+return __a(db.scorched_fuel_tank_name)end,ae2_interfaces=function()return __a(db.ae2_interface_name)end,ae2_1k_crafting_storages=function()return
+__a(db.ae2_1k_crafting_storage_name)end,ae2_4k_crafting_storages=function()return
+__a(db.ae2_4k_crafting_storage_name)end,ae2_pattern_providers=function()return
+__a(db.ae2_pattern_provider_name)end,solid_canning_machines=function()return
+__a(db.solid_canning_machine_name)end,industrial_centrifuges=function()return
+__a(db.industrial_centrifuge_name)end,industrial_electrolyzers=function()return
+__a(db.industrial_electrolyzer_name)end,compressors=function()
+return __a(db.compressor_name)end,basic_tank_units=function()return __a(db.basic_tank_unit_name)end,grinders=function()return
+__a(db.grinder_name)end,chemical_reactors=function()
+return __a(db.chemical_reactor_name)end,thermal_generators=function()return __a(db.thermal_generator_name)end,cryo_freezers=function()return
+__a(db.cryo_freezer_name)end,custom_machine_blocks=function()
+return __a(db.custom_machine_block_name)end,diamond_chests=function()return __a(db.diamond_chest_name)end,copper_chests=function()return
+__a(db.copper_cehst_name)end,redrouters=function()return __a(db.redrouter_name)end,all_tank_units=function()return
+__a(db.all_tank_unit_name)end,centrifuges=function()return __a(db.centrifuge)end}return{load=a_a,CONTAINER_NAMES=db,addCommonContainerPropsAndMethods=dd} end
+modules["utils.OSUtils"] = function() local c=require("utils.Logger")local d={}
+d.timestampBaseIdGenerate=function()
+local _a=os.epoch("utc")local aa=math.random(1000,9999)return
+tostring(_a).."-"..tostring(aa)end
+d.loadTable=function(_a)local aa={}local ba=fs.open(_a,"r")if ba then
+aa=textutils.unserialize(ba.readAll())ba.close()else return nil end;return aa end
+d.saveTable=function(_a,aa)local ba=fs.open(_a,"w")
+if ba then
+xpcall(function()
+local ca=textutils.serialize(aa)ba.write(ca)end,function(ca)
+c.error("Failed to save table to {}, error: {}",_a,ca)end)ba.close()end end;return d end
+modules["elements.MessageBox"] = function() local d=require("libraries.basalt")
+local _a=require("utils.StringUtils")local aa={}aa.__index=aa
+function aa:new(ba,ca,da)local _b=setmetatable({},aa)_b.frame=ba
+_b.title="Message"_b.message="No message provided."
+_b.coverFrame=ba:addFrame():setPosition(1,1):setSize(ba:getWidth(),ba:getHeight()):setBackground(colors.black):setForeground(colors.white):setVisible(false)
+_b.boxFrame=_b.coverFrame:addFrame():setPosition(5,2):setSize(ca,da):setBackground(colors.lightGray):setForeground(colors.white)
+_b.titleLabel=_b.boxFrame:addLabel():setText(_b.title):setPosition(2,2):setBackgroundEnabled(true):setBackground(colors.lightGray):setForeground(colors.white)
+_b.textBox=_b.boxFrame:addTextBox():setText(_b.message):setSize(
+_b.boxFrame:getWidth()-2,_b.boxFrame:getHeight()-6):setPosition(2,4):setBackground(colors.lightGray):setForeground(colors.white)
+_b.closeBtn=_b.boxFrame:addButton():setText("Close"):setPosition(
+_b.boxFrame:getWidth()-7,_b.boxFrame:getHeight()-1):setSize(7,1):setBackground(colors.gray):setForeground(colors.white):onClick(function()
+_b:close()end)return _b end
+function aa:open(ba,ca)
+if ba then self.title=ba;self.titleLabel:setText(ba)end;if ca then self.message=ca
+self.textBox:setText(_a.wrapText(ca,self.textBox:getWidth()))end
+self.coverFrame:setVisible(true)end
+function aa:close()self.coverFrame:setVisible(false)end;return aa end
 return modules["programs.AE2Crafter"]()
