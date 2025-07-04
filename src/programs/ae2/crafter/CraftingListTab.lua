@@ -215,7 +215,7 @@ function CraftingListTab:isConflictingRecipe(recipe, newRecipe)
     end
 
     if markItem.nbt == recipe.mark.nbt and recipeOutput.name ~= recipe.output.name then
-        return true, "There is already a recipe " .. recipe.output.displayName .. " with the same mark item and different output"
+        return true, "There is already a recipe " .. recipe.output.displayName .. " with the same mark item name and different output"
     end
 
     return false
