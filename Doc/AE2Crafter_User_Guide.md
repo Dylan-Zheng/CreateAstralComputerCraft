@@ -25,16 +25,16 @@ AE2Crafter is an automated crafting system designed for ComputerCraft and Applie
    - wget https://raw.githubusercontent.com/Dylan-Zheng/CreateAstralComputerCraft/refs/heads/main/release/AE2Crafter.lua startup
 2. schematic:
    - https://github.com/Dylan-Zheng/CreateAstralComputerCraft/raw/refs/heads/main/Doc/schematic/ae2_crafter.nbt
-3. AE2 Pattern Encodeing with 1x or 2x speed. 
-   - To increasing the crafting speed just increasing number of input, output and markitem
-![Create AE2 Pattern - 1X](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/PatternEncoding_1x_speed.png?raw=true)
-![Create AE2 Pattern - 2X](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/PatternEncoding_2x_speed.png?raw=true)
-4. Find Turtle Crafting Partting Chest (Trapped Chest)
-![Turtle Pattern Chest](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/FindTrappedChest.png?raw=true)
-5. Create A Turtle Crafting Pattern
-![Turtle Pattern Chest](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/CreateTurtlePatternA.png?raw=true)
-![Turtle Pattern Chest](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/CreateTurtlePatternB.png?raw=true)
-![Turtle Pattern Chest](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/CreateTurtlePatternC.png?raw=true)
+3. AE2 Pattern Encoding with 1x or 2x speed:
+   - To increase crafting speed, simply increase the number of input items, output items, and mark items in the pattern
+   - ![Create AE2 Pattern - 1X](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/PatternEncoding_1x_speed.png?raw=true)
+   - ![Create AE2 Pattern - 2X](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/PatternEncoding_2x_speed.png?raw=true)
+4. Find Turtle Crafting Pattern Chest (Trapped Chest)
+   - ![Turtle Pattern Chest](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/FindTrappedChest.png?raw=true)
+5. Create a Turtle Crafting Pattern
+   - ![Turtle Pattern Chest](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/CreateTurtlePatternA.png?raw=true)
+   - ![Turtle Pattern Chest](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/CreateTurtlePatternB.png?raw=true)
+   - ![Turtle Pattern Chest](https://github.com/Dylan-Zheng/CreateAstralComputerCraft/blob/main/Doc/images/ae2crafter/CreateTurtlePatternC.png?raw=true)
 
 ## Usage
 
