@@ -106,14 +106,14 @@ function CraftingListTab:new(pframe)
             local text = instance.textBox:getText()
             local ok, toAdd = pcall(textutils.unserialize, text)
             if not ok or type(toAdd) ~= "table" or not toAdd.mark or not toAdd.mark.nbt then
-                instance.messageBox:open("Error", "Invalid recipe format!\n" .. text)
+                instance.messageBox:open("Invalid Recipe Format!", text)
                 return
             end
             
             -- Validate the recipe first
             local isValid, validationError = instance:validateRecipe(toAdd)
             if not isValid then
-                instance.messageBox:open("Error", "Recipe validation failed: " .. validationError)
+                instance.messageBox:open("Recipe Validation Failed!", validationError)
                 return
             end
             
@@ -121,7 +121,7 @@ function CraftingListTab:new(pframe)
             for _, recipe in ipairs(instance.recipes) do
                 local isConflict, errorMsg = instance:isConflictingRecipe(recipe, toAdd)
                 if isConflict then
-                    instance.messageBox:open("Error", "Conflicting recipe found: " .. errorMsg)
+                    instance.messageBox:open("Conflicting Recipe Found!", errorMsg)
                     return
                 end
                 if recipe.mark.nbt == toAdd.mark.nbt then
