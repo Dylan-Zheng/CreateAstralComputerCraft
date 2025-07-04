@@ -7,7 +7,7 @@ AE2Crafter is an automated crafting system designed for ComputerCraft and Applie
 ## System Components
 
 ### Hardware Requirements
-- **Turtle** - Core device for executing crafting operations
+- **Advenced Turtle** - Core device for executing crafting operations
 - **AE2 Pattern Provider** - Connects to AE2 network
 - **Item Vault** - Stores raw materials
 - **Chest** - Temporary storage for crafted items
@@ -18,15 +18,17 @@ AE2Crafter is an automated crafting system designed for ComputerCraft and Applie
 
 ### 1. Hardware Layout
 ```
-[Item Vault]      →      [Dropper]
-    ↑                        ↓
-[AE2 Pattern Provider]  ← [Turtle] → [Chest]
-                             ↑
+[Item Vault]       →       [Dropper]
+    ↑                         ↓
+[AE2 Pattern Provider]  ←  [Turtle]  →  [Chest]
+                              ↑
                         [Trapped Chest]
 ```
 
-### 2. Software Deployment
-1. wget https://raw.githubusercontent.com/Dylan-Zheng/CreateAstralComputerCraft/refs/heads/main/release/AE2Crafter.lua startup
+### 2. Setup
+1. run this below command in turtle:
+   - wget https://raw.githubusercontent.com/Dylan-Zheng/CreateAstralComputerCraft/refs/heads/main/release/AE2Crafter.lua startup
+2. schematic:
 
 ## Usage
 
