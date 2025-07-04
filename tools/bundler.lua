@@ -131,7 +131,7 @@ local function bundle()
         table.insert(outputMinified, string.format('return modules["%s"]()', name))
         table.insert(output, string.format('return modules["%s"]()', name))
 
-        local path = "release/" .. name:gsub("^programs%.", "") .. ".lua"
+        local path = "build/" .. name:gsub("^programs%.", "") .. ".lua"
         local out = io.open(path, "w")
         local minifiedCode = table.concat(outputMinified)
         out:write(minifiedCode)
