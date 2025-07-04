@@ -6,7 +6,20 @@ local _, partternProvider = next(Container.load.ae2_pattern_providers())
 local _, dropper = next(Container.load.droppers())
 local _, chest = next(Container.load.chests())
 
-local TurtleCraft = {}
+local TurtleCraft = {
+    printFn = print
+}
+
+TurtleCraft.setPrintFunction = function (printFunction)
+    if type(printFunction) ~= "function" then
+        error("printFunction must be a function")
+    end
+    TurtleCraft.printFn = printFunction
+end
+
+TurtleCraft.print = function (message)
+    TurtleCraft.printFn(message)
+end
 
 local STEPS ={
     PREPARE_ITEM = 1,
@@ -28,10 +41,16 @@ TurtleCraft.hasMarkedItems = function(items, markTables)
 end
 
 TurtleCraft.moveCraftingItemToBuffer = function(item, amount)
+    if not vault or not item or not item.name then
+        return 0, "Invalid parameters"
+    end
     return vault.moveItem(dropper, item.name, amount)
 end
 
 TurtleCraft.moveMarkItemToOutputChest = function(item, amount)
+    if not vault or not item or not item.name then
+        return 0, "Invalid parameters"
+    end
     return vault.moveItem(chest, item.name, amount)
 end
 
@@ -45,7 +64,8 @@ TurtleCraft.prepareItem = function(params)
     
     local movedMarkItemCount, err = TurtleCraft.moveMarkItemToOutputChest(params.markItem, params.inputAmt)
     if movedMarkItemCount <= 0 then
-        return false, "Failed to move marked item to output chest: " .. (err or "unknown error")
+        TurtleCraft.print("Failed to move marked item to output chest: " .. (err or "unknown error"))
+        return false
     end
 
     TurtleCraft.saveStep(STEPS.PREPARE_ITEM, params)
@@ -53,14 +73,17 @@ TurtleCraft.prepareItem = function(params)
         if input and input.name then
             local movedItemCount, err = TurtleCraft.moveCraftingItemToBuffer(input, params.inputAmt)
             if movedItemCount <= 0 then
-                return false, "Failed to move crafting item to buffer: " .. (err or "unknown error")
+                TurtleCraft.print("Failed to move crafting item to buffer: " .. (err or "unknown error"))
+                return false
             end
             local gotCount, err = TurtleCraft.getInputFromBuffer(CRAFTING_SLOT[idx], movedItemCount)
             if not gotCount then
-                return false, "Failed to get input from buffer: " .. (err or "unknown error")
+                TurtleCraft.print("Failed to get input from buffer: " .. (err or "unknown error"))
+                return false
             end
         end
     end
+    return true
 end
 
 TurtleCraft.checkingInput = function(params)
@@ -69,7 +92,8 @@ TurtleCraft.checkingInput = function(params)
         local item = turtle.getItemDetail(slot)
         if params.recipe.input[index] and params.recipe.input[index].name then
             if not item or item.name ~= params.recipe.input[index].name or item.count ~= params.inputAmt then
-                return false, "Input slot " .. index .. " has incorrect item or amount"
+                TurtleCraft.print("Input slot " .. index .. " has incorrect item or amount")
+                return false
             end
         end
     end
@@ -89,11 +113,12 @@ TurtleCraft.dropOutput = function(params)
             turtle.select(i)
             local moved = turtle.drop()
             if not moved then
-                return false, "Failed to drop item from slot " .. i
+                TurtleCraft.print("Failed to drop item from slot " .. i)
+                return false
             end
         end
     end
-    return true, "Output items dropped successfully"
+    return true
 end
 
 TurtleCraft.moveOutputItem = function(params)
@@ -108,23 +133,58 @@ TurtleCraft.moveOutputItem = function(params)
         end
     end
     local requireOutputCount = params.inputAmt * params.recipe.output.count
-    if outputItem and outputItem.count ~= requireOutputCount then
-        return false, "Output item count mismatch: expected " .. requireOutputCount .. ", got " .. outputItem.count
+    if not params.isRecovering and outputItem and outputItem.count ~= requireOutputCount then
+        TurtleCraft.print("Output item count mismatch: expected " .. requireOutputCount .. ", got " .. outputItem.count)
+        return false
+    elseif params.isRecovering then
+        requireOutputCount = outputItem and outputItem.count or 0
     end
+    TurtleCraft.print("Moving output item: " .. (outputItem and outputItem.name or "none") .. ", count: " .. (outputItem and outputItem.count or 0))
     TurtleCraft.saveStep(STEPS.PROVIDER_TAKE_OUTPUT, params)
     local totalMoved = 0
     local tryCount = 0
     while totalMoved < requireOutputCount do
-        local movedCount, err = partternProvider.moveItem(chest, params.recipe.output.name, requireOutputCount - totalMoved)
+        local movedCount, err = partternProvider.takeItem(chest, params.recipe.output.name, requireOutputCount - totalMoved)
         if movedCount <= 0 then
             tryCount = tryCount + 1
+        else
+            tryCount = 0  -- Reset try count on successful move
         end
         if tryCount > 5 then
-            return false, "Failed to move output item after multiple attempts: " .. (err or "unknown error")
+            TurtleCraft.print("Failed to move output item after multiple attempts: " .. (err or "unknown error"))
+            return false
         end
         totalMoved = totalMoved + movedCount
+        if movedCount > 0 then
+            TurtleCraft.print("Moved " .. movedCount .. " " .. params.recipe.output.name .. " (total: " .. totalMoved .. "/" .. requireOutputCount .. ")")
+        end
     end
-    return true, "Output item moved successfully: " .. totalMoved .. " items"
+    TurtleCraft.print("Moved all output items to pattern provider: " .. params.recipe.output.name)
+    
+    -- Move mark item back to pattern provider if it exists
+    if markItem then
+        local totalMovedMarkCount = 0
+        local tryCountMark = 0
+        local requireMarkCount = markItem.count
+        while totalMovedMarkCount < requireMarkCount do
+            local movedMarkCount, err = partternProvider.takeItem(chest, params.recipe.mark.name, requireMarkCount - totalMovedMarkCount)
+            if movedMarkCount <= 0 then
+                tryCountMark = tryCountMark + 1
+            else
+                tryCountMark = 0  -- Reset try count on successful move
+            end
+            if tryCountMark > 5 then
+                TurtleCraft.print("Failed to move mark item after multiple attempts: " .. (err or "unknown error"))
+                return false
+            end
+            totalMovedMarkCount = totalMovedMarkCount + movedMarkCount
+            if movedMarkCount > 0 then
+                TurtleCraft.print("Moved " .. movedMarkCount .. " " .. params.recipe.mark.name .. " (total: " .. totalMovedMarkCount .. "/" .. requireMarkCount .. ")")
+            end
+        end 
+        TurtleCraft.print("Moved all mark items to pattern provider: " .. params.recipe.mark.name)
+    end
+    return true
 end
 
 TurtleCraft.saveStep = function(step, params)
@@ -168,63 +228,77 @@ end
 
 TurtleCraft.process = function(params, save)
     local step = 0
-    if not save then
-        params.inputAmt = math.min(12, params.markItem.count)
-        step = save.step
+    if save then
+        step = save.step or 0
+    else
+        params.inputAmt = math.min(16, params.markItem.count)
         if params.inputAmt <= 0 then
-            return false, "No marked item available for crafting:"
+            TurtleCraft.print("No marked item available for crafting:")
+            return false
         end
     end
     
-    if STEPS.PREPARE_ITEM >= step then
-        local success, msg = TurtleCraft.prepareItem(params)
+    if step <= STEPS.PREPARE_ITEM then
+        TurtleCraft.print("Preparing items for crafting...")
+        local success = TurtleCraft.prepareItem(params)
         if not success then
-            return false, "Preparation failed: " .. msg
+            return false
         end
     end
-    if STEPS.CHECKING >= step then
-        local success, msg = TurtleCraft.checkingInput(params)
+    if step <= STEPS.CHECKING then
+        TurtleCraft.print("Checking input items...")
+        local success = TurtleCraft.checkingInput(params)
         if not success then
-            return false, "Checking input failed: " .. msg
+            return false
         end
     end
-    if STEPS.CRAFT >= step then
-        local success, msg = TurtleCraft.craft(params)
+    if step <= STEPS.CRAFT then
+        TurtleCraft.print("Crafting items...")
+        local success = TurtleCraft.craft(params)
         if not success then
-            return false, "Crafting failed: " .. msg
+            return false
         end
     end
-    if STEPS.DROP_OUTPUT >= step then
-        local success, msg = TurtleCraft.dropOutput(params)
+    if step <= STEPS.DROP_OUTPUT then
+        TurtleCraft.print("Dropping output items...")
+        local success = TurtleCraft.dropOutput(params)
         if not success then
-            return false, "Dropping output failed: " .. msg
+            return false
         end
     end
-    if STEPS.PROVIDER_TAKE_OUTPUT >= step then
-        local success, msg = TurtleCraft.moveOutputItem(params)
+    if step <= STEPS.PROVIDER_TAKE_OUTPUT then
+        TurtleCraft.print("Moving output item to pattern provider...")
+        local success = TurtleCraft.moveOutputItem(params)
         if not success then
-            return false, "Moving output item failed: " .. msg
+            return false
         end
     end
     TurtleCraft.saveStep(nil, nil)
-    return true, "Crafting process completed successfully"
+    TurtleCraft.print("Crafting process completed successfully")
+    return true
 end
 
 TurtleCraft.hasUnfinishedJob = function()
     local save = TurtleCraft.readStep()
     if not save or not save.step then
-        return false, "No unfinished job found"
+        return false
     end
+    TurtleCraft.print("Found unfinished job with step: " .. save.step)
     if save.step == STEPS.PREPARE_ITEM then
         TurtleCraft.clear()
     end
     if save.step == STEPS.CRAFT then
-        local success, msg = TurtleCraft.checkingInput(save.params)
+        local success = TurtleCraft.checkingInput(save.params)
+
         if not success then
             save.step = STEPS.DROP_OUTPUT
             TurtleCraft.saveStep(STEPS.DROP_OUTPUT, save.params)
             return true, save
         end
+    end
+    if save.step == STEPS.PROVIDER_TAKE_OUTPUT then
+        save.params.isRecovering = true
+        return true, save
     end
     return true, save
 end
@@ -232,12 +306,16 @@ end
 TurtleCraft.listen = function(getMarkTable)
     while true do 
         local waitTime = 3
-        local shouldProcess = false
 
         local hasUnfinished, save = TurtleCraft.hasUnfinishedJob()
         if hasUnfinished then
-            TurtleCraft.process(save.params, save)
-            waitTime = 0.2
+            local success = TurtleCraft.process(save.params, save)
+            if success then
+                waitTime = 0.2
+            else
+                -- Don't clear here - let the save state handle recovery on next iteration
+                waitTime = 1  -- Short wait before retry
+            end
         else
             local vaultItems = vault.listItem()
             if vaultItems and #vaultItems > 0 then
@@ -246,7 +324,12 @@ TurtleCraft.listen = function(getMarkTable)
                     local hasMarked, markItem, recipe = TurtleCraft.hasMarkedItems(vaultItems, markTables)
                     if hasMarked then
                         waitTime = 0.2
-                        TurtleCraft.process({markItem = markItem, recipe = recipe})
+                        local success = TurtleCraft.process({markItem = markItem, recipe = recipe})
+                        if not success then
+                            TurtleCraft.print("Processing failed")
+                            TurtleCraft.clear()
+                            waitTime = 1
+                        end
                     end
                 end
             end

@@ -109,12 +109,19 @@ function CraftingListTab:new(pframe)
                 instance.messageBox:open("Error", "Invalid recipe format!\n" .. text)
                 return
             end
+            
+            -- Validate the recipe first
+            local isValid, validationError = instance:validateRecipe(toAdd)
+            if not isValid then
+                instance.messageBox:open("Error", "Recipe validation failed: " .. validationError)
+                return
+            end
+            
             local found = false
             for _, recipe in ipairs(instance.recipes) do
-                if self:isMarkItemInRecipeInputAndOutput(toAdd.mark, recipe) then
-                    instance.messageBox:open("Error", 
-                        "Mark Item " .. (toAdd.mark.displayName or "?") ..
-                        " is in recipe of " .. (recipe.output and recipe.output.displayName or "?") .. ". Change MarkItem to save the recipe")
+                local isConflict, errorMsg = instance:isConflictingRecipe(recipe, toAdd)
+                if isConflict then
+                    instance.messageBox:open("Error", "Conflicting recipe found: " .. errorMsg)
                     return
                 end
                 if recipe.mark.nbt == toAdd.mark.nbt then
@@ -155,21 +162,60 @@ function CraftingListTab:new(pframe)
     return instance
 end
 
-function CraftingListTab:isMarkItemInRecipeInputAndOutput(markItem, recipe)
+function CraftingListTab:validateRecipe(recipe)
+    local markItem = recipe.mark
+    local inputs = recipe.input
+    local output = recipe.output
+
+    if not markItem or not markItem.name or not markItem.nbt then
+        return false, "Mark item is missing or invalid"
+    end
+
+    if not output or not output.name then
+        return false, "Output item is missing or invalid"
+    end
+
+    if not inputs or #inputs == 0 then
+        return false, "Input items are missing or invalid"
+    end
+
+    -- Check if mark item is used as input item
+    for idx, input in ipairs(inputs) do
+        if input and input.name == markItem.name then
+            return false, "Mark item '" .. markItem.displayName .. "' cannot be used as input item"
+        end
+    end
+
+    -- Check if mark item is same as output item
+    if output.name == markItem.name then
+        return false, "Mark item '" .. markItem.displayName .. "' cannot be the same as output item"
+    end
+
+    return true
+end
+
+function CraftingListTab:isConflictingRecipe(recipe, newRecipe)
+    local markItem = newRecipe.mark
+    local recipeOutput = newRecipe.output
+    
     if not markItem or not recipe then
-        return false
+        return true, "Invalid recipe or mark item"
     end
 
     -- Check if the mark item is in the input slots
     for _, input in ipairs(recipe.input) do
         if input and input.name == markItem.name then
-            return true
+            return true, "Mark item is in a existing recipe " .. recipe.output.displayName .. " as input"
         end
     end
 
     -- Check if the mark item is in the output slot
     if recipe.output and recipe.output.name == markItem.name then
-        return true
+        return true, "Mark item is in a existing recipe " .. recipe.output.displayName .. " as output"
+    end
+
+    if markItem.nbt == recipe.mark.nbt and recipeOutput.name ~= recipe.output.name then
+        return true, "There is already a recipe " .. recipe.output.displayName .. " with the same mark item and different output"
     end
 
     return false

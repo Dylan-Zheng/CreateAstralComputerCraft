@@ -6,9 +6,9 @@ local TurtleCraft = require("programs.ae2.crafter.TurtleCraft")
 local LogBox = require("elements.LogBox")
 
 -- LOGGER
-local basaltLogEnabled = true
+local basaltLogEnabled = false
 basalt.LOGGER.setEnabled(basaltLogEnabled)
-basalt.LOGGER.setLogToFile(true)
+basalt.LOGGER.setLogToFile(basaltLogEnabled)
 
 if basaltLogEnabled then
     Logger.addPrintFunction(function(level, src, currentline, message)
@@ -24,7 +24,6 @@ if basaltLogEnabled then
         end
     end)
 end
-
 --
 
 local main = basalt.getMainFrame()
@@ -33,11 +32,20 @@ basalt.LOGGER.debug("Starting MachineController...")
 local tabView = TabView:new(main:addFrame(), 1, 1, main:getWidth(), main:getHeight())
 local craftingListTab = tabView:createTab("Crafting List")
 local logTab = tabView:createTab("Log")
-local settingsTab = tabView:createTab("Settings")
 local craftingListFrame = CraftingListTab:new(craftingListTab.frame):init()
 local logBox = LogBox:new(logTab.frame, 2, 2, logTab.frame:getWidth() -2, logTab.frame:getHeight() -2, colors.white, colors.gray)
+TurtleCraft.setPrintFunction(function(message)
+    logBox:addLog(message)
+end)
 
 tabView:init()
 
-basalt.run()
+parallel.waitForAll(
+    function()
+        basalt.run()
+    end,
+    function()
+        TurtleCraft.listen(function () return craftingListFrame:getMarkTables() end)
+    end
+)
 

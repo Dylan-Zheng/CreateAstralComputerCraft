@@ -35,7 +35,7 @@ function LogBox:new(pframe, x, y, width, height, fg, bg)
 end
 
 function LogBox:addLog(message)
-    local wrappedMsg = StringUtils:wrapText(message, self.textBox.getWidth())
+    local wrappedMsg = StringUtils.wrapText(message, self.textBox:getWidth())
     self.text = self.text .. wrappedMsg .. "\n"
     
     -- Check if we need to trim lines
@@ -47,11 +47,27 @@ function LogBox:addLog(message)
         -- Find the position after the nth newline to remove
         local pos = 1
         for i = 1, linesToRemove do
-            pos = self.text:find("\n", pos)
-            if pos then
-                pos = pos + 1  -- Move past the newline
+            local newlinePos = self.text:find("\n", pos)
+            if newlinePos then
+                pos = newlinePos + 1  -- Move past the newline
             else
-                break
+                -- If we can't find enough newlines, clear everything except last few lines
+                local lines = {}
+                for line in self.text:gmatch("([^\n]*)\n?") do
+                    if line ~= "" then
+                        table.insert(lines, line)
+                    end
+                end
+                
+                -- Keep only the last maxLines
+                local startIdx = math.max(1, #lines - self.maxLines + 1)
+                local newLines = {}
+                for i = startIdx, #lines do
+                    table.insert(newLines, lines[i])
+                end
+                self.text = table.concat(newLines, "\n") .. "\n"
+                self.textBox:setText(self.text)
+                return
             end
         end
         
@@ -62,6 +78,12 @@ function LogBox:addLog(message)
     end
     
     self.textBox:setText(self.text)
+    -- Auto-scroll to bottom to show latest messages
+    local lineCount = countNewlines(self.text)
+    local boxHeight = self.textBox:getHeight()
+    if lineCount > boxHeight then
+        self.textBox:setScrollY(lineCount - boxHeight + 1)
+    end
 end
 
 function LogBox:setMaxLines(maxLines)

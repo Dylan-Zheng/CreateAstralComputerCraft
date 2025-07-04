@@ -11,7 +11,6 @@ if %errorlevel% neq 0 (
     echo.
     echo You can install Lua from: https://www.lua.org/download.html
     echo Or use a package manager like Chocolatey: choco install lua
-    pause
     exit /b 1
 )
 
@@ -30,12 +29,10 @@ if %errorlevel% neq 0 (
     echo =====================================
     echo Build failed with error code %errorlevel%
     echo =====================================
-    pause
     exit /b %errorlevel%
 ) else (
     echo.
     echo =====================================
     echo Build completed successfully!
     echo =====================================
-    pause
 )
