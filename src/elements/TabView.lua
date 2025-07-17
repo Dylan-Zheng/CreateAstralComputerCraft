@@ -97,6 +97,9 @@ function TabView:selectTab (tab)
         tab.label:setForeground(self.bottomFrameFg)
         tab.frame:setVisible(true)
     end
+    if tab.onSelect ~= nil then
+        tab:onSelect()
+    end
 end
 
 
