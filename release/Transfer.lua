@@ -2877,8 +2877,8 @@ local ac=require("utils.Logger")local bc=require("elements.TabView")
 local cc=require("elements.ItemSelectedListBox")local dc=require("utils.TableUtils")
 local _d=require("programs.transfer.TransferJobManager")local ad=require("elements.MessageBox")
 local bd=function(__a,a_a)local b_a={}local c_a={}for d_a,_aa in pairs(a_a)do
-b_a[_aa]=true
-table.insert(c_a,{text=_aa,name=_aa,selected=true})end
+b_a[d_a]=true
+table.insert(c_a,{text=d_a,name=d_a,selected=true})end
 for d_a,_aa in pairs(__a)do
 if
 db.isInventory(_aa)or db.isTank(_aa)then if not b_a[d_a]then b_a[d_a]=true
@@ -2932,11 +2932,12 @@ a_a.inputInvLabel=a_a.detailsTabFrame:addLabel():setText("Input Inventory: 0"):s
 a_a.idLabel:getY()+a_a.idLabel:getHeight()+1):setForeground(colors.white)
 a_a.editinputInv=a_a.detailsTabFrame:addButton():setPosition(
 a_a.detailsTabFrame:getWidth()-3,a_a.inputInvLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
-db.reloadAll()local b_a=db.getAll()
-local c_a=bd(b_a,
-a_a.selectedTransfer and a_a.selectedTransfer.inputInv or{})
-a_a.itemListBox:open(c_a,true,{confirm=function(d_a)local _aa={}
-for aaa,baa in pairs(d_a)do _aa[baa.name]=true end;a_a.selectedTransfer.inputInv=_aa
+db.reloadAll()local b_a=db.getAll()ac.debug("Peripherals: ")
+local c_a=bd(b_a,a_a.selectedTransfer and
+a_a.selectedTransfer.inputInv or{})ac.debug(textutils.serialize(c_a))
+a_a.itemListBox:open(c_a,true,{confirm=function(d_a)
+local _aa={}for aaa,baa in pairs(d_a)do _aa[baa.name]=true end
+a_a.selectedTransfer.inputInv=_aa
 a_a.inputInvLabel:setText(string.format("Input Inventory: %d",dc.getLength(_aa)))end})end)
 a_a.outputInvLabel=a_a.detailsTabFrame:addLabel():setText("Output Inventory: 0"):setPosition(2,
 a_a.inputInvLabel:getY()+a_a.inputInvLabel:getHeight()+1):setForeground(colors.white)

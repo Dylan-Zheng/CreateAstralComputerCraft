@@ -12,7 +12,7 @@ local MessageBox = require("elements.MessageBox")
 local setSelectedPeripherals = function(peripherals, selectedNames)       
     local isAdded = {}
     local items = {}
-    for _, selectedName in pairs(selectedNames) do
+    for selectedName, _ in pairs(selectedNames) do
         isAdded[selectedName] = true
         table.insert(items, {text= selectedName, name = selectedName, selected = true})
     end
@@ -182,7 +182,9 @@ function TransferTab:new(pframe)
         :onClick(function()
             PeripheralWrapper.reloadAll()
             local peripheral =  PeripheralWrapper.getAll()
+            Logger.debug("Peripherals: ")
             local items = setSelectedPeripherals(peripheral, instance.selectedTransfer and instance.selectedTransfer.inputInv or {})
+            Logger.debug(textutils.serialize(items))
             instance.itemListBox:open(items, true, {confirm = function(selectedItems) 
                 local items = {}
                 for _, item in pairs(selectedItems) do

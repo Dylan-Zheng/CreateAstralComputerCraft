@@ -2825,7 +2825,7 @@ ab.selected=false;ab.label:setBackground(self.tabBg)
 ab.label:setForeground(self.tabFg)ab.frame:setVisible(false)end end
 if da then self.selectedTab=da;da.selected=true
 da.label:setBackground(self.bottomFrameBg)da.label:setForeground(self.bottomFrameFg)
-da.frame:setVisible(true)end end
+da.frame:setVisible(true)end;if da.onSelect~=nil then da:onSelect()end end
 function ca:createTab(da)aa.debug("Creating tab: "..da)local _b={}
 _b.name=da;_b.idx=#self.tabs+1;_b.selected=false
 _b.label=self.topFrame:addLabel():setText(
@@ -2945,9 +2945,10 @@ _d and _d.name==bc.name then return true,
 return true,"Mark item is in a existing recipe "..
 _c.output.displayName.." as output"end
 if bc.nbt==
-_c.mark.nbt and cc.name~=_c.output.name then return true,
-
-"There is already a recipe ".._c.output.displayName.." with the same mark item and different output"end;return false end
+_c.mark.nbt and cc.name~=_c.output.name then
+return true,
+"There is already a recipe "..
+_c.output.displayName.." with the same mark item name and different output"end;return false end
 function db:loadRecipes()local _c=_b.loadTable("crafting_recipes.json")if not _c then
 self.recipes={}return end;self.recipes=_c
 for ac,bc in ipairs(self.recipes)do if bc.mark and

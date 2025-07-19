@@ -75,6 +75,8 @@ computercraft/computer/*/
 # Personal build paths (comment out if you want to track them)
 tools/build_path.txt
 build_path.txt
+tools/build_filter.txt
+build_filter.txt
 
 # Lua specific
 # Compiled Lua files

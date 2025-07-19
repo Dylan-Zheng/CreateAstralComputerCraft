@@ -9,6 +9,24 @@ local shouldMinify = false
 
 local minify = chunk()
 
+local function readProgramFilter()
+    local filters = {}
+    local file = io.open("tools/program_filter.txt", "r")
+    if file then
+        for line in file:lines() do
+            -- Trim whitespace and skip empty lines
+            line = line:match("^%s*(.-)%s*$")
+            if line and line ~= "" then
+                filters[line] = true
+            end
+        end
+        file:close()
+    else
+        print("Warning: build_filter.txt not found, no filters applied")
+    end
+    return filters
+end
+
 local function scanDir(dir)
     local files = {}
     local sep = package.config:sub(1, 1)
@@ -63,13 +81,26 @@ end
 
 local function getPrograms(modules)
     local programs = {}
-    for name, module in pairs(modules) do
-        if name:match("^programs%.[^%.]+$") then
-            programs[name] = {
-                content = module.content,
-                minified = module.minified,
-                requires = module.requires
-            }
+    local filter = readProgramFilter()
+    if next(filter) then
+        for name, module in pairs(modules) do
+            if filter[name] then
+                programs[name] = {
+                    content = module.content,
+                    minified = module.minified,
+                    requires = module.requires
+                }
+            end
+        end
+    else
+        for name, module in pairs(modules) do
+            if name:match("^programs%.[^%.]+$") then
+                programs[name] = {
+                    content = module.content,
+                    minified = module.minified,
+                    requires = module.requires
+                }
+            end
         end
     end
     return programs
@@ -124,7 +155,8 @@ local function bundle()
 
         for _, req in ipairs(allRequires) do
             if modules[req] then
-                table.insert(outputMinified, string.format('modules["%s"] = function() %s end\n', req, modules[req].minified))
+                table.insert(outputMinified,
+                    string.format('modules["%s"] = function() %s end\n', req, modules[req].minified))
                 table.insert(output, string.format('modules["%s"] = function() %s end\n', req, modules[req].content))
             end
         end
