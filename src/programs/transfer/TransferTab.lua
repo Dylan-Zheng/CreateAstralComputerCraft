@@ -31,7 +31,7 @@ end
 local setSelectedItems = function (peripherals, selectedNames)
     local isAdded = {}
     local items = {}
-    for _, selectedName in pairs(selectedNames) do
+    for selectedName, _ in pairs(selectedNames) do
         isAdded[selectedName] = true
         table.insert(items, {text= selectedName, name = selectedName, selected = true})
     end

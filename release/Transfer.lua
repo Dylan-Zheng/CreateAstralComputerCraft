@@ -2883,8 +2883,8 @@ for d_a,_aa in pairs(__a)do
 if
 db.isInventory(_aa)or db.isTank(_aa)then if not b_a[d_a]then b_a[d_a]=true
 table.insert(c_a,{text=d_a,name=d_a,selected=false})end end end;return c_a end
-local cd=function(__a,a_a)local b_a={}local c_a={}for d_a,_aa in pairs(a_a)do b_a[_aa]=true
-table.insert(c_a,{text=_aa,name=_aa,selected=true})end
+local cd=function(__a,a_a)local b_a={}local c_a={}for d_a,_aa in pairs(a_a)do b_a[d_a]=true
+table.insert(c_a,{text=d_a,name=d_a,selected=true})end
 for d_a,_aa in pairs(__a)do
 ac.debug("Peripheral: "..d_a)
 if _aa.isInventory()then local aaa=_aa.getItems()
