@@ -5,7 +5,7 @@ require = function(path) if(modules[path])then if(loadedModules[path]==nil)then 
 modules["programs.Transfer"] = function() local _c=require("libraries.basalt")
 local ac=require("elements.TabView")local bc=require("programs.transfer.TransferTab")
 local cc=require("wrapper.PeripheralWrapper")local dc=require("programs.transfer.TransferJobManager")
-local _d=require("utils.Logger")local ad=require("elements.LogBox")local bd=false
+local _d=require("utils.Logger")local ad=require("elements.LogBox")local bd=true
 _c.LOGGER.setEnabled(bd)_c.LOGGER.setLogToFile(bd)
 if bd then
 _d.addPrintFunction(function(d_a,_aa,aaa,baa)
@@ -19,7 +19,7 @@ local c_a=ad:new(b_a.frame,2,2,b_a.frame:getWidth()-2,
 b_a.frame:getHeight()-2,colors.white,colors.gray)a_a:init()dd:init()
 _d.addPrintFunction(function(d_a,_aa,aaa,baa)
 c_a:addLog(string.format("[%d] %s",aaa,baa))end)
-parallel.waitForAll(_c.run,function()while true do dc.exec()os.sleep(1)end end) end
+parallel.waitForAll(_c.run,function()while true do dc.exec()os.sleep(0.2)end end) end
 modules["libraries.basalt"] = function() local ba=true;local ca={}local da={}local _b={}local ab={}local bb=require
 require=function(cb)if(_b[cb..".lua"])then if
 (ab[cb]==nil)then ab[cb]=_b[cb..".lua"]()end
@@ -2871,154 +2871,221 @@ self:selectTab(self.tabs[1])end end;function ca:getTabByName(da)
 for _b,ab in ipairs(self.tabs)do if ab.name==da then return ab end end;return nil end;function ca:getTabByIndex(da)if
 da<1 or da>#self.tabs then return nil end
 return self.tabs[da]end;return ca end
-modules["programs.transfer.TransferTab"] = function() local cb=require("utils.StringUtils")
-local db=require("wrapper.PeripheralWrapper")local _c=require("utils.OSUtils")
-local ac=require("utils.Logger")local bc=require("elements.TabView")
-local cc=require("elements.ItemSelectedListBox")local dc=require("utils.TableUtils")
-local _d=require("programs.transfer.TransferJobManager")local ad=require("elements.MessageBox")
-local bd=function(__a,a_a)local b_a={}local c_a={}for d_a,_aa in pairs(a_a)do
-b_a[d_a]=true
-table.insert(c_a,{text=d_a,name=d_a,selected=true})end
-for d_a,_aa in pairs(__a)do
+modules["programs.transfer.TransferTab"] = function() local bc=require("utils.StringUtils")
+local cc=require("wrapper.PeripheralWrapper")local dc=require("utils.OSUtils")
+local _d=require("utils.Logger")local ad=require("elements.TabView")
+local bd=require("elements.ItemSelectedListBox")local cd=require("utils.TableUtils")
+local dd=require("programs.transfer.TransferJobManager")local __a=require("elements.MessageBox")
+local a_a=require("elements.ConfirmMessageBox")local b_a=require("programs.transfer.Triggers")local c_a=colors
+local d_a=textutils
+local _aa=function(caa,daa)local _ba={}local aba={}for bba,cba in pairs(daa)do _ba[bba]=true
+table.insert(aba,{text=bba,name=bba,selected=true})end
+for bba,cba in pairs(caa)do
 if
-db.isInventory(_aa)or db.isTank(_aa)then if not b_a[d_a]then b_a[d_a]=true
-table.insert(c_a,{text=d_a,name=d_a,selected=false})end end end;return c_a end
-local cd=function(__a,a_a)local b_a={}local c_a={}for d_a,_aa in pairs(a_a)do b_a[d_a]=true
-table.insert(c_a,{text=d_a,name=d_a,selected=true})end
-for d_a,_aa in pairs(__a)do
-ac.debug("Peripheral: "..d_a)
-if _aa.isInventory()then local aaa=_aa.getItems()
-for baa,caa in pairs(aaa)do if caa.name and
-not b_a[caa.name]then b_a[caa.name]=true
-table.insert(c_a,{text=caa.displayName or caa.name,name=caa.name,selected=false})end end end
-if _aa.isTank()then local aaa=_aa.tanks()
-for baa,caa in pairs(aaa)do if
-caa.name and not b_a[caa.name]then b_a[caa.name]=true
-table.insert(c_a,{text=caa.displayName or caa.name,name=caa.name,selected=false})end end end end;return c_a end;local dd={}dd.__index=dd
-function dd:new(__a)local a_a=setmetatable({},dd)a_a.pframe=__a
-a_a.frame=__a:addFrame():setPosition(1,1):setSize(__a:getWidth(),__a:getHeight()):setBackground(colors.lightGray):setForeground(colors.white)
-a_a.list=a_a.frame:addList():setPosition(2,2):setSize(18,
-a_a.frame:getHeight()-4):setBackground(colors.gray):setForeground(colors.white)
-a_a.addButton=a_a.frame:addButton():setPosition(2,a_a.list:getY()+
-a_a.list:getHeight()+1):setSize(5,1):setText(" New "):setBackground(colors.green):setForeground(colors.black):onClick(function()a_a:openDetail(
+cc.isInventory(cba)or cc.isTank(cba)then if not _ba[bba]then _ba[bba]=true
+table.insert(aba,{text=bba,name=bba,selected=false})end end end;return aba end
+local aaa=function(caa,daa)local _ba={}local aba={}for bba,cba in pairs(daa)do _ba[bba]=true
+table.insert(aba,{text=bba,name=bba,type=cba,selected=true})end
+for bba,cba in pairs(caa)do
+_d.debug("Peripheral: "..bba)
+if cba.isInventory()then local dba=cba.getItems()
+for _ca,aca in pairs(dba)do
+if aca.name and
+not _ba[aca.name]then _ba[aca.name]=true
+table.insert(aba,{text=aca.displayName or aca.name,name=aca.name,type="item",selected=false})end end end
+if cba.isTank()then local dba=cba.tanks()
+for _ca,aca in pairs(dba)do
+if
+aca.name and not _ba[aca.name]then _ba[aca.name]=true
+table.insert(aba,{text=aca.displayName or aca.name,name=aca.name,type="fluid",selected=false})end end end end;return aba end;local baa={}baa.__index=baa
+function baa:new(caa)local daa=setmetatable({},baa)
+daa.pframe=caa
+daa.frame=caa:addFrame():setPosition(1,1):setSize(caa:getWidth(),caa:getHeight()):setBackground(c_a.lightGray):setForeground(c_a.white)
+daa.list=daa.frame:addList():setPosition(2,2):setSize(18,
+daa.frame:getHeight()-4):setBackground(c_a.gray):setForeground(c_a.white)
+daa.addButton=daa.frame:addButton():setPosition(2,daa.list:getY()+
+daa.list:getHeight()+1):setSize(5,1):setText(" New "):setBackground(c_a.green):setForeground(c_a.black):onClick(function()daa:openDetail(
 nil)end)
-a_a.editBtn=a_a.frame:addButton():setPosition(
-a_a.addButton:getX()+a_a.addButton:getWidth()+1,a_a.addButton:getY()):setSize(6,1):setText(" Edit "):setBackground(colors.yellow):setForeground(colors.black):onClick(function()
-local b_a=a_a.list:getSelectedItem()if not b_a then
-a_a.messageBox:open("Warning","No transfer selected")return end
-a_a:openDetail(_d.getTransfer(b_a.id))end)
-a_a.delBtn=a_a.frame:addButton():setPosition(a_a.editBtn:getX()+
-a_a.editBtn:getWidth()+1,a_a.editBtn:getY()):setSize(5,1):setText(" Del "):setBackground(colors.red):setForeground(colors.black):onClick(function()
-local b_a=a_a.list:getSelectedItem()if not b_a then
-a_a.messageBox:open("Warning","No transfer selected")return end
-_d.removeTransfer(b_a.id)a_a:openDetail(nil)a_a:updateTransferList()end)
-a_a.tabView=bc:new(a_a.frame:addFrame(),a_a.list:getX()+
-a_a.list:getWidth()+1,2,a_a.frame:getWidth()-
-a_a.list:getWidth()-3,a_a.frame:getHeight()-2,colors.lightGray,colors.white,colors.gray,colors.white)a_a.detailsTab=a_a.tabView:createTab("Detail")
-a_a.detailsTabFrame=a_a.detailsTab.frame
-a_a.nameInput=a_a.detailsTabFrame:addInput():setPosition(2,2):setSize(
-a_a.detailsTabFrame:getWidth()-2,1):setBackground(colors.lightGray):setForeground(colors.white):setPlaceholderColor(colors.gray):setPlaceholder("Transfer Name")
-a_a.idLabel=a_a.detailsTabFrame:addLabel():setText(cb.ellipsisMiddle("ID: nil",
-a_a.detailsTabFrame:getWidth()-4)):setSize(
-a_a.detailsTabFrame:getWidth()-4,1):setPosition(2,
-a_a.nameInput:getY()+a_a.nameInput:getHeight()+1):setAutoSize(false):setForeground(colors.white)
-a_a.newIdBtn=a_a.detailsTabFrame:addButton():setPosition(
-a_a.idLabel:getX()+a_a.idLabel:getWidth()+1,a_a.idLabel:getY()):setSize(1,1):setText("N"):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
+daa.editBtn=daa.frame:addButton():setPosition(
+daa.addButton:getX()+daa.addButton:getWidth()+1,daa.addButton:getY()):setSize(6,1):setText(" Edit "):setBackground(c_a.yellow):setForeground(c_a.black):onClick(function()
+local _ba=daa.list:getSelectedItem()if not _ba then
+daa.messageBox:open("Warning","No transfer selected")return end
+daa:openDetail(dd.getTransfer(_ba.id))end)
+daa.delBtn=daa.frame:addButton():setPosition(daa.editBtn:getX()+
+daa.editBtn:getWidth()+1,daa.editBtn:getY()):setSize(5,1):setText(" Del "):setBackground(c_a.red):setForeground(c_a.black):onClick(function()
+local _ba=daa.list:getSelectedItem()if not _ba then
+daa.messageBox:open("Warning","No transfer selected")return end
+daa.confirmMessageBox:open("Confirm Delete","Are you sure you want to delete this transfer?",function()
+dd.removeTransfer(_ba.id)daa:openDetail(nil)daa:updateTransferList()end)end)
+daa.tabView=ad:new(daa.frame:addFrame(),daa.list:getX()+
+daa.list:getWidth()+1,2,daa.frame:getWidth()-
+daa.list:getWidth()-3,daa.frame:getHeight()-2,c_a.lightGray,c_a.white,c_a.gray,c_a.white)daa.detailsTab=daa.tabView:createTab("Detail")
+daa.detailsTabFrame=daa.detailsTab.frame
+daa.nameInput=daa.detailsTabFrame:addInput():setPosition(2,2):setSize(
+daa.detailsTabFrame:getWidth()-2,1):setBackground(c_a.lightGray):setForeground(c_a.white):setPlaceholderColor(c_a.gray):setPlaceholder("Transfer Name")
+daa.idLabel=daa.detailsTabFrame:addLabel():setText(bc.ellipsisMiddle("ID: nil",
+daa.detailsTabFrame:getWidth()-4)):setSize(
+daa.detailsTabFrame:getWidth()-4,1):setPosition(2,
+daa.nameInput:getY()+daa.nameInput:getHeight()+1):setAutoSize(false):setForeground(c_a.white)
+daa.newIdBtn=daa.detailsTabFrame:addButton():setPosition(
+daa.idLabel:getX()+daa.idLabel:getWidth()+1,daa.idLabel:getY()):setSize(1,1):setText("N"):setBackground(c_a.lightGray):setForeground(c_a.white):onClick(function()
 if
-a_a.selectedTransfer then
-a_a.selectedTransfer.id=_c.timestampBaseIdGenerate()
-a_a.idLabel:setText(cb.ellipsisMiddle(string.format("ID: %s",a_a.selectedTransfer.id),a_a.idLabel:getWidth()))end end)
-a_a.inputInvLabel=a_a.detailsTabFrame:addLabel():setText("Input Inventory: 0"):setPosition(2,
-a_a.idLabel:getY()+a_a.idLabel:getHeight()+1):setForeground(colors.white)
-a_a.editinputInv=a_a.detailsTabFrame:addButton():setPosition(
-a_a.detailsTabFrame:getWidth()-3,a_a.inputInvLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
-db.reloadAll()local b_a=db.getAll()ac.debug("Peripherals: ")
-local c_a=bd(b_a,a_a.selectedTransfer and
-a_a.selectedTransfer.inputInv or{})ac.debug(textutils.serialize(c_a))
-a_a.itemListBox:open(c_a,true,{confirm=function(d_a)
-local _aa={}for aaa,baa in pairs(d_a)do _aa[baa.name]=true end
-a_a.selectedTransfer.inputInv=_aa
-a_a.inputInvLabel:setText(string.format("Input Inventory: %d",dc.getLength(_aa)))end})end)
-a_a.outputInvLabel=a_a.detailsTabFrame:addLabel():setText("Output Inventory: 0"):setPosition(2,
-a_a.inputInvLabel:getY()+a_a.inputInvLabel:getHeight()+1):setForeground(colors.white)
-a_a.editoutputInv=a_a.detailsTabFrame:addButton():setPosition(
-a_a.detailsTabFrame:getWidth()-3,a_a.outputInvLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
-db.reloadAll()local b_a=db.getAll()
-local c_a=bd(b_a,
-a_a.selectedTransfer and a_a.selectedTransfer.outputInv or{})
-a_a.itemListBox:open(c_a,true,{confirm=function(d_a)local _aa={}
-for aaa,baa in pairs(d_a)do _aa[baa.name]=true end;a_a.selectedTransfer.outputInv=_aa
-a_a.outputInvLabel:setText(string.format("Output Inventory: %d",dc.getLength(_aa)))end})end)
-a_a.itemLabel=a_a.detailsTabFrame:addLabel():setText("Item Filter: 0"):setPosition(2,
-a_a.outputInvLabel:getY()+a_a.outputInvLabel:getHeight()+1):setForeground(colors.white):setAutoSize(false)
-a_a.editItemBtn=a_a.detailsTabFrame:addButton():setPosition(
-a_a.detailsTabFrame:getWidth()-3,a_a.itemLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
-local b_a=db.getAll()
-local c_a=cd(b_a,a_a.selectedTransfer and a_a.selectedTransfer.itemFilter or{})
-a_a.itemListBox:open(c_a,true,{confirm=function(d_a)local _aa={}
-for aaa,baa in pairs(d_a)do _aa[baa.name]=true end;a_a.selectedTransfer.itemFilter=_aa
-a_a.itemLabel:setText(string.format("Item Filter: %d",dc.getLength(_aa)))end})end)
-a_a.isBlackListCheckBox=a_a.detailsTabFrame:addCheckbox():setSize(1,1):setBackground(colors.gray):setForeground(colors.white):setText("[ ] Black List"):setCheckedText("[x] Black List"):setChecked(false):setPosition(2,
-a_a.itemLabel:getY()+a_a.itemLabel:getHeight())
-a_a.isDisabledCheckBox=a_a.detailsTabFrame:addCheckbox():setSize(1,1):setBackground(colors.gray):setForeground(colors.white):setText("[ ] Disabled"):setCheckedText("[x] Disabled"):setChecked(false):setPosition(2,
-a_a.isBlackListCheckBox:getY()+a_a.isBlackListCheckBox:getHeight())
-a_a.saveBtn=a_a.detailsTabFrame:addButton():setPosition(
-a_a.detailsTabFrame:getWidth()-6,a_a.detailsTabFrame:getHeight()-1):setSize(6,1):setText(" Save "):setBackground(colors.green):setForeground(colors.black):onClick(function()if
-a_a.selectedTransfer==nil then
-a_a.messageBox:open("Error","No transfer to save")return end;a_a.selectedTransfer.name=
-a_a.nameInput:getText()or"unnamed"
-a_a.selectedTransfer.isBlackList=a_a.isBlackListCheckBox:getChecked()
-a_a.selectedTransfer.isDisabled=a_a.isDisabledCheckBox:getChecked()_d.addTransfer(a_a.selectedTransfer)
-a_a:updateTransferList()end)a_a.srcTab=a_a.tabView:createTab("Source")
-a_a.srcTextBox=a_a.srcTab.frame:addTextBox():setPosition(2,2):setSize(
-a_a.srcTab.frame:getWidth()-2,a_a.srcTab.frame:getHeight()-2):setBackground(colors.lightGray):setForeground(colors.white):setText("")
-a_a.srcTab.onSelect=function()a_a:updateSrcText()end;a_a.itemListBox=cc:new(a_a.pframe)
-a_a.messageBox=ad:new(a_a.pframe,40,15)return a_a end;function dd:init()self.tabView:init()self:openDetail(nil)
+daa.selectedTransfer then
+daa.selectedTransfer.id=dc.timestampBaseIdGenerate()
+daa.idLabel:setText(bc.ellipsisMiddle(string.format("ID: %s",daa.selectedTransfer.id),daa.idLabel:getWidth()))end end)
+daa.inputInvLabel=daa.detailsTabFrame:addLabel():setText("Input: 0"):setPosition(2,
+daa.idLabel:getY()+daa.idLabel:getHeight()+1):setForeground(c_a.white)
+daa.editInputSlots=daa.detailsTabFrame:addButton():setPosition(
+daa.detailsTabFrame:getWidth()-9,daa.inputInvLabel:getY()):setSize(5,1):setText("Slots"):setBackground(c_a.lightGray):setForeground(c_a.white):onClick(function()
+daa:openSlotSelector("input")end)
+daa.editinputInv=daa.detailsTabFrame:addButton():setPosition(
+daa.detailsTabFrame:getWidth()-3,daa.inputInvLabel:getY()):setSize(3,1):setText("..."):setBackground(c_a.blue):setForeground(c_a.white):onClick(function()
+cc.reloadAll()local _ba=cc.getAll()_d.debug("Peripherals: ")
+local aba=_aa(_ba,daa.selectedTransfer and
+daa.selectedTransfer.inputInv or{})
+daa.itemListBox:open(aba,true,{confirm=function(bba)local cba={}
+for dba,_ca in pairs(bba)do cba[_ca.name]=true end;daa.selectedTransfer.inputInv=cba
+daa.inputInvLabel:setText(string.format("Input: %d",cd.getLength(cba)))end})end)
+daa.outputInvLabel=daa.detailsTabFrame:addLabel():setText("Output: 0"):setPosition(2,
+daa.inputInvLabel:getY()+daa.inputInvLabel:getHeight()):setForeground(c_a.white)
+daa.editOutputSlots=daa.detailsTabFrame:addButton():setPosition(
+daa.detailsTabFrame:getWidth()-9,daa.outputInvLabel:getY()):setSize(5,1):setText("Slots"):setBackground(c_a.lightGray):setForeground(c_a.white):onClick(function()
+daa:openSlotSelector("output")end)
+daa.editoutputInv=daa.detailsTabFrame:addButton():setPosition(
+daa.detailsTabFrame:getWidth()-3,daa.outputInvLabel:getY()):setSize(3,1):setText("..."):setBackground(c_a.blue):setForeground(c_a.white):onClick(function()
+cc.reloadAll()local _ba=cc.getAll()
+local aba=_aa(_ba,
+daa.selectedTransfer and daa.selectedTransfer.outputInv or{})
+daa.itemListBox:open(aba,true,{confirm=function(bba)local cba={}
+for dba,_ca in pairs(bba)do cba[_ca.name]=true end;daa.selectedTransfer.outputInv=cba
+daa.outputInvLabel:setText(string.format("Output: %d",cd.getLength(cba)))end})end)
+daa.itemLabel=daa.detailsTabFrame:addLabel():setText("Item Filter: 0"):setPosition(2,
+daa.outputInvLabel:getY()+daa.outputInvLabel:getHeight()):setForeground(c_a.white):setAutoSize(false)
+daa.editItemBtn=daa.detailsTabFrame:addButton():setPosition(
+daa.detailsTabFrame:getWidth()-3,daa.itemLabel:getY()):setSize(3,1):setText("..."):setBackground(c_a.blue):setForeground(c_a.white):onClick(function()
+local _ba=cc.getAll()
+local aba=aaa(_ba,daa.selectedTransfer and daa.selectedTransfer.itemFilter or{})
+daa.itemListBox:open(aba,true,{confirm=function(bba)local cba={}
+for dba,_ca in pairs(bba)do cba[_ca.name]=_ca.type end;daa.selectedTransfer.itemFilter=cba
+daa.itemLabel:setText(string.format("Item Filter: %d",cd.getLength(cba)))end})end)
+daa.itemRateLabel=daa.detailsTabFrame:addLabel():setText("I-R:"):setPosition(2,
+daa.itemLabel:getY()+daa.itemLabel:getHeight()):setForeground(c_a.white)
+daa.itemRateInput=daa.detailsTabFrame:addInput():setPosition(
+daa.itemRateLabel:getX()+daa.itemRateLabel:getWidth()+1,daa.itemRateLabel:getY()):setSize(8,1):setBackground(c_a.lightGray):setForeground(c_a.white):setText("-1"):setPlaceholder("-1")
+daa.fluidRateLabel=daa.detailsTabFrame:addLabel():setText("F-R:"):setPosition(
+daa.itemRateInput:getX()+daa.itemRateInput:getWidth()+2,daa.itemRateLabel:getY()):setForeground(c_a.white)
+daa.fluidRateInput=daa.detailsTabFrame:addInput():setPosition(
+daa.fluidRateLabel:getX()+daa.fluidRateLabel:getWidth()+1,daa.fluidRateLabel:getY()):setSize(8,1):setBackground(c_a.lightGray):setForeground(c_a.white):setText("-1"):setPlaceholder("-1")
+daa.isBlackListCheckBox=daa.detailsTabFrame:addCheckbox():setSize(1,1):setBackground(c_a.gray):setForeground(c_a.white):setText("[ ] BlackList"):setCheckedText("[x] BlackList"):setChecked(false):setPosition(2,
+daa.itemRateLabel:getY()+daa.itemRateLabel:getHeight())
+daa.isDisabledCheckBox=daa.detailsTabFrame:addCheckbox():setSize(1,1):setBackground(c_a.gray):setForeground(c_a.white):setText("[ ] Disabled"):setCheckedText("[x] Disabled"):setChecked(false):setPosition(
+
+daa.isBlackListCheckBox:getX()+daa.isBlackListCheckBox:getWidth()+3,daa.isBlackListCheckBox:getY())
+daa.setTriggerBtn=daa.detailsTabFrame:addButton():setPosition(2,
+
+daa.isBlackListCheckBox:getY()+daa.isBlackListCheckBox:getHeight()+1):setSize(10,1):setText("SetTrigger"):setBackground(c_a.blue):setForeground(c_a.white):onClick(function()
+daa:openTriggerInterface()end)
+daa.clearTriggerBtn=daa.detailsTabFrame:addButton():setPosition(
+daa.setTriggerBtn:getX()+daa.setTriggerBtn:getWidth()+1,daa.setTriggerBtn:getY()):setSize(11,1):setText("ClearTrigger"):setBackground(c_a.red):setForeground(c_a.white):onClick(function()
+daa:clearTriggerWithConfirm()end)
+daa.saveBtn=daa.detailsTabFrame:addButton():setPosition(
+daa.detailsTabFrame:getWidth()-6,daa.detailsTabFrame:getHeight()-1):setSize(6,1):setText(" Save "):setBackground(c_a.green):setForeground(c_a.black):onClick(function()if
+daa.selectedTransfer==nil then
+daa.messageBox:open("Error","No transfer to save")return end;daa.selectedTransfer.name=
+daa.nameInput:getText()or"unnamed"
+daa.selectedTransfer.isBlackList=daa.isBlackListCheckBox:getChecked()
+daa.selectedTransfer.isDisabled=daa.isDisabledCheckBox:getChecked()daa.selectedTransfer.itemRate=
+tonumber(daa.itemRateInput:getText())or-1;daa.selectedTransfer.fluidRate=
+tonumber(daa.fluidRateInput:getText())or-1
+dd.addTransfer(daa.selectedTransfer)daa:updateTransferList()end)daa.srcTab=daa.tabView:createTab("Source")
+daa.srcTextBox=daa.srcTab.frame:addTextBox():setPosition(2,2):setSize(
+daa.srcTab.frame:getWidth()-2,daa.srcTab.frame:getHeight()-2):setBackground(c_a.lightGray):setForeground(c_a.white):setText("")
+daa.srcTab.onSelect=function()daa:updateSrcText()end;daa.trigger=b_a:new(daa.pframe)
+daa.itemListBox=bd:new(daa.pframe)daa.messageBox=__a:new(daa.pframe,40,15)
+daa.confirmMessageBox=a_a:new(daa.pframe,40,10)return daa end;function baa:init()self.tabView:init()self:openDetail(nil)
 self:updateTransferList()return self end
-function dd:updateSrcText()self.selectedTransfer.name=
+function baa:updateSrcText()self.selectedTransfer.name=
 self.nameInput:getText()or"unnamed"
 self.selectedTransfer.isBlackList=self.isBlackListCheckBox:getChecked()
 self.selectedTransfer.isDisabled=self.isDisabledCheckBox:getChecked()
-self.srcTextBox:setText(textutils.serialize(self.selectedTransfer or{}))end
-function dd:updateTransferList()local __a=_d.getAllTransfers()local a_a={}for b_a,c_a in pairs(__a)do
-table.insert(a_a,{text=
-c_a.name or"unnamed",id=c_a.id})end
-self.list:setItems(a_a)end
-function dd:openDetail(__a)
-if(__a==nil)then
-self.selectedTransfer={id=_c.timestampBaseIdGenerate(),name="unnamed",inputInv={},outputInv={},itemFilter={},isBlackList=false,isDisabled=false}
-self.nameInput:setText(self.selectedTransfer.name)
-self.inputInvLabel:setText("Input Inventory: 0")
-self.outputInvLabel:setText("Output Inventory: 0")self.itemLabel:setText("Item Filter: 0")
+self.srcTextBox:setText(d_a.serialize(self.selectedTransfer or{}))end
+function baa:updateTransferList()local caa=dd.getAllTransfers()local daa={}for _ba,aba in pairs(caa)do
+table.insert(daa,{text=
+aba.name or"unnamed",id=aba.id})end
+self.list:setItems(daa)end
+function baa:openDetail(caa)
+if(caa==nil)then
+self.selectedTransfer={id=dc.timestampBaseIdGenerate(),name="unnamed",inputInv={},outputInv={},inputSlots={},outputSlots={},itemFilter={},itemRate=-1,fluidRate=-1,isBlackList=false,isDisabled=false,triggerStatement={id="root"}}
+self.nameInput:setText(self.selectedTransfer.name)self.inputInvLabel:setText("Input: 0")
+self.outputInvLabel:setText("Output: 0")self.itemLabel:setText("Item Filter: 0")
+self.itemRateInput:setText("-1")self.fluidRateInput:setText("-1")
 self.isBlackListCheckBox:setChecked(false)
-self.idLabel:setText(cb.ellipsisMiddle(string.format("ID: %s",self.selectedTransfer.id),self.idLabel:getWidth()))self.isDisabledCheckBox:setChecked(false)else
-self.selectedTransfer=__a
-self.nameInput:setText(self.selectedTransfer.name or"unnamed")
-self.inputInvLabel:setText(string.format("Input Inventory: %d",dc.getLength(self.selectedTransfer.inputInv)))
-self.outputInvLabel:setText(string.format("Output Inventory: %d",dc.getLength(self.selectedTransfer.outputInv)))
-self.itemLabel:setText(string.format("Item Filter: %d",dc.getLength(self.selectedTransfer.itemFilter)))
+self.idLabel:setText(bc.ellipsisMiddle(string.format("ID: %s",self.selectedTransfer.id),self.idLabel:getWidth()))self.isDisabledCheckBox:setChecked(false)else
+self.selectedTransfer=caa;if not self.selectedTransfer.inputSlots then
+self.selectedTransfer.inputSlots={}end
+if
+not self.selectedTransfer.outputSlots then self.selectedTransfer.outputSlots={}end;if not self.selectedTransfer.itemRate then
+self.selectedTransfer.itemRate=-1 end
+if
+not self.selectedTransfer.fluidRate then self.selectedTransfer.fluidRate=-1 end;if not self.selectedTransfer.triggerStatement then
+self.selectedTransfer.triggerStatement={id="root"}end
+self.nameInput:setText(
+self.selectedTransfer.name or"unnamed")
+self.inputInvLabel:setText(string.format("Input: %d",cd.getLength(self.selectedTransfer.inputInv)))
+self.outputInvLabel:setText(string.format("Output: %d",cd.getLength(self.selectedTransfer.outputInv)))
+self.itemLabel:setText(string.format("Item Filter: %d",cd.getLength(self.selectedTransfer.itemFilter)))
+self.itemRateInput:setText(tostring(self.selectedTransfer.itemRate))
+self.fluidRateInput:setText(tostring(self.selectedTransfer.fluidRate))
 self.isBlackListCheckBox:setChecked(self.selectedTransfer.isBlackList or false)
-self.idLabel:setText(cb.ellipsisMiddle(string.format("ID: %s",self.selectedTransfer.id),self.idLabel:getWidth()))
-self.isDisabledCheckBox:setChecked(self.selectedTransfer.isDisabled or false)end;return self.frame end;return dd end
+self.idLabel:setText(bc.ellipsisMiddle(string.format("ID: %s",self.selectedTransfer.id),self.idLabel:getWidth()))
+self.isDisabledCheckBox:setChecked(self.selectedTransfer.isDisabled or false)end;return self.frame end
+function baa:openSlotSelector(caa)cc.reloadAll()local daa=cc.getAll()local _ba=
+caa=="input"and"inputInv"or"outputInv"local aba=
+caa=="input"and"inputSlots"or"outputSlots"
+local bba=caa=="input"and
+"No DEFAULT_INVENTORY found in input peripherals"or"No DEFAULT_INVENTORY found in output peripherals"local cba=0
+for bca,cca in pairs(daa)do
+if
+
+self.selectedTransfer and self.selectedTransfer[_ba]and self.selectedTransfer[_ba][bca]then local dca=cca.getTypes()
+for _da,ada in ipairs(dca)do if ada==1 then local bda=cca.size()
+if bda>cba then cba=bda end;break end end end end
+if cba==0 then self.messageBox:open("Warning",bba)return end;local dba={}
+local _ca=self.selectedTransfer and self.selectedTransfer[aba]or{}local aca={}if type(_ca)=="table"then
+for bca,cca in ipairs(_ca)do aca[tostring(cca)]=true end end;for i=1,cba do
+table.insert(dba,{text="Slot "..i,slotId=i,selected=
+aca[tostring(i)]or false})end
+self.itemListBox:open(dba,true,{confirm=function(bca)
+local cca={}
+for dca,_da in pairs(bca)do table.insert(cca,_da.slotId)end;self.selectedTransfer[aba]=cca end})end
+function baa:openTriggerInterface()if not self.selectedTransfer then
+self.messageBox:open("Error","No transfer selected")return end;local caa=
+self.selectedTransfer.triggerStatement or{id="root"}
+self.trigger:open(caa,function(daa)
+self.selectedTransfer.triggerStatement=daa end)end
+function baa:clearTriggerWithConfirm()if not self.selectedTransfer then
+self.messageBox:open("Error","No transfer selected")return end
+self.confirmMessageBox:open("Confirm Clear Trigger","Are you sure you want to clear the trigger statement?",function()
+self.selectedTransfer.triggerStatement={id="root"}end)end;return baa end
 modules["wrapper.PeripheralWrapper"] = function() local c=require("utils.Logger")local d={}
 TYPES={DEFAULT_INVENTORY=1,UNLIMITED_PERIPHERAL_INVENTORY=2,TANK=3,REDSTONE=4}d.loadedPeripherals={}
 d.wrap=function(_a)if _a==nil or _a==""then
 error("Peripheral name cannot be nil or empty")end;local aa=peripheral.wrap(_a)
 d.addBaseMethods(aa,_a)if aa==nil then
 error("Failed to wrap peripheral '".._a.."'")end;if aa.isInventory()then
-d.addInventoryMethods(aa)end;return aa end
+d.addInventoryMethods(aa)end
+if aa.isTank()then d.addTankMethods(aa)end;return aa end
 d.addBaseMethods=function(_a,aa)
 if _a==nil then error("Peripheral cannot be nil")end;if _a.getTypes==nil then _a._types=d.getTypes(_a)
 _a.getTypes=function()return _a._types end end
 if _a.isTypeOf==nil then _a.isTypeOf=function(ba)return
-d.isTypeOf(_a,ba)end end;_a._id=aa or _a.id or"unknown"
-_a.getName=function()return _a._id end;if _a.getID==nil and _a.id~=nil then
-_a.getID=function()return _a._id end end
-_a._isInventory=d.isInventory(_a)_a.isInventory=function()return _a._isInventory end
-_a._isTank=d.isTank(_a)_a.isTank=function()return _a._isTank end
-_a._isRedstone=d.isRedstone(_a)_a.isRedstone=function()return _a._isRedstone end
+d.isTypeOf(_a,ba)end end;_a._id=aa;_a.getName=function()return _a._id end
+_a.getId=function()return _a._id end;_a._isInventory=d.isInventory(_a)
+_a.isInventory=function()return _a._isInventory end;_a._isTank=d.isTank(_a)
+_a.isTank=function()return _a._isTank end;_a._isRedstone=d.isRedstone(_a)
+_a.isRedstone=function()return _a._isRedstone end
 _a._isDefaultInventory=d.isTypeOf(_a,TYPES.DEFAULT_INVENTORY)
-_a.isDefaultInventory=function()return d.isInventory(_a)end
+_a.isDefaultInventory=function()return _a._isDefaultInventory end
 _a._isUnlimitedPeripheralInventory=d.isTypeOf(_a,TYPES.UNLIMITED_PERIPHERAL_INVENTORY)
 _a.isUnlimitedPeripheralInventory=function()return d._isUnlimitedPeripheralInventory end end
 d.addInventoryMethods=function(_a)
@@ -3033,25 +3100,45 @@ if aa.isDefaultInventory()then local da=_a.size()local _b=0
 for slot=1,da do
 local ab=_a.getItemDetail(slot)
 if ab~=nil and ab.name==ba then
-local bb=_a.pushItems(aa.getName(),slot,ca)if bb==0 then return _b end;_b=_b+bb;ca=ca-bb end;if ca<=0 then return _b end end elseif aa.isUnlimitedPeripheralInventory()then
-aa.pullItem(_a.getName(),ba,ca)end end
+local bb=_a.pushItems(aa.getName(),slot,ca)if bb==0 then return _b end;_b=_b+bb;ca=ca-bb end;if ca<=0 then return _b end end;return _b elseif aa.isUnlimitedPeripheralInventory()then local da=0
+while da<ca do
+local _b=aa.pullItem(_a.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end;return 0 end
 _a.transferItemFrom=function(aa,ba,ca)
 if aa.isDefaultInventory()then local da=aa.size()local _b=0
 for slot=1,da do
 local ab=aa.getItemDetail(slot)
 if ab~=nil and ab.name==ba then
-local bb=_a.pullItems(aa.getName(),slot,ca)if bb==0 then return _b end;_b=_b+bb;ca=ca-bb end;if ca<=0 then return _b end end elseif aa.isUnlimitedPeripheralInventory()then
-aa.pushItem(_a.getName(),ba,ca)end end elseif _a.isUnlimitedPeripheralInventory()then
+local bb=_a.pullItems(aa.getName(),slot,ca)if bb==0 then return _b end;_b=_b+bb;ca=ca-bb end;if ca<=0 then return _b end end;return _b elseif aa.isUnlimitedPeripheralInventory()then local da=0
+while da<ca do
+local _b=aa.pushItem(_a.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end end elseif _a.isUnlimitedPeripheralInventory()then
 _a.getItems=function()return _a.items()end
-_a.transferItemFrom=function(aa,ba,ca)local da=_a.pushItem(aa.getName(),ba,ca)return da end
-_a.transferItemTo=function(aa,ba,ca)local da=_a.pullItem(aa.getName(),ba,ca)return da end else error("Peripheral is not an inventory")end end
+_a.transferItemFrom=function(aa,ba,ca)local da=0
+while da<ca do
+local _b=_a.pushItem(aa.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end
+_a.transferItemTo=function(aa,ba,ca)local da=0
+while da<ca do
+local _b=_a.pullItem(aa.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end else error("Peripheral is not an inventory")end end
+d.addTankMethods=function(_a)
+if _a==nil then error("Peripheral cannot be nil")end
+if not d.isTank(_a)then error("Peripheral is not a tank")end
+_a.getFluids=function()local aa={}local ba={}
+for ca,da in pairs(_a.tanks())do
+if aa[da.name]==nil then
+aa[da.name]={name=da.name,amount=0}table.insert(ba,aa[da.name])end
+aa[da.name].amount=aa[da.name].amount+da.amount end;return ba end
+_a.transferFluidTo=function(aa,ba,ca)if aa.isTank()==false then
+error(string.format("Peripheral '%s' is not a tank",aa.getName()))end;local da=0;while da<ca do local _b=_a.pushFluid(aa.getName(),
+ca-da,ba)if _b==0 then return da end
+da=da+_b end;return da end
+_a.transferFluidFrom=function(aa,ba,ca)if aa.isTank()==false then
+error(string.format("Peripheral '%s' is not a tank",aa.getName()))end;local da=0;while da<ca do local _b=_a.pullFluid(aa.getName(),
+ca-da,ba)if _b==0 then return da end
+da=da+_b end;return da end end
 d.getTypes=function(_a)if _a._types~=nil then return _a._types end;local aa={}if _a.list~=nil then
-table.insert(aa,TYPES.DEFAULT_INVENTORY)end;if
-_a.items~=nil and _a.pullItems~=nil then
-table.insert(aa,TYPES.UNLIMITED_PERIPHERAL_INVENTORY)end
-if _a.getFluidInTank~=nil and
-_a.tank~=nil then table.insert(aa,TYPES.TANK)end
-if _a.redstone~=nil then table.insert(aa,TYPES.REDSTONE)end;_a._types=aa;return aa end
+table.insert(aa,TYPES.DEFAULT_INVENTORY)end;if _a.items~=nil then
+table.insert(aa,TYPES.UNLIMITED_PERIPHERAL_INVENTORY)end;if _a.tanks~=nil then
+table.insert(aa,TYPES.TANK)end;if _a.redstone~=nil then
+table.insert(aa,TYPES.REDSTONE)end;_a._types=aa;return aa end
 d.isInventory=function(_a)local aa=d.getTypes(_a)
 if _a._isInventory~=nil then return _a._isInventory end;for ba,ca in ipairs(aa)do
 if ca==TYPES.DEFAULT_INVENTORY or
@@ -3074,51 +3161,145 @@ d.addPeripherals(aa)end end;d.getAll=function()return d.loadedPeripherals end
 d.getByName=function(_a)
 if
 _a==nil then error("Peripheral name cannot be nil")end
-if d.loadedPeripherals[_a]==nil then d.addPeripherals(_a)end;return d.loadedPeripherals[_a]end;return d end
-modules["programs.transfer.TransferJobManager"] = function() local _a=require("utils.OSUtils")
-local aa=require("wrapper.PeripheralWrapper")local ba={}local ca=require("utils.Logger")ba.transfers={}
-ba.load=function()
-local da=_a.loadTable("transfers")if da~=nil then ba.transfers=da end end
-ba.save=function()_a.saveTable("transfers",ba.transfers)end
-ba.addTransfer=function(da)ba.transfers[da.id]=da;ba.save()end
-ba.removeTransfer=function(da)ba.transfers[da]=nil;ba.save()end
-ba.getTransfer=function(da)return
-textutils.unserialize(textutils.serialize(ba.transfers[da]))end
-ba.getAllTransfers=function()return
-textutils.unserialize(textutils.serialize(ba.transfers))end
-ba.exec=function()local da=ba.buildJobsFns()
-if#da>0 then
-local _b,ab=pcall(function()
-parallel.waitForAll(table.unpack(da))end)if not _b then
-ca.error("Error executing transfer jobs: "..tostring(ab))end end end
-ba.buildJobsFns=function()local da={}
-for _b,ab in pairs(ba.transfers)do
-if not ab.isDisabled then
-table.insert(da,function()
-local bb,cb=pcall(function()
-ca.info(
-"Starting transfer job: "..ab.name.." (ID: "..ab.id..")")
-for db,_c in pairs(ab.inputInv)do
-local ac,bc=ba.transferItem(db,ab.outputInv,ab.itemFilter,ab.isBlackList)if ac>0 then
-ca.info("Transfer job '"..ab.name..
-"' transferred "..ac.." items from "..db)end end
-ca.info("Completed transfer job: "..ab.name)end)if not bb then
-ca.error("Error executing transfer job '"..ab.name..
-"' (ID: "..ab.id.."): "..tostring(cb))end end)end end;return da end
-ba.transferItem=function(da,_b,ab,bb)local cb=aa.getByName(da)if cb==nil then
-error("Input inventory '"..da.."' not found")end;local db=cb:getItems()if
-db==nil or#db==0 then return 0 end;local _c=0;local ac={}
-for bc,cc in ipairs(db)do local dc=false
+if d.loadedPeripherals[_a]==nil then d.addPeripherals(_a)end;return d.loadedPeripherals[_a]end
+d.getByTypes=function(_a)if _a==nil or#_a==0 then
+error("Types cannot be nil or empty")end;local aa={}
+for ba,ca in pairs(d.getAll())do for da,_b in ipairs(_a)do if
+d.isTypeOf(ca,_b)then aa[ba]=ca;break end end end;return aa end;return d end
+modules["programs.transfer.TransferJobManager"] = function() local da=require("utils.OSUtils")
+local _b=require("wrapper.PeripheralWrapper")local ab={}local bb=require("utils.Logger")
+ab.TRIGGER_TYPES={FLUID_COUNT="fluid_count",ITEM_COUNT="item_count",ITEM_COUNT_AT_SLOTS="item_count_at_slot",REDSTONE_SIGNAL="redstone_signal"}
+ab.TRIGGER_CONDITION_TYPES={COUNT_GREATER="count_greater",COUNT_LESS="count_less",COUNT_EQUAL="count_equal"}ab.transfers={}
+ab.load=function()local bc=da.loadTable("transfers")if bc~=nil then
+ab.transfers=bc end end
+ab.save=function()da.saveTable("transfers",ab.transfers)end
+ab.addTransfer=function(bc)ab.transfers[bc.id]=bc;ab.save()end
+ab.removeTransfer=function(bc)ab.transfers[bc]=nil;ab.save()end
+ab.getTransfer=function(bc)return
+textutils.unserialize(textutils.serialize(ab.transfers[bc]))end
+ab.getAllTransfers=function()return
+textutils.unserialize(textutils.serialize(ab.transfers))end
+ab.exec=function()local bc=ab.buildJobsFns()
+if#bc>0 then
+local cc,dc=pcall(function()
+parallel.waitForAll(table.unpack(bc))end)if not cc then
+bb.error("Error executing transfer jobs: {}",dc)end end end
+ab.buildJobsFns=function()local bc={}
+for cc,dc in pairs(ab.transfers)do
+if not dc.isDisabled then
+local _d=ab.evalTrigger(dc.triggerStatement)
+if _d then
+table.insert(bc,function()
+local ad,bd=pcall(function()
+bb.info("Starting transfer job: {} (ID: {})",dc.name,dc.id)
+for cd,dd in pairs(dc.inputInv)do
+local __a=ab.transferItem(cd,dc.outputInv,dc.itemFilter,dc.isBlackList,dc.inputSlots,dc.outputSlots,dc.itemRate,dc.fluidRate)
+if __a.itemCount>0 or __a.fluidCount>0 then
+bb.info("Transfer job '{}' transferred {} items and {} fluid units from {}",dc.name,__a.itemCount,__a.fluidCount,cd)end end;bb.info("Completed transfer job: {}",dc.name)end)if not ad then
+bb.error("Error executing transfer job '{}' (ID: {}): {}",dc.name,dc.id,bd)end end)else
+bb.debug("Transfer job '{}' skipped: trigger conditions not met",dc.name)end end end;return bc end;local function cb(bc,cc,dc)
+if cc==nil or#cc==0 then local _d=bc.size()for slot=1,_d do dc(slot)end else for _d,ad in ipairs(cc)do
+dc(ad)end end end;local function db(bc,cc,dc)
+if cc==
+nil or next(cc)==nil then return dc else local _d=cc[bc]~=nil;return dc and(not _d)or(
+not dc and _d)end end
+local function _c(bc,cc,dc,_d,ad,bd)
+local cd=0;local dd=_d;if bd and bd>=0 then dd=math.min(_d,bd)end
+for __a,a_a in pairs(cc)do
+local b_a=_b.getByName(__a)if b_a==nil then
+error("Output inventory '"..__a.."' not found")end
+while dd>cd do local c_a
+if ad then
+c_a=bc.transferFluidTo(b_a,dc,dd-cd)else c_a=bc.transferItemTo(b_a,dc,dd-cd)end;if c_a==0 then break end;cd=cd+c_a end;if cd>=dd then break end end;return cd end
+local function ac(bc,cc,dc,_d,ad,bd,cd)local dd=0;local __a=cd;if not bc.isDefaultInventory()then
+bb.warn("Slot-specific transfer requires DEFAULT_INVENTORY type for input: {}",bc.getName())return 0 end
+cb(bc,ad,function(a_a)if
+cd>=0 and __a<=0 then return end;local b_a=bc.getItemDetail(a_a)
 if
-ab==nil or next(ab)==nil then if bb then dc=true else dc=false end else local _d=ab[cc.name]~=nil;if bb then
-dc=not _d else dc=_d end end
-if dc then local _d=cc.count;local ad=0
-for bd,cd in pairs(_b)do local dd=aa.getByName(bd)if dd==nil then
-error("Output inventory '"..
-bd.."' not found")end
-while _d>ad do
-local __a=cb.transferItemTo(dd,cc.name,_d)if __a==0 then break end;ad=ad+__a;_c=_c+__a end;if ad>=_d then break end end
-if ad>0 then table.insert(ac,{name=cc.name,count=ad})end end end;return _c,ac end;return ba end
+b_a and db(b_a.name,dc,_d)then local c_a=b_a.count;if cd>=0 then
+c_a=math.min(c_a,__a)end
+for d_a,_aa in pairs(cc)do if c_a<=0 then break end
+local aaa=_b.getByName(d_a)
+if aaa and aaa.isDefaultInventory()then
+if bd and next(bd)~=nil then
+for baa,caa in
+ipairs(bd)do if c_a<=0 then break end;local daa=bc.pushItems(d_a,a_a,c_a,caa)
+if daa>0 then
+dd=dd+daa;c_a=c_a-daa;if cd>=0 then __a=__a-daa end end end else local baa=bc.pushItems(d_a,a_a,c_a)if baa>0 then dd=dd+baa;c_a=c_a-baa;if cd>=0 then __a=
+__a-baa end end end else
+if not aaa then bb.warn("Output inventory not found: {}",d_a)else
+bb.warn("Slot-specific transfer requires DEFAULT_INVENTORY type for output: {}",d_a)end end end end end)return dd end
+ab.transferItem=function(bc,cc,dc,_d,ad,bd,cd,dd)local __a=_b.getByName(bc)if __a==nil then
+error("Input inventory '"..bc.."' not found")end;local a_a=0;local b_a=0;local c_a=cd or-1;local d_a=dd or-1
+if
+__a.isTank()then local _aa=__a.getFluids()or{}
+for aaa,baa in pairs(_aa)do if
+dd and dd>=0 and d_a<=0 then break end
+if db(baa.name,dc,_d)then local caa=baa.amount;if dd and dd>=0 then
+caa=math.min(baa.amount,d_a)end
+local daa=_c(__a,cc,baa.name,caa,true,dd and dd>=0 and d_a or nil)
+if daa>0 then b_a=b_a+daa;if dd and dd>=0 then d_a=d_a-daa end end end end end
+if __a.isInventory()then
+if
+(ad and next(ad)~=nil)or(bd and next(bd)~=nil)then local _aa=ac(__a,cc,dc,_d,ad,bd,c_a)a_a=a_a+_aa else
+local _aa=__a:getItems()
+if _aa~=nil and#_aa>0 then
+for aaa,baa in ipairs(_aa)do
+if cd and cd>=0 and c_a<=0 then break end
+if db(baa.name,dc,_d)then local caa=baa.count;if cd and cd>=0 then
+caa=math.min(baa.count,c_a)end
+local daa=_c(__a,cc,baa.name,caa,false,cd and cd>=0 and c_a or nil)
+if daa>0 then a_a=a_a+daa;if cd and cd>=0 then c_a=c_a-daa end end end end end end end;return{itemCount=a_a,fluidCount=b_a}end
+ab.evalTrigger=function(bc)if not bc or not bc.children then return true end
+for cc,dc in
+ipairs(bc.children)do
+bb.debug("Evaluating child node: {}",dc.data and dc.data.name or"Unnamed")if ab.evalTriggerNode(dc)then return true end end;return false end
+ab.evalTriggerNode=function(bc)if not bc or not bc.data then return true end
+local cc=bc.data;local dc=false
+if cc.triggerType==ab.TRIGGER_TYPES.ITEM_COUNT then
+dc=ab.evalItemCountTrigger(cc)elseif cc.triggerType==ab.TRIGGER_TYPES.FLUID_COUNT then
+dc=ab.evalFluidCountTrigger(cc)elseif cc.triggerType==ab.TRIGGER_TYPES.ITEM_COUNT_AT_SLOTS then
+dc=ab.evalItemCountAtSlotsTrigger(cc)elseif cc.triggerType==ab.TRIGGER_TYPES.REDSTONE_SIGNAL then
+dc=ab.evalRedstoneSignalTrigger(cc)else
+bb.warn("Unknown trigger type: {}",cc.triggerType)return true end;local _d=true
+if bc.children and#bc.children>0 then _d=false
+for ad,bd in
+ipairs(bc.children)do if ab.evalTriggerNode(bd)then _d=true
+bb.debug("Child node passed: {}",bd.data.name)break end end end;return dc and _d end
+ab.evalItemCountTrigger=function(bc)
+if not bc.targetPeripheralId or not bc.itemName then
+bb.warn("Invalid ITEM_COUNT trigger data: missing targetPeripheralId or itemName")return false end;local cc=_b.getByName(bc.targetPeripheralId)if not cc or not
+cc.isInventory()then
+bb.warn("Peripheral not found or not an inventory: {}",bc.targetPeripheralId)return false end
+local dc,_d=cc.getItems()local ad=0
+if _d and _d[bc.itemName]then ad=_d[bc.itemName].count end
+return ab.evalCondition(ad,bc.amount,bc.triggerConditionType)end
+ab.evalFluidCountTrigger=function(bc)
+if not bc.targetPeripheralId or not bc.itemName then
+bb.warn("Invalid FLUID_COUNT trigger data: missing targetPeripheralId or itemName")return false end;local cc=_b.getByName(bc.targetPeripheralId)if not cc or
+not cc.isTank()then
+bb.warn("Peripheral not found or not a tank: {}",bc.targetPeripheralId)return false end
+local dc=cc.getFluids()local _d=0
+if dc then for ad,bd in pairs(dc)do
+if bd.name==bc.itemName then _d=_d+bd.amount end end end
+return ab.evalCondition(_d,bc.amount,bc.triggerConditionType)end
+ab.evalItemCountAtSlotsTrigger=function(bc)
+if
+not bc.targetPeripheralId or not bc.itemName or not bc.selectedSlot then
+bb.warn("Invalid ITEM_COUNT_AT_SLOTS trigger data: missing required fields")return false end;local cc=_b.getByName(bc.targetPeripheralId)if not cc then
+bb.warn("Peripheral not found: {}",bc.targetPeripheralId)return false end
+if not
+cc.isDefaultInventory()then
+bb.warn("ITEM_COUNT_AT_SLOTS trigger requires DEFAULT_INVENTORY type peripheral: {}",bc.targetPeripheralId)return false end;local dc=cc.getItemDetail(bc.selectedSlot)local _d=0;if dc and
+dc.name==bc.itemName then _d=dc.count end;return
+ab.evalCondition(_d,bc.amount,bc.triggerConditionType)end
+ab.evalRedstoneSignalTrigger=function(bc)
+bb.warn("REDSTONE_SIGNAL trigger not implemented yet")return true end
+ab.evalCondition=function(bc,cc,dc)
+if dc==ab.TRIGGER_CONDITION_TYPES.COUNT_GREATER then
+return bc>cc elseif dc==ab.TRIGGER_CONDITION_TYPES.COUNT_LESS then return bc<cc elseif dc==
+ab.TRIGGER_CONDITION_TYPES.COUNT_EQUAL then return bc==cc else
+bb.warn("Unknown condition type: {}",dc)return false end end;return ab end
 modules["utils.Logger"] = function() local b={currentLevel=1,printFunctions={}}
 b.levels={DEBUG=1,INFO=2,WARN=3,ERROR=4}
 b.addPrintFunction=function(c)table.insert(b.printFunctions,c)end
@@ -3229,22 +3410,424 @@ function d:close()self.frame:setVisible(false)end;return d end
 modules["utils.TableUtils"] = function() local b={}
 b.findInArray=function(c,d)if c==nil or d==nil then return nil end;for _a,aa in ipairs(c)do
 if d(aa)then return _a end end;return nil end
-b.getLength=function(c)if c==nil then return 0 end;local d=0;for _a in pairs(c)do d=d+1 end;return d end;return b end
-modules["elements.MessageBox"] = function() local d=require("libraries.basalt")
-local _a=require("utils.StringUtils")local aa={}aa.__index=aa
-function aa:new(ba,ca,da)local _b=setmetatable({},aa)_b.frame=ba
-_b.title="Message"_b.message="No message provided."
-_b.coverFrame=ba:addFrame():setPosition(1,1):setSize(ba:getWidth(),ba:getHeight()):setBackground(colors.black):setForeground(colors.white):setVisible(false)
-_b.boxFrame=_b.coverFrame:addFrame():setPosition(5,2):setSize(ca,da):setBackground(colors.lightGray):setForeground(colors.white)
-_b.titleLabel=_b.boxFrame:addLabel():setText(_b.title):setPosition(2,2):setBackgroundEnabled(true):setBackground(colors.lightGray):setForeground(colors.white)
-_b.textBox=_b.boxFrame:addTextBox():setText(_b.message):setSize(
-_b.boxFrame:getWidth()-2,_b.boxFrame:getHeight()-6):setPosition(2,4):setBackground(colors.lightGray):setForeground(colors.white)
-_b.closeBtn=_b.boxFrame:addButton():setText("Close"):setPosition(
-_b.boxFrame:getWidth()-7,_b.boxFrame:getHeight()-1):setSize(7,1):setBackground(colors.gray):setForeground(colors.white):onClick(function()
-_b:close()end)return _b end
-function aa:open(ba,ca)
-if ba then self.title=ba;self.titleLabel:setText(ba)end;if ca then self.message=ca
-self.textBox:setText(_a.wrapText(ca,self.textBox:getWidth()))end
+b.getLength=function(c)if c==nil then return 0 end;local d=0;for _a in pairs(c)do d=d+1 end;return d end
+b.getAllKeyValueAsTreeString=function(c,d,_a)d=d or""_a=_a or{}if _a[c]then
+return d.."<circular reference>\n"end;_a[c]=true;local aa=d.."{\n"
+for ba,ca in pairs(c)do
+aa=aa..d.."  ["..tostring(ba)..
+"] = "
+if type(ca)=="table"then
+aa=aa..b.getAllKeyValueAsTreeString(ca,d.."  ",_a)elseif type(ca)=="function"then aa=aa.."function\n"else
+aa=aa..tostring(ca).."\n"end end;aa=aa..d.."}\n"return aa end;return b end
+modules["elements.MessageBox"] = function() local _a=require("libraries.basalt")
+local aa=require("utils.StringUtils")local ba=colors;local ca={}ca.__index=ca
+function ca:new(da,_b,ab)local bb=setmetatable({},ca)
+bb.frame=da;bb.title="Message"bb.message="No message provided."
+bb.coverFrame=da:addFrame():setPosition(1,1):setSize(da:getWidth(),da:getHeight()):setBackground(ba.black):setForeground(ba.white):setVisible(false)local cb=da:getWidth()-2;local db=da:getHeight()-2;local _c=math.min(_b or
+cb,cb)local ac=math.min(ab or db,db)
+local bc=math.floor((
+da:getWidth()-_c)/2)+1
+local cc=math.floor((da:getHeight()-ac)/2)+1
+bb.boxFrame=bb.coverFrame:addFrame():setPosition(bc,cc):setSize(_c,ac):setBackground(ba.lightGray):setForeground(ba.white)
+bb.titleLabel=bb.boxFrame:addLabel():setText(bb.title):setPosition(2,2):setBackgroundEnabled(true):setBackground(ba.lightGray):setForeground(ba.white)
+bb.textBox=bb.boxFrame:addTextBox():setText(bb.message):setSize(
+bb.boxFrame:getWidth()-2,bb.boxFrame:getHeight()-6):setPosition(2,4):setBackground(ba.lightGray):setForeground(ba.white)
+bb.closeBtn=bb.boxFrame:addButton():setText("Close"):setPosition(
+bb.boxFrame:getWidth()-7,bb.boxFrame:getHeight()-1):setSize(7,1):setBackground(ba.gray):setForeground(ba.white):onClick(function()
+bb:close()end)return bb end
+function ca:open(da,_b)
+if da then self.title=da;self.titleLabel:setText(da)end;if _b then self.message=_b
+self.textBox:setText(aa.wrapText(_b,self.textBox:getWidth()))end
 self.coverFrame:setVisible(true)end
-function aa:close()self.coverFrame:setVisible(false)end;return aa end
+function ca:close()self.coverFrame:setVisible(false)end;return ca end
+modules["elements.ConfirmMessageBox"] = function() local aa=require("libraries.basalt")
+local ba=require("utils.StringUtils")local ca=require("utils.Logger")local da=colors;local _b={}_b.__index=_b
+function _b:new(ab,bb,cb)
+local db=setmetatable({},_b)db.frame=ab;db.title="Confirm"db.message="No message provided."
+db.onConfirm=nil;db.onCancel=nil
+db.coverFrame=ab:addFrame():setPosition(1,1):setSize(ab:getWidth(),ab:getHeight()):setBackground(da.black):setForeground(da.white):setVisible(false)local _c=ab:getWidth()-2;local ac=ab:getHeight()-2;local bc=math.min(bb or
+_c,_c)local cc=math.min(cb or ac,ac)
+local dc=math.floor((
+ab:getWidth()-bc)/2)+1
+local _d=math.floor((ab:getHeight()-cc)/2)+1
+db.boxFrame=db.coverFrame:addFrame():setPosition(dc,_d):setSize(bc,cc):setBackground(da.lightGray):setForeground(da.white)
+db.titleLabel=db.boxFrame:addLabel():setText(db.title):setPosition(2,2):setBackgroundEnabled(true):setBackground(da.lightGray):setForeground(da.white)
+db.textBox=db.boxFrame:addTextBox():setText(db.message):setSize(
+db.boxFrame:getWidth()-2,db.boxFrame:getHeight()-6):setPosition(2,4):setBackground(da.lightGray):setForeground(da.white)
+db.yesBtn=db.boxFrame:addButton():setText("Yes"):setPosition(
+db.boxFrame:getWidth()-15,db.boxFrame:getHeight()-1):setSize(6,1):setBackground(da.green):setForeground(da.white):onClick(function()
+db:confirm()end)
+db.noBtn=db.boxFrame:addButton():setText("No"):setPosition(
+db.boxFrame:getWidth()-7,db.boxFrame:getHeight()-1):setSize(6,1):setBackground(da.red):setForeground(da.white):onClick(function()
+db:cancel()end)return db end
+function _b:open(ab,bb,cb,db)
+if ab then self.title=ab;self.titleLabel:setText(ab)end;if bb then self.message=bb
+self.textBox:setText(ba.wrapText(bb,self.textBox:getWidth()))end;self.onConfirm=cb
+self.onCancel=db;self.coverFrame:setVisible(true)end
+function _b:confirm()
+if self.onConfirm then local ab,bb=pcall(self.onConfirm)if not ab then end end;self:close()end;function _b:cancel()if self.onCancel then self.onCancel()end
+self:close()end
+function _b:close()
+self.coverFrame:setVisible(false)self.onConfirm=nil;self.onCancel=nil end;return _b end
+modules["programs.transfer.Triggers"] = function() local ac=require("utils.StringUtils")
+local bc=require("wrapper.PeripheralWrapper")local cc=require("utils.OSUtils")
+local dc=require("utils.Logger")local _d=require("elements.TabView")
+local ad=require("elements.ItemSelectedListBox")local bd=require("utils.TableUtils")
+local cd=require("programs.transfer.TransferJobManager")local dd=require("elements.MessageBox")
+local __a=require("elements.ConfirmMessageBox")local a_a=textutils;local b_a=colors;local c_a={}c_a.__index=c_a;local d_a=cd.TRIGGER_TYPES
+local _aa=cd.TRIGGER_CONDITION_TYPES
+function c_a:new(aaa)local baa=setmetatable({},c_a)baa.selectNodeData={}
+baa.pframe=aaa
+baa.frame=aaa:addFrame():setPosition(1,1):setSize(aaa:getWidth(),aaa:getHeight()):setBackground(b_a.lightGray):setForeground(b_a.white):setVisible(false)local caa=baa.frame:getWidth()
+local daa=baa.frame:getHeight()local _ba=math.floor(caa*2 /5)-1;local aba=caa-_ba-3
+baa.conditionTree=baa.frame:addTree():setPosition(2,2):setSize(_ba,
+daa-4):setBackground(b_a.gray):setForeground(b_a.white):setSelectedColor(b_a.lightBlue):onSelect(function(bba,cba)if
+cba and cba.data then baa:updateDetails(cba.data)
+baa.selectedTreeNode=cba end end)
+baa.nodeDetailsFrame=baa.frame:addFrame():setPosition(_ba+3,2):setSize(aba,
+daa-2):setBackground(b_a.gray):setForeground(b_a.white)
+baa.parentNodeLabel=baa.nodeDetailsFrame:addLabel():setPosition(2,2):setBackground(b_a.gray):setForeground(b_a.white):setText("Parent:")
+baa.displayedParentNodelabel=baa.nodeDetailsFrame:addLabel():setPosition(
+baa.parentNodeLabel:getX()+baa.parentNodeLabel:getWidth()+1,2):setAutoSize(false):setSize(
+aba-baa.parentNodeLabel:getWidth()-9,1):setBackground(b_a.lightGray):setForeground(b_a.white):setText("root")
+baa.changedParentNodeBtn=baa.nodeDetailsFrame:addButton():setPosition(
+baa.nodeDetailsFrame:getWidth()-5,2):setSize(5,1):setBackground(b_a.lightGray):setForeground(b_a.white):setText("..."):onClick(function()
+baa:openParentNodeSelector()end)
+baa.nodeNameLabel=baa.nodeDetailsFrame:addLabel():setPosition(2,4):setBackground(b_a.gray):setForeground(b_a.white):setText("Name:")
+baa.nodeNameInput=baa.nodeDetailsFrame:addInput():setPosition(
+baa.nodeNameLabel:getX()+baa.nodeNameLabel:getWidth()+1,baa.nodeNameLabel:getY()):setSize(
+baa.nodeDetailsFrame:getWidth()-baa.nodeNameLabel:getWidth()-3,1):setBackground(b_a.lightGray):setForeground(b_a.white):setText("unnamed"):setPlaceholder("")
+baa.triggerTypeDropdown=baa.nodeDetailsFrame:addDropdown():setPosition(2,
+baa.nodeNameInput:getY()+2):setSize(
+baa.nodeDetailsFrame:getWidth()-2,1):setBackground(b_a.lightGray):setForeground(b_a.white):setItems({{text="Item Count",value=d_a.ITEM_COUNT,selected=true,callback=function(bba)
+baa:updateUIForTriggerType()end},{text="Fluid Count",value=d_a.FLUID_COUNT,callback=function(bba)
+baa:updateUIForTriggerType()end},{text="Item Count at Slots",value=d_a.ITEM_COUNT_AT_SLOTS,callback=function(bba)
+baa:updateUIForTriggerType()end}})
+baa.targetLabel=baa.nodeDetailsFrame:addLabel():setPosition(2,
+baa.triggerTypeDropdown:getY()+2):setBackground(b_a.gray):setForeground(b_a.white):setText("Target:")
+baa.selectedTargetLabel=baa.nodeDetailsFrame:addLabel():setPosition(
+baa.targetLabel:getX()+baa.targetLabel:getWidth()+1,baa.targetLabel:getY()):setAutoSize(false):setSize(
+baa.nodeDetailsFrame:getWidth()-baa.targetLabel:getWidth()-9,1):setBackground(b_a.black):setForeground(b_a.white):setText("")
+baa.selectTargetBtn=baa.nodeDetailsFrame:addButton():setPosition(
+baa.nodeDetailsFrame:getWidth()-5,baa.targetLabel:getY()):setSize(5,1):setBackground(b_a.lightGray):setForeground(b_a.white):setText("..."):onClick(function()
+baa:openTargetSelector()end)
+baa.itemLabel=baa.nodeDetailsFrame:addLabel():setPosition(2,
+baa.selectedTargetLabel:getY()+1):setBackground(b_a.gray):setForeground(b_a.white):setText("Item:")
+baa.selectedItemLabel=baa.nodeDetailsFrame:addLabel():setPosition(
+baa.itemLabel:getX()+baa.itemLabel:getWidth()+1,baa.itemLabel:getY()):setAutoSize(false):setSize(
+baa.nodeDetailsFrame:getWidth()-baa.itemLabel:getWidth()-9,1):setBackground(b_a.black):setForeground(b_a.white):setText("")
+baa.selectItemBtn=baa.nodeDetailsFrame:addButton():setPosition(
+baa.nodeDetailsFrame:getWidth()-5,baa.itemLabel:getY()):setSize(5,1):setBackground(b_a.lightGray):setForeground(b_a.white):setText("..."):onClick(function()
+baa:openItemSelector()end)
+baa.conditionTypeDropdown=baa.nodeDetailsFrame:addDropdown():setPosition(2,
+baa.selectedItemLabel:getY()+2):setSize(
+baa.nodeDetailsFrame:getWidth()-2,1):setBackground(b_a.lightGray):setForeground(b_a.white):setItems({{text="Count Greater",value=_aa.COUNT_GREATER,selected=true,callback=function(bba)
+end},{text="Count Less",value=_aa.COUNT_LESS,callback=function(bba)end},{text="Count Equal",value=_aa.COUNT_EQUAL,callback=function(bba)
+end}})
+baa.amountLabel=baa.nodeDetailsFrame:addLabel():setPosition(2,
+baa.conditionTypeDropdown:getY()+2):setBackground(b_a.gray):setForeground(b_a.white):setText("Amt:")
+baa.amountInput=baa.nodeDetailsFrame:addInput():setPosition(
+baa.amountLabel:getX()+baa.amountLabel:getWidth()+1,baa.amountLabel:getY()):setSize(12,1):setBackground(b_a.lightGray):setForeground(b_a.white):setText("0"):setPlaceholder("0"):setPattern("[0-9]")
+baa.slotButton=baa.nodeDetailsFrame:addButton():setPosition(
+baa.amountInput:getX()+baa.amountInput:getWidth()+2,baa.amountInput:getY()):setSize(8,1):setBackground(b_a.lightGray):setForeground(b_a.white):setText("Slot"):setVisible(false):onClick(function()
+baa:openSlotSelector()end)
+baa.modifyNodeBtn=baa.nodeDetailsFrame:addButton():setPosition(
+baa.nodeDetailsFrame:getWidth()-27,baa.amountInput:getY()+2):setSize(8,1):setBackground(b_a.blue):setForeground(b_a.white):setText("Modify"):setVisible(false):onClick(function()
+baa:modifySelectedNode()end)
+baa.addNodeBtn=baa.nodeDetailsFrame:addButton():setPosition(
+baa.nodeDetailsFrame:getWidth()-16,baa.amountInput:getY()+2):setSize(6,1):setBackground(b_a.green):setForeground(b_a.white):setText("Add"):onClick(function()
+baa:addNodeToTree()end)
+baa.deleteNodeBtn=baa.nodeDetailsFrame:addButton():setPosition(
+baa.nodeDetailsFrame:getWidth()-8,baa.addNodeBtn:getY()):setSize(8,1):setBackground(b_a.red):setForeground(b_a.white):setVisible(false):setText("Delete"):onClick(function()
+baa:deleteSelectedNode()end)
+baa.NewTriggerBtn=baa.frame:addButton():setPosition(2,
+baa.conditionTree:getY()+baa.conditionTree:getHeight()+1):setSize(5,1):setBackground(b_a.red):setForeground(b_a.white):setText("New"):onClick(function()
+baa:updateDetails()end)
+baa.saveTriggerBtn=baa.frame:addButton():setPosition(
+baa.NewTriggerBtn:getX()+baa.NewTriggerBtn:getWidth()+1,
+baa.conditionTree:getY()+baa.conditionTree:getHeight()+1):setSize(6,1):setBackground(b_a.green):setForeground(b_a.white):setText("Save"):onClick(function()
+baa:saveTriggerStatement()end)
+baa.cancelBtn=baa.frame:addButton():setPosition(
+baa.saveTriggerBtn:getX()+baa.saveTriggerBtn:getWidth()+1,
+baa.conditionTree:getY()+baa.conditionTree:getHeight()+1):setSize(6,1):setBackground(b_a.gray):setForeground(b_a.white):setText("Back"):onClick(function()
+baa:close()end)baa.itemListBox=ad:new(baa.pframe)
+baa.messageBox=dd:new(baa.frame,30,10)baa.confirmMessageBox=__a:new(baa.frame,30,10)
+baa:updateUIForTriggerType()return baa end
+function c_a:open(aaa,baa)self.tree=aaa or{id="root"}
+dc.debug("Opening Triggers with tree: "..
+a_a.serialize(self.tree))self.saveCallback=baa;self.frame:setVisible(true)local caa=
+self.tree.children or{}
+self.conditionTree:setNodes(caa)self:updateDetails()end
+function c_a:addNode(aaa,baa,caa,daa)caa.data=daa or{}
+if baa then
+if not baa.children then baa.children={}end;table.insert(baa.children,caa)self.conditionTree:setNodes(
+self.tree.children or{})
+self.conditionTree.get("expandedNodes")[caa]=true end;return caa end
+function c_a:getSelectedTriggerType()
+local aaa=self.triggerTypeDropdown:getSelectedItems()if#aaa>0 then return aaa[1].value end;return nil end
+function c_a:setTriggerType(aaa)
+local baa=self.triggerTypeDropdown.get("items")
+for caa,daa in ipairs(baa)do
+if daa.value==aaa then for _ba,aba in ipairs(baa)do
+if type(aba)=="table"then aba.selected=false end end;daa.selected=true
+self.triggerTypeDropdown:updateRender()self:updateUIForTriggerType()return true end end;return false end
+function c_a:setConditionType(aaa)
+local baa=self.conditionTypeDropdown.get("items")
+for caa,daa in ipairs(baa)do
+if daa.value==aaa then for _ba,aba in ipairs(baa)do
+if type(aba)=="table"then aba.selected=false end end;daa.selected=true
+self.conditionTypeDropdown:updateRender()return true end end;return false end
+function c_a:getSelectedConditionType()
+local aaa=self.conditionTypeDropdown:getSelectedItems()if#aaa>0 then return aaa[1].value end;return nil end;function c_a:getAmountValue()local aaa=self.amountInput.get("text")
+local baa=tonumber(aaa)return baa or 0 end
+function c_a:setAmountValue(aaa)if
+type(aaa)=="number"and aaa>=0 then
+self.amountInput.set("text",tostring(math.floor(aaa)))return true end;return false end
+function c_a:flattenTreeNodes(aaa,baa,caa,daa)daa=daa or{}caa=caa or 0
+for _ba,aba in ipairs(aaa or{})do
+table.insert(daa,{node=aba,level=caa})if baa and baa[aba]and aba.children then
+self:flattenTreeNodes(aba.children,baa,caa+1,daa)end end;return daa end
+function c_a:openParentNodeSelector()
+local aaa=self.conditionTree.get("nodes")local baa=self.conditionTree.get("expandedNodes")
+local caa=self:flattenTreeNodes(aaa,baa)local daa={}
+table.insert(daa,1,{text="root",data={id="root",text="root"}})for aba,bba in ipairs(caa)do local cba=bba.node
+table.insert(daa,{text=cba.text or"Unnamed Node",data=cba})end
+local _ba=self.selectNodeData and
+self.selectNodeData.parentNodeId or"root"for aba,bba in ipairs(daa)do
+if(bba.data.id==_ba)or
+(_ba=="root"and bba.data.id=="root")then bba.selected=true;break end end
+self.itemListBox:open(daa,false,{confirm=function(aba)
+if
+not self.selectNodeData then self.selectNodeData={}end;local bba=aba[1].data
+if bba.id=="root"then
+self.selectNodeData.parentNodeId="root"self.selectNodeData.parentNodeName="root"
+self.displayedParentNodelabel:setText("root")else
+self.selectNodeData.parentNodeId=bba.data and bba.data.id or bba.id
+self.selectNodeData.parentNodeName=bba.text or"Unnamed Node"
+self.displayedParentNodelabel:setText(ac.ellipsisMiddle(self.selectNodeData.parentNodeName,self.displayedParentNodelabel:getWidth()))end end})end
+function c_a:openTargetSelector()local aaa=self:getSelectedTriggerType()local baa={}
+local caa={}bc.reloadAll()
+if aaa==d_a.ITEM_COUNT then baa=bc.getByTypes({1,2})elseif
+aaa==d_a.FLUID_COUNT then baa=bc.getByTypes({3})elseif
+aaa==d_a.ITEM_COUNT_AT_SLOTS then baa=bc.getByTypes({1})else baa={}end
+local daa=self.selectNodeData and self.selectNodeData.targetPeripheralId or nil
+for _ba,aba in pairs(baa)do
+if aba.getId()==daa then
+table.insert(caa,{text=aba.getId()or"Unknown",selected=true,data=aba})else
+table.insert(caa,{text=aba.getId()or"Unknown",data=aba})end end
+self.itemListBox:open(caa,false,{confirm=function(_ba)
+if self.selectNodeData==nil then self.selectNodeData={}end
+self.selectNodeData.targetPeripheralId=_ba[1].data.getId()
+self.selectedTargetLabel:setText(ac.ellipsisMiddle(self.selectNodeData.targetPeripheralId,self.selectedTargetLabel:getWidth()))self:updateSlotButton()end})end
+function c_a:openItemSelector()local aaa=self:getSelectedTriggerType()local baa={}
+if aaa==
+d_a.ITEM_COUNT or aaa==d_a.ITEM_COUNT_AT_SLOTS then local daa=
+bc.getByTypes({1,2})or{}local _ba={}
+for aba,bba in pairs(daa)do
+if bba.getItems then
+local cba=bba.getItems()
+for dba,_ca in ipairs(cba)do if not _ba[_ca.name]then _ba[_ca.name]=true
+table.insert(baa,{text=_ca.name,data={type="item",name=_ca.name}})end end end end elseif aaa==d_a.FLUID_COUNT then local daa=bc.getByTypes({3})or{}local _ba={}
+for aba,bba in
+pairs(daa)do
+if bba.getFluids then local cba=bba.getFluids()
+for dba,_ca in ipairs(cba)do if not _ba[_ca.name]then
+_ba[_ca.name]=true
+table.insert(baa,{text=_ca.name,data={type="fluid",name=_ca.name}})end end end end end
+if#baa==0 then if aaa==d_a.FLUID_COUNT then
+table.insert(baa,{text="No fluids found",data=nil})else
+table.insert(baa,{text="No items found",data=nil})end end
+local caa=self.selectNodeData and self.selectNodeData.itemName or nil;for daa,_ba in ipairs(baa)do
+if _ba.data and _ba.data.name==caa then _ba.selected=true;break end end
+self.itemListBox:open(baa,false,{confirm=function(daa)
+if
+daa[1].data then
+if self.selectNodeData==nil then self.selectNodeData={}end;self.selectNodeData.itemName=daa[1].data.name
+self.selectNodeData.itemType=daa[1].data.type
+self.selectedItemLabel:setText(ac.ellipsisMiddle(self.selectNodeData.itemName,self.selectedItemLabel:getWidth()))end end})end
+function c_a:openSlotSelector()local aaa=self:getSelectedTriggerType()if aaa~=
+d_a.ITEM_COUNT_AT_SLOTS then return end;local baa={}
+if self.selectNodeData and
+self.selectNodeData.targetPeripheralId then bc.reloadAll()
+local caa=bc.getByName(self.selectNodeData.targetPeripheralId)
+if caa and caa.size then local daa=caa.size()for i=1,daa do
+local _ba=(self.selectNodeData.selectedSlot==i)
+table.insert(baa,{text="Slot "..i,data={slotId=i},selected=_ba})end else
+table.insert(baa,{text="Slot 1",data={slotId=1},selected=true})end else
+table.insert(baa,{text="Select Target First",data=nil})end
+self.itemListBox:open(baa,false,{confirm=function(caa)
+if caa[1].data then if self.selectNodeData==nil then
+self.selectNodeData={}end
+self.selectNodeData.selectedSlot=caa[1].data.slotId
+self.slotButton:setText("Slot "..self.selectNodeData.selectedSlot)end end})end
+function c_a:updateSlotButton()local aaa=self:getSelectedTriggerType()
+if aaa==
+d_a.ITEM_COUNT_AT_SLOTS then self.slotButton:setVisible(true)
+if
+self.selectNodeData and self.selectNodeData.selectedSlot then
+self.slotButton:setText(
+"Slot "..self.selectNodeData.selectedSlot)else
+if self.selectNodeData and self.selectNodeData.targetPeripheralId then
+self.slotButton:setText("Select Slot")else self.slotButton:setText("Select Target")end end else self.slotButton:setVisible(false)end end
+function c_a:getSelectedSlot()
+if
+self.selectNodeData and self.selectNodeData.selectedSlot then return self.selectNodeData.selectedSlot end;return nil end
+function c_a:updateUIForTriggerType()local aaa=self:getSelectedTriggerType()if
+aaa==d_a.FLUID_COUNT then self.itemLabel:setText("Fluid:")else
+self.itemLabel:setText("Item:")end
+self:updateSlotButton()end
+function c_a:updateDetails(aaa)
+if aaa==nil then self.selectNodeData={}
+self.nodeNameInput:setText("unnamed")
+self.displayedParentNodelabel:setText("root")self.selectedTargetLabel:setText("")
+self.selectedItemLabel:setText("")self.amountInput:setText("0")
+self:setTriggerType(d_a.ITEM_COUNT)self:setConditionType(_aa.COUNT_GREATER)
+self.slotButton:setText("Slot")self:updateUIForTriggerType()
+self.modifyNodeBtn:setVisible(false)self.deleteNodeBtn:setVisible(false)else
+self.selectNodeData={parentNodeId=
+aaa.parentNodeId or"",parentNodeName=aaa.parentNodeName or"root",targetPeripheralId=aaa.targetPeripheralId or"",name=aaa.name or
+"unnamed",id=aaa.id or cc.timestampBaseIdGenerate(),triggerType=aaa.triggerType or
+d_a.ITEM_COUNT,triggerConditionType=aaa.triggerConditionType or _aa.COUNT_GREATER,itemName=aaa.itemName or"",itemType=
+aaa.itemType or"item",amount=aaa.amount or 0,selectedSlot=aaa.selectedSlot}
+self.nodeNameInput:setText(self.selectNodeData.name)
+self.displayedParentNodelabel:setText(self.selectNodeData.parentNodeName)
+self.selectedTargetLabel:setText(ac.ellipsisMiddle(self.selectNodeData.targetPeripheralId or"",self.selectedTargetLabel:getWidth()))
+self.selectedItemLabel:setText(ac.ellipsisMiddle(self.selectNodeData.itemName or"",self.selectedItemLabel:getWidth()))
+self.amountInput:setText(tostring(self.selectNodeData.amount))
+self:setTriggerType(self.selectNodeData.triggerType)
+self:setConditionType(self.selectNodeData.triggerConditionType)
+if self.selectNodeData.selectedSlot then
+self.slotButton:setText("Slot "..
+self.selectNodeData.selectedSlot)else self.slotButton:setText("Slot")end;self:updateUIForTriggerType()
+self.modifyNodeBtn:setVisible(true)self.deleteNodeBtn:setVisible(true)end end
+function c_a:addNodeToTree()self.selectNodeData.name=self.nodeNameInput:getText()or
+"unnamed"self.selectNodeData.triggerType=
+self:getSelectedTriggerType()or d_a.ITEM_COUNT
+self.selectNodeData.triggerConditionType=
+self:getSelectedConditionType()or _aa.COUNT_GREATER
+self.selectNodeData.amount=self:getAmountValue()or 0
+self.selectNodeData.id=cc.timestampBaseIdGenerate()local aaa=self:validateSelectNodeData()if#aaa>0 then
+self.messageBox:open("Validation Errors",table.concat(aaa,"\n"))return end
+local baa={text=self.selectNodeData.name,data=a_a.unserialize(a_a.serialize(self.selectNodeData)),children={}}
+dc.debug("Adding node with data: "..a_a.serialize(baa.data))local caa=self.selectNodeData.parentNodeId;local daa=nil
+if
+not caa or caa==""or caa=="root"then if not self.tree.children then
+self.tree.children={}end
+table.insert(self.tree.children,baa)
+self.conditionTree:setNodes(self.tree.children or{})else daa=self:findNodeById(self.tree,caa)
+if daa then if not daa.children then
+daa.children={}end;table.insert(daa.children,baa)
+self.conditionTree:expandNode(daa)
+self.conditionTree:setNodes(self.tree.children or{})else
+if not self.tree.children then self.tree.children={}end;table.insert(self.tree.children,baa)self.conditionTree:setNodes(
+self.tree.children or{})end end;self:updateDetails(nil)end
+function c_a:modifySelectedNode()if not self.selectedTreeNode or
+not self.selectedTreeNode.data then return end;self.selectNodeData.name=
+self.nodeNameInput:getText()or"unnamed"self.selectNodeData.triggerType=
+self:getSelectedTriggerType()or d_a.ITEM_COUNT
+self.selectNodeData.triggerConditionType=
+self:getSelectedConditionType()or _aa.COUNT_GREATER
+self.selectNodeData.amount=self:getAmountValue()or 0
+self.selectNodeData.id=self.selectedTreeNode.data.id;local aaa=self:validateSelectNodeData()if#aaa>0 then
+self.messageBox:open("Validation Errors",table.concat(aaa,"\n"))return end;local baa=
+self.selectedTreeNode.data.parentNodeId or""local caa=
+self.selectNodeData.parentNodeId or""if baa~=caa then
+self:moveNodeToNewParent(self.selectedTreeNode,caa)end
+self.selectedTreeNode.data=a_a.unserialize(a_a.serialize(self.selectNodeData))self.selectedTreeNode.text=self.selectNodeData.name
+dc.debug(
+"Modified node with data: "..a_a.serialize(self.selectedTreeNode.data))
+self.conditionTree:setNodes(self.tree.children or{})end
+function c_a:moveNodeToNewParent(aaa,baa)if not aaa then return end
+self:removeNodeFromParent(aaa)local caa=nil
+if not baa or baa==""or baa=="root"then if
+not self.tree.children then self.tree.children={}end
+table.insert(self.tree.children,aaa)else caa=self:findNodeById(self.tree,baa)
+if caa then if not caa.children then
+caa.children={}end;table.insert(caa.children,aaa)
+self.conditionTree:expandNode(caa)else
+if not self.tree.children then self.tree.children={}end;table.insert(self.tree.children,aaa)end end end
+function c_a:removeNodeFromParent(aaa)if not aaa then return false end;return
+self:removeNodeRecursive(self.tree,aaa)end
+function c_a:removeNodeRecursive(aaa,baa)
+if not aaa or not aaa.children then return false end
+for caa,daa in ipairs(aaa.children)do if daa==baa then table.remove(aaa.children,caa)return
+true end end;for caa,daa in ipairs(aaa.children)do
+if self:removeNodeRecursive(daa,baa)then return true end end;return false end
+function c_a:findNodeById(aaa,baa)if not aaa then return nil end;if
+aaa.data and aaa.data.id==baa then return aaa end
+if aaa.children then for caa,daa in ipairs(aaa.children)do
+local _ba=self:findNodeById(daa,baa)if _ba then return _ba end end end;return nil end
+function c_a:validateSelectNodeData()local aaa={}if not self.selectNodeData.name or
+self.selectNodeData.name==""or
+self.selectNodeData.name=="unnamed"then
+table.insert(aaa,"Name cannot be empty")end;if not
+self.selectNodeData.triggerType then
+table.insert(aaa,"Trigger type is required")return aaa end
+if
+self.selectNodeData.triggerType==d_a.ITEM_COUNT then
+if
+
+not self.selectNodeData.targetPeripheralId or self.selectNodeData.targetPeripheralId==""then
+table.insert(aaa,"Target peripheral is required for Item Count trigger")else bc.reloadAll()
+local baa=bc.getByName(self.selectNodeData.targetPeripheralId)
+if baa then local caa=baa.getTypes()local daa=false;for _ba,aba in ipairs(caa)do if aba==1 or aba==2 then daa=true
+break end end;if not daa then
+table.insert(aaa,"Target peripheral must be inventory type (type 1 or 2) for Item Count trigger")end else
+table.insert(aaa,"Target peripheral not found")end end;if not self.selectNodeData.itemType or
+self.selectNodeData.itemType~="item"then
+table.insert(aaa,"Item type must be 'item' for Item Count trigger")end;if
+not
+self.selectNodeData.itemName or self.selectNodeData.itemName==""then
+table.insert(aaa,"Item name is required for Item Count trigger")end elseif
+self.selectNodeData.triggerType==d_a.FLUID_COUNT then
+if
+
+not self.selectNodeData.targetPeripheralId or self.selectNodeData.targetPeripheralId==""then
+table.insert(aaa,"Target peripheral is required for Fluid Count trigger")else bc.reloadAll()
+local baa=bc.getByName(self.selectNodeData.targetPeripheralId)
+if baa then local caa=baa.getTypes()local daa=false;for _ba,aba in ipairs(caa)do
+if aba==3 then daa=true;break end end;if not daa then
+table.insert(aaa,"Target peripheral must be tank type (type 3) for Fluid Count trigger")end else
+table.insert(aaa,"Target peripheral not found")end end
+if not self.selectNodeData.itemType or
+self.selectNodeData.itemType~="fluid"then
+table.insert(aaa,"Item type must be 'fluid' for Fluid Count trigger")end;if not self.selectNodeData.itemName or
+self.selectNodeData.itemName==""then
+table.insert(aaa,"Fluid name is required for Fluid Count trigger")end elseif
+self.selectNodeData.triggerType==d_a.ITEM_COUNT_AT_SLOTS then
+if
+
+not self.selectNodeData.targetPeripheralId or self.selectNodeData.targetPeripheralId==""then
+table.insert(aaa,"Target peripheral is required for Item Count at Slots trigger")else bc.reloadAll()
+local baa=bc.getByName(self.selectNodeData.targetPeripheralId)
+if baa then local caa=baa.getTypes()local daa=false;for _ba,aba in ipairs(caa)do
+if aba==1 then daa=true;break end end;if not daa then
+table.insert(aaa,"Target peripheral must be inventory type (type 1) for Item Count at Slots trigger")end else
+table.insert(aaa,"Target peripheral not found")end end
+if not self.selectNodeData.itemType or
+self.selectNodeData.itemType~="item"then
+table.insert(aaa,"Item type must be 'item' for Item Count at Slots trigger")end
+if not self.selectNodeData.itemName or
+self.selectNodeData.itemName==""then
+table.insert(aaa,"Item name is required for Item Count at Slots trigger")end
+if not self.selectNodeData.selectedSlot or
+self.selectNodeData.selectedSlot<=0 then
+table.insert(aaa,"Valid slot selection is required for Item Count at Slots trigger")end else
+table.insert(aaa,"Unknown trigger type: "..tostring(self.selectNodeData.triggerType))end;if not self.selectNodeData.amount or
+self.selectNodeData.amount<0 then
+table.insert(aaa,"Amount must be a non-negative number")end;if not
+self.selectNodeData.triggerConditionType then
+table.insert(aaa,"Trigger condition type is required")end;return aaa end
+function c_a:deleteSelectedNode()if not self.selectedTreeNode or
+not self.selectedTreeNode.data then return end
+local aaa=self.selectedTreeNode.data.id
+local baa=self.selectedTreeNode.data.name or"Unnamed Node"
+self.confirmMessageBox:open("Confirm Delete","Are you sure you want to delete node '"..baa.."'?",function()
+self:deleteNodeById(aaa)end,function()end)end
+function c_a:deleteNodeById(aaa)if not aaa then return false end
+local baa=self:findNodeById(self.tree,aaa)if not baa then return false end
+self:removeNodeFromParent(baa)self.selectedTreeNode=nil
+self.conditionTree:setNodes(self.tree.children or{})self:updateDetails(nil)return true end;function c_a:saveTriggerStatement()
+if self.saveCallback then self.saveCallback(self.tree)end;self:close()end;function c_a:close()
+self.frame:setVisible(false)self.saveCallback=nil end;return c_a end
 return modules["programs.Transfer"]()

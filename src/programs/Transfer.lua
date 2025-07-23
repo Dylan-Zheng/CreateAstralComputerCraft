@@ -7,7 +7,7 @@ local Logger = require("utils.Logger")
 local LogBox = require("elements.LogBox")
 
 -- LOGGER
-local basaltLogEnabled = false
+local basaltLogEnabled = true
 basalt.LOGGER.setEnabled(basaltLogEnabled)
 basalt.LOGGER.setLogToFile(basaltLogEnabled)
 
@@ -54,7 +54,7 @@ parallel.waitForAll(basalt.run,
     function()
         while true do
             TransferJobManager.exec()
-            os.sleep(1)
+            os.sleep(0.2)
         end
     end
 )

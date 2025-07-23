@@ -27,6 +27,10 @@ PeripheralWrapper.wrap = function(peripheralName)
         PeripheralWrapper.addInventoryMethods(wrappedPeripheral)
     end
 
+    if wrappedPeripheral.isTank() then
+        PeripheralWrapper.addTankMethods(wrappedPeripheral)
+    end
+
     return wrappedPeripheral
 end
 
@@ -49,15 +53,13 @@ PeripheralWrapper.addBaseMethods = function(peripheral, peripheralName)
         end
     end
 
-    peripheral._id = peripheralName or peripheral.id or "unknown"
+    peripheral._id = peripheralName
     peripheral.getName = function()
         return peripheral._id
     end
 
-    if peripheral.getID == nil and peripheral.id ~= nil then
-        peripheral.getID = function()
-            return peripheral._id
-        end
+    peripheral.getId = function()
+        return peripheral._id
     end
 
     peripheral._isInventory = PeripheralWrapper.isInventory(peripheral)
@@ -77,7 +79,7 @@ PeripheralWrapper.addBaseMethods = function(peripheral, peripheralName)
 
     peripheral._isDefaultInventory = PeripheralWrapper.isTypeOf(peripheral, TYPES.DEFAULT_INVENTORY)
     peripheral.isDefaultInventory = function()
-        return PeripheralWrapper.isInventory(peripheral)
+        return peripheral._isDefaultInventory
     end
 
     peripheral._isUnlimitedPeripheralInventory = PeripheralWrapper.isTypeOf(peripheral,
@@ -89,6 +91,7 @@ end
 
 
 PeripheralWrapper.addInventoryMethods = function(peripheral)
+    -- add for DEFAULT_INVENTORY
     if PeripheralWrapper.isTypeOf(peripheral, TYPES.DEFAULT_INVENTORY) then
         -- add getItems method
         peripheral.getItems = function()
@@ -126,9 +129,19 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
                         return totalTransferred
                     end
                 end
+                return totalTransferred
             elseif toPeripheral.isUnlimitedPeripheralInventory() then
-                toPeripheral.pullItem(peripheral.getName(), itemName, amount)
+                local totalTransferred = 0
+                while totalTransferred < amount do
+                    local transferred = toPeripheral.pullItem(peripheral.getName(), itemName, amount - totalTransferred)
+                    if transferred == 0 then
+                        return totalTransferred
+                    end
+                    totalTransferred = totalTransferred + transferred
+                end
+                return totalTransferred
             end
+            return 0
         end
 
         -- add transferItemTo method (renamed from pushItem)
@@ -150,26 +163,106 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
                         return totalTransferred
                     end
                 end
+                return totalTransferred
             elseif fromPeripheral.isUnlimitedPeripheralInventory() then
-                fromPeripheral.pushItem(peripheral.getName(), itemName, amount)
+                local totalTransferred = 0
+                while totalTransferred < amount do
+                    local transferred = fromPeripheral.pushItem(peripheral.getName(), itemName, amount - totalTransferred)
+                    if transferred == 0 then
+                        return totalTransferred
+                    end
+                    totalTransferred = totalTransferred + transferred
+                end
+                return totalTransferred
             end
         end
+        -- for UNLIMITED_PERIPHERAL_INVENTORY
     elseif peripheral.isUnlimitedPeripheralInventory() then
         peripheral.getItems = function()
             return peripheral.items()
         end
 
         peripheral.transferItemFrom = function(toPeripheral, itemName, amount)
-            local transferred = peripheral.pushItem(toPeripheral.getName(), itemName, amount)
-            return transferred
+            local totalTransferred = 0
+            while totalTransferred < amount do
+                local transferred = peripheral.pushItem(toPeripheral.getName(), itemName, amount - totalTransferred)
+                if transferred == 0 then
+                    return totalTransferred
+                end
+                totalTransferred = totalTransferred + transferred
+            end
+            return totalTransferred
         end
 
         peripheral.transferItemTo = function(fromPeripheral, itemName, amount)
-            local transferred = peripheral.pullItem(fromPeripheral.getName(), itemName, amount)
-            return transferred
+            local totalTransferred = 0
+            while totalTransferred < amount do
+                local transferred = peripheral.pullItem(fromPeripheral.getName(), itemName, amount - totalTransferred)
+                if transferred == 0 then
+                    return totalTransferred
+                end
+                totalTransferred = totalTransferred + transferred
+            end
+            return totalTransferred
         end
     else
         error("Peripheral is not an inventory")
+    end
+end
+
+PeripheralWrapper.addTankMethods = function(peripheral)
+    if peripheral == nil then
+        error("Peripheral cannot be nil")
+    end
+
+    if not PeripheralWrapper.isTank(peripheral) then
+        error("Peripheral is not a tank")
+    end
+
+    peripheral.getFluids = function()
+        local fluidTable = {}
+        local fluids = {}
+        for _, tank in pairs(peripheral.tanks()) do
+            if fluidTable[tank.name] == nil then
+                fluidTable[tank.name] = {
+                    name = tank.name,
+                    amount = 0,
+                }
+                table.insert(fluids, fluidTable[tank.name])
+            end
+            fluidTable[tank.name].amount = fluidTable[tank.name].amount + tank.amount
+        end
+        return fluids
+    end
+
+    peripheral.transferFluidTo = function(toPeripheral, fluidName, amount)
+        if toPeripheral.isTank() == false then
+            error(string.format("Peripheral '%s' is not a tank", toPeripheral.getName()))
+        end
+        local totalTransferred = 0
+        while totalTransferred < amount do
+            local transferred = peripheral.pushFluid(toPeripheral.getName(), amount - totalTransferred, fluidName)
+            if transferred == 0 then
+                return totalTransferred
+            end
+            totalTransferred = totalTransferred + transferred
+        end
+        return totalTransferred
+    end
+
+    peripheral.transferFluidFrom = function(fromPeripheral, fluidName, amount)
+        if fromPeripheral.isTank() == false then
+            error(string.format("Peripheral '%s' is not a tank", fromPeripheral.getName()))
+        end
+        local totalTransferred = 0
+        while totalTransferred < amount do
+            local transferred = peripheral.pullFluid(fromPeripheral.getName(), amount - totalTransferred, fluidName)
+            if transferred == 0 then
+                return totalTransferred
+            end
+            totalTransferred = totalTransferred + transferred
+        end
+        return totalTransferred
     end
 end
 
@@ -181,10 +274,10 @@ PeripheralWrapper.getTypes = function(peripheral)
     if peripheral.list ~= nil then
         table.insert(types, TYPES.DEFAULT_INVENTORY)
     end
-    if peripheral.items ~= nil and peripheral.pullItems ~= nil then
+    if peripheral.items ~= nil then
         table.insert(types, TYPES.UNLIMITED_PERIPHERAL_INVENTORY)
     end
-    if peripheral.getFluidInTank ~= nil and peripheral.tank ~= nil then
+    if peripheral.tanks ~= nil then
         table.insert(types, TYPES.TANK)
     end
     if peripheral.redstone ~= nil then
@@ -283,6 +376,22 @@ PeripheralWrapper.getByName = function(peripheralName)
         PeripheralWrapper.addPeripherals(peripheralName)
     end
     return PeripheralWrapper.loadedPeripherals[peripheralName]
+end
+
+PeripheralWrapper.getByTypes = function(types)
+    if types == nil or #types == 0 then
+        error("Types cannot be nil or empty")
+    end
+    local matchedPeripherals = {}
+    for name, peripheral in pairs(PeripheralWrapper.getAll()) do
+        for _, t in ipairs(types) do
+            if PeripheralWrapper.isTypeOf(peripheral, t) then
+                matchedPeripherals[name] = peripheral
+                break
+            end
+        end
+    end
+    return matchedPeripherals
 end
 
 return PeripheralWrapper

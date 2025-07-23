@@ -77,6 +77,8 @@ tools/build_path.txt
 build_path.txt
 tools/build_filter.txt
 build_filter.txt
+tools/program_filter.txt
+program_filter.txt
 
 # Lua specific
 # Compiled Lua files

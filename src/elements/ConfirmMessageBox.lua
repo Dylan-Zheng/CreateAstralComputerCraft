@@ -1,19 +1,22 @@
 local basalt = require("libraries.basalt")
 local StringUtils = require("utils.StringUtils")
+local Logger = require("utils.Logger")
 
 -- Global references for ComputerCraft
 ---@diagnostic disable-next-line: undefined-global
 local colors = colors
 
-local MessageBox = {}
-MessageBox.__index = MessageBox
+local ConfirmMessageBox = {}
+ConfirmMessageBox.__index = ConfirmMessageBox
 
-function MessageBox:new(pframe, width, height)
-    local instance = setmetatable({}, MessageBox)
+function ConfirmMessageBox:new(pframe, width, height)
+    local instance = setmetatable({}, ConfirmMessageBox)
 
     instance.frame = pframe
-    instance.title = "Message"
+    instance.title = "Confirm"
     instance.message = "No message provided."
+    instance.onConfirm = nil
+    instance.onCancel = nil
 
     instance.coverFrame = pframe:addFrame()
         :setPosition(1, 1)
@@ -52,35 +55,71 @@ function MessageBox:new(pframe, width, height)
         :setBackground(colors.lightGray)
         :setForeground(colors.white)
 
-    instance.closeBtn = instance.boxFrame:addButton()
-        :setText("Close")
-        :setPosition(instance.boxFrame:getWidth() -7, instance.boxFrame:getHeight() - 1)
-        :setSize(7, 1)
-        :setBackground(colors.gray)
+    -- Yes 按钮
+    instance.yesBtn = instance.boxFrame:addButton()
+        :setText("Yes")
+        :setPosition(instance.boxFrame:getWidth() - 15, instance.boxFrame:getHeight() - 1)
+        :setSize(6, 1)
+        :setBackground(colors.green)
         :setForeground(colors.white)
         :onClick(function()
-            instance:close()
+            instance:confirm()
+        end)
+
+    -- No 按钮
+    instance.noBtn = instance.boxFrame:addButton()
+        :setText("No")
+        :setPosition(instance.boxFrame:getWidth() - 7, instance.boxFrame:getHeight() - 1)
+        :setSize(6, 1)
+        :setBackground(colors.red)
+        :setForeground(colors.white)
+        :onClick(function()
+            instance:cancel()
         end)
 
     return instance
 end
 
-function MessageBox:open(title, message)
+function ConfirmMessageBox:open(title, message, onConfirm, onCancel)
     if title then
         self.title = title
         self.titleLabel:setText(title)
-
     end
+    
     if message then
         self.message = message
         self.textBox:setText(StringUtils.wrapText(message, self.textBox:getWidth()))
     end
+    
+    -- 设置回调函数
+    self.onConfirm = onConfirm
+    self.onCancel = onCancel
 
     self.coverFrame:setVisible(true)
 end
 
-function MessageBox:close()
-    self.coverFrame:setVisible(false)
+function ConfirmMessageBox:confirm()
+    if self.onConfirm then
+        local success, error = pcall(self.onConfirm)
+        if not success then
+            -- Handle error silently or log if needed
+        end
+    end
+    self:close()
 end
 
-return MessageBox
+function ConfirmMessageBox:cancel()
+    if self.onCancel then
+        self.onCancel()
+    end
+    self:close()
+end
+
+function ConfirmMessageBox:close()
+    self.coverFrame:setVisible(false)
+    -- 清理回调函数
+    self.onConfirm = nil
+    self.onCancel = nil
+end
+
+return ConfirmMessageBox

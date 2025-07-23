@@ -127,20 +127,6 @@ local function collectAllRequires(modules, startModule)
     return result
 end
 
-local function clean()
-    local sep = package.config:sub(1, 1)
-    local command
-    if sep == "\\" then
-        -- Windows
-        command = 'del /Q /F "release\\*.lua"'
-    else
-        -- Linux/macOS
-        command = 'rm -f release/*.lua'
-    end
-
-    os.execute(command)
-end
-
 local function bundle()
     local files = scanDir("src")
     local modules = getModulesAndRequire(files)
@@ -186,5 +172,4 @@ local function bundle()
     end
 end
 
-clean()
 bundle()
