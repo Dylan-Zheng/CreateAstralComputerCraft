@@ -7,7 +7,9 @@ local Logger = require("utils.Logger")
 local LogBox = require("elements.LogBox")
 
 -- LOGGER
-local basaltLogEnabled = true
+Logger.currentLevel = Logger.levels.ERROR
+
+local basaltLogEnabled = false
 basalt.LOGGER.setEnabled(basaltLogEnabled)
 basalt.LOGGER.setLogToFile(basaltLogEnabled)
 

@@ -5,12 +5,13 @@ require = function(path) if(modules[path])then if(loadedModules[path]==nil)then 
 modules["programs.Transfer"] = function() local _c=require("libraries.basalt")
 local ac=require("elements.TabView")local bc=require("programs.transfer.TransferTab")
 local cc=require("wrapper.PeripheralWrapper")local dc=require("programs.transfer.TransferJobManager")
-local _d=require("utils.Logger")local ad=require("elements.LogBox")local bd=true
-_c.LOGGER.setEnabled(bd)_c.LOGGER.setLogToFile(bd)
+local _d=require("utils.Logger")local ad=require("elements.LogBox")
+_d.currentLevel=_d.levels.ERROR;local bd=false;_c.LOGGER.setEnabled(bd)
+_c.LOGGER.setLogToFile(bd)
 if bd then
-_d.addPrintFunction(function(d_a,_aa,aaa,baa)
-baa=string.format("[%s:%d] %s",_aa,aaa,baa)
-if d_a==_d.levels.DEBUG then _c.LOGGER.debug(baa)elseif
+_d.addPrintFunction(function(d_a,_aa,aaa,baa)baa=string.format("[%s:%d] %s",_aa,aaa,baa)
+if
+d_a==_d.levels.DEBUG then _c.LOGGER.debug(baa)elseif
 d_a==_d.levels.INFO then _c.LOGGER.info(baa)elseif d_a==_d.levels.WARN then
 _c.LOGGER.warn(baa)elseif d_a==_d.levels.ERROR then _c.LOGGER.error(baa)end end)end;cc.reloadAll()dc.load()local cd=_c.getMainFrame()
 local dd=ac:new(cd:addFrame(),1,1,cd:getWidth(),cd:getHeight())local __a=dd:createTab("Transfers")
