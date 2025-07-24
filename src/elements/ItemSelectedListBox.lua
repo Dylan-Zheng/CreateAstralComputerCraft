@@ -78,7 +78,13 @@ function ItemSelectedListBox:new(pframe, frameBg, bg, fg, searchPlaceholderColor
         :setBackground(bg)
         :setForeground(fg)
         :onClick(function()
-            local selectedItems = instance.list:getSelectedItems()
+            local selectedItems = {}
+            for _, item in ipairs(instance.items) do
+                if item.selected then
+                    table.insert(selectedItems, item)
+                end
+            end
+            
             if instance.callbacks.confirm ~= nil then
                 instance.callbacks.confirm(selectedItems)
             end

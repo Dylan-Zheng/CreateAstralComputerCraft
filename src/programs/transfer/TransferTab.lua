@@ -407,6 +407,12 @@ function TransferTab:updateTransferList()
     for _, t in pairs(transfers) do
         table.insert(items, {text = t.name or "unnamed", id = t.id})
     end
+    
+    -- Sort items by name (text field)
+    table.sort(items, function(a, b)
+        return a.text < b.text
+    end)
+    
     self.list:setItems(items)
 end
 

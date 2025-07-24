@@ -41,7 +41,7 @@ TransferJobManager.save = function()
 end
 
 TransferJobManager.addTransfer = function(transfer)
-    TransferJobManager.transfers[transfer.id] = transfer
+    TransferJobManager.transfers[transfer.id] = textutils.unserialize(textutils.serialize(transfer))
     TransferJobManager.save()
 end
 

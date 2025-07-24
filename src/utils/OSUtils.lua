@@ -21,15 +21,24 @@ OSUtils.loadTable = function(file_name)
 end
 
 OSUtils.saveTable = function(file_name, obj)
+    local serialized
+    local success, err = xpcall(function()
+        serialized = textutils.serialize(obj)
+    end, function(error)
+        return error
+    end)
+    
+    if not success then
+        Logger.error("Failed to serialize table for {}, error: {}", file_name, err)
+        return
+    end
+    
     local file = fs.open(file_name, "w")
     if file then
-        xpcall(function()
-            local serialized = textutils.serialize(obj)
-            file.write(serialized)
-        end, function(err)
-            Logger.error("Failed to save table to {}, error: {}", file_name, err)
-        end)
+        file.write(serialized)
         file.close()
+    else
+        Logger.error("Failed to open file for writing: {}", file_name)
     end
 end
 
