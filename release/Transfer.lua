@@ -3384,11 +3384,9 @@ _b.frame:getWidth()-6,1):setBackground(ba):setForeground(ca):setPlaceholderColor
 _b.searchBtn=_b.frame:addButton():setPosition(_b.searchInput:getX()+
 _b.searchInput:getWidth()+1,_b.searchInput:getY()):setSize(1,1):setText("S"):setBackground(ba):setForeground(ca):onClick(function()
 local ab=_b.searchInput:getText()
-if ab==nil or ab==""then _b.list:setItems(_b.items)else local bb={}for cb,db in
-pairs(_b.items)do
-if db.name:find(ab)or
-(db.displayName and db.displayName:find(ab))then table.insert(bb,db)end end
-_b.list:setItems(bb)end end)
+if ab==nil or ab==""then _b.list:setItems(_b.items)else local bb={}
+for cb,db in
+pairs(_b.items)do if db.text:find(ab)then table.insert(bb,db)end end;_b.list:setItems(bb)end end)
 _b.cleanInputBtn=_b.frame:addButton():setPosition(_b.searchBtn:getX()+
 _b.searchBtn:getWidth()+1,_b.searchBtn:getY()):setSize(1,1):setText("C"):setBackground(ba):setForeground(ca):onClick(function()
 _b.searchInput:setText("")_b.list:setItems(_b.items)end)

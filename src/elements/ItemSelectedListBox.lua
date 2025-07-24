@@ -46,7 +46,7 @@ function ItemSelectedListBox:new(pframe, frameBg, bg, fg, searchPlaceholderColor
             else
                 local filtered = {}
                 for _, item in pairs(instance.items) do
-                    if item.name:find(text) or (item.displayName and item.displayName:find(text)) then
+                    if item.text:find(text) then
                         table.insert(filtered, item)
                     end
                 end
