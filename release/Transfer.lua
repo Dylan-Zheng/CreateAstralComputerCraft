@@ -3174,7 +3174,8 @@ ab.TRIGGER_CONDITION_TYPES={COUNT_GREATER="count_greater",COUNT_LESS="count_less
 ab.load=function()local bc=da.loadTable("transfers")if bc~=nil then
 ab.transfers=bc end end
 ab.save=function()da.saveTable("transfers",ab.transfers)end
-ab.addTransfer=function(bc)ab.transfers[bc.id]=bc;ab.save()end
+ab.addTransfer=function(bc)
+ab.transfers[bc.id]=textutils.unserialize(textutils.serialize(bc))ab.save()end
 ab.removeTransfer=function(bc)ab.transfers[bc]=nil;ab.save()end
 ab.getTransfer=function(bc)return
 textutils.unserialize(textutils.serialize(ab.transfers[bc]))end
@@ -3369,11 +3370,12 @@ local _a=os.epoch("utc")local aa=math.random(1000,9999)return
 tostring(_a).."-"..tostring(aa)end
 d.loadTable=function(_a)local aa={}local ba=fs.open(_a,"r")if ba then
 aa=textutils.unserialize(ba.readAll())ba.close()else return nil end;return aa end
-d.saveTable=function(_a,aa)local ba=fs.open(_a,"w")
-if ba then
-xpcall(function()
-local ca=textutils.serialize(aa)ba.write(ca)end,function(ca)
-c.error("Failed to save table to {}, error: {}",_a,ca)end)ba.close()end end;return d end
+d.saveTable=function(_a,aa)local ba
+local ca,da=xpcall(function()ba=textutils.serialize(aa)end,function(ab)
+return ab end)if not ca then
+c.error("Failed to serialize table for {}, error: {}",_a,da)return end;local _b=fs.open(_a,"w")if _b then
+_b.write(ba)_b.close()else
+c.error("Failed to open file for writing: {}",_a)end end;return d end
 modules["elements.ItemSelectedListBox"] = function() local c=require("libraries.basalt")local d={}d.__index=d
 function d:new(_a,aa,ba,ca,da)
 local _b=setmetatable({},d)aa=aa or colors.lightGray;ba=ba or colors.gray;ca=ca or
