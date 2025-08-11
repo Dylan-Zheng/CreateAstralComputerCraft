@@ -85,7 +85,7 @@ PeripheralWrapper.addBaseMethods = function(peripheral, peripheralName)
     peripheral._isUnlimitedPeripheralInventory = PeripheralWrapper.isTypeOf(peripheral,
         TYPES.UNLIMITED_PERIPHERAL_INVENTORY)
     peripheral.isUnlimitedPeripheralInventory = function()
-        return PeripheralWrapper._isUnlimitedPeripheralInventory
+        return peripheral._isUnlimitedPeripheralInventory
     end
 end
 
@@ -206,7 +206,7 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
             return totalTransferred
         end
     else
-        error("Peripheral is not an inventory")
+        error("Peripheral " .. peripheral.getName() .. " types " .. table.concat(PeripheralWrapper.getTypes(peripheral), ", ") .. " is not an inventory")
     end
 end
 
