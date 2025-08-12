@@ -168,6 +168,8 @@ function JobExecutor.load(jobsData)
                     end
                 end
             }
+        else 
+            JobExecutor.executableJobs[jobName] = nil
         end
     end
 end

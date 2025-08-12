@@ -116,15 +116,15 @@ end
 function JobManager:disableJob(jobName)
     local job = self:getJob(jobName)
     if not job then return end
-    
     job.enabled = false
+    self:save()
 end
 
 function JobManager:enableJob(jobName)
     local job = self:getJob(jobName)
     if not job then return end
-    
     job.enabled = true
+    self:save()
 end
 
 

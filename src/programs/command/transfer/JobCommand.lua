@@ -434,6 +434,7 @@ function JobCommand.execute(input)
         while true do
             local result = subCommandLine:run()
             if result == "exit" then
+                JobDataManager:save()
                 break
             end
         end
@@ -495,6 +496,7 @@ function JobCommand.execute(input)
         end
         
         job.enabled = false
+        JobDataManager:save()
         print("Job '" .. jobName .. "' disabled.")
         
     elseif action == "delete" then
