@@ -334,21 +334,23 @@ print(string.format("- %s (%s)",a_a,c_a))end end elseif cd=="create"then
 if#bd<3 then print("Usage: job create <name>")return end;local dd=bd[3]if bb:getJob(dd)then
 print("Job '"..dd.."' already exists.")return end;bb:addJob(dd,{})print("Created job '"..
 dd.."'")
-print("Entering job editing mode...")_d(dd)local __a=dc()
-while true do local a_a=__a:run()if a_a=="exit"then break end end elseif cd=="edit"then
-if#bd<3 then print("Usage: job edit <name>")return end;local dd=bd[3]if not bb:getJob(dd)then
-print("Job '"..dd.."' not found.")return end
-print("Editing job '"..dd.."'...")_d(dd)local __a=dc()
+print("Entering job editing mode...")_d(dd)local __a=dc()while true do local a_a=__a:run()
+if a_a=="exit"then bb:save()break end end elseif cd=="edit"then if#bd<3 then
+print("Usage: job edit <name>")return end;local dd=bd[3]
+if not bb:getJob(dd)then print("Job '"..dd..
+"' not found.")return end;print("Editing job '"..dd.."'...")_d(dd)
+local __a=dc()
 while true do local a_a=__a:run()if a_a=="exit"then break end end elseif cd=="save"then bb:save()print("All jobs saved.")elseif cd=="enable"then if#bd<3 then
 print("Usage: job enable <name>")return end;local dd=bd[3]local __a=bb:getJob(dd)
 if not __a then print(
 "Job '"..dd.."' not found.")return end;__a.enabled=true
 print("Job '"..dd.."' enabled.")elseif cd=="disable"then
 if#bd<3 then print("Usage: job disable <name>")return end;local dd=bd[3]local __a=bb:getJob(dd)if not __a then
-print("Job '"..dd.."' not found.")return end;__a.enabled=false
-print("Job '"..dd.."' disabled.")elseif cd=="delete"then
-if#bd<3 then print("Usage: job delete <name>")return end;local dd=bd[3]if not bb:getJob(dd)then
-print("Job '"..dd.."' not found.")return end
+print("Job '"..dd.."' not found.")return end;__a.enabled=false;bb:save()print("Job '"..dd..
+"' disabled.")elseif cd=="delete"then if#bd<3 then
+print("Usage: job delete <name>")return end;local dd=bd[3]
+if not bb:getJob(dd)then print("Job '"..dd..
+"' not found.")return end
 print("Are you sure you want to delete job '"..dd.."'? (y/N)")local __a=io.read()
 if string.lower(__a)=="y"or
 string.lower(__a)=="yes"then bb:removeJob(dd)
@@ -385,8 +387,8 @@ not ac then
 error("Invalid component type: "..tostring(db))end;return _c[ac]or{}end;function bb:setBlacklist(cb,db)local _c=self:getJob(cb)if not _c then return end
 _c.isFilterBlacklist=db end
 function bb:disableJob(cb)
-local db=self:getJob(cb)if not db then return end;db.enabled=false end
-function bb:enableJob(cb)local db=self:getJob(cb)if not db then return end;db.enabled=true end;return bb end
+local db=self:getJob(cb)if not db then return end;db.enabled=false;self:save()end;function bb:enableJob(cb)local db=self:getJob(cb)if not db then return end;db.enabled=true
+self:save()end;return bb end
 modules["programs.command.transfer.JobExecutor"] = function() local da=require("wrapper.PeripheralWrapper")
 local _b=require("utils.Logger")local ab={}ab.executableJobs={}local function bb(bc,cc)
 if not bc:find("*")then return bc==cc end;local dc=bc:gsub("%*",".*")dc="^"..dc.."$"
@@ -425,7 +427,7 @@ if _d.outputTanks then for __a,a_a in ipairs(_d.outputTanks)do local b_a=cb(a_a,
 for c_a,d_a in pairs(b_a)do dd[c_a]=d_a end end end
 ab.executableJobs[dc]={enable=true,exec=function()local __a=_d.filters or{}
 local a_a=_d.isFilterBlacklist or false;if next(ad)and next(bd)then _c(ad,bd,__a,a_a)end;if
-next(cd)and next(dd)then ac(cd,dd,__a,a_a)end end}end end end
+next(cd)and next(dd)then ac(cd,dd,__a,a_a)end end}else ab.executableJobs[dc]=nil end end end
 function ab.run()
 for bc,cc in pairs(ab.executableJobs)do
 if cc.enable then local dc,_d=pcall(cc.exec)if not dc then
