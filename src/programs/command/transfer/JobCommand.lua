@@ -480,6 +480,7 @@ function JobCommand.execute(input)
         end
         
         job.enabled = true
+        JobDataManager:save()
         print("Job '" .. jobName .. "' enabled.")
         
     elseif action == "disable" then

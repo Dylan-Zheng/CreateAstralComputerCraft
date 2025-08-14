@@ -12,7 +12,8 @@ OSUtils.loadTable = function(file_name)
     local obj = {}
     local file = fs.open(file_name, "r")
     if file then
-        obj = textutils.unserialize(file.readAll())
+        local text = file.readAll()
+        obj = textutils.unserialize(text)
         file.close()
     else
         return nil

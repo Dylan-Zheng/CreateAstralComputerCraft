@@ -55,7 +55,15 @@ end)
 parallel.waitForAll(basalt.run,
     function()
         while true do
-            TransferJobManager.exec()
+            local ok, err = pcall(function()
+                TransferJobManager.exec()
+            end)
+            if not ok then
+                Logger.error("Transfer job execution failed: {}", err)
+                Logger.error("Rebooting system due to critical error...")
+                os.sleep(1) -- Brief delay to ensure log is written
+                os.reboot()
+            end
             os.sleep(0.2)
         end
     end

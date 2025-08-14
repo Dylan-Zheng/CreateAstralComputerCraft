@@ -2,19 +2,38 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CommandLineTransfer"] = function() local da=require("wrapper.PeripheralWrapper")
-local _b=require("programs.command.CommandLine")
-local ab=require("programs.command.transfer.ListCommand")local bb=require("programs.command.transfer.JobCommand")
-local cb=require("programs.command.transfer.JobDataManager")
-local db=require("programs.command.transfer.JobExecutor")local _c=require("utils.Logger")_c.currentLevel=_c.levels.ERROR
-_c.addPrintFunction(function(bc,cc,dc,_d)
-_d=string.format("[%s:%d] %s",cc,dc,_d)
-if bc==_c.levels.DEBUG then print("DEBUG: ".._d)elseif
-bc==_c.levels.INFO then print("INFO: ".._d)elseif bc==_c.levels.WARN then
-print("WARN: ".._d)elseif bc==_c.levels.ERROR then print("ERROR: ".._d)end end)da.reloadAll()cb:load()local ac=_b:new()
-ac:addCommand("list","List system components. Usage: list <inventory|tank|item|fluid|reload> [page]",ab.execute,ab.complete)
-ac:addCommand("job","Manage transfer jobs. Usage: job <list|create|edit|save|delete> [name]",bb.execute,bb.complete)
-parallel.waitForAll(function()while true do ac:run()end end,function()while true do db.run()
+modules["programs.CommandLineTransfer"] = function() local _b=require("wrapper.PeripheralWrapper")
+local ab=require("programs.command.CommandLine")
+local bb=require("programs.command.transfer.ListCommand")local cb=require("programs.command.transfer.JobCommand")
+local db=require("programs.command.transfer.JobDataManager")
+local _c=require("programs.command.transfer.JobExecutor")local ac=require("utils.Logger")
+local bc=require("programs.command.transfer.SnapShot")ac.currentLevel=ac.levels.DEBUG
+ac.addPrintFunction(function(dc,_d,ad,bd)
+bd=string.format("[%s:%d] %s",_d,ad,bd)
+if dc==ac.levels.DEBUG then print("DEBUG: "..bd)elseif
+dc==ac.levels.INFO then print("INFO: "..bd)elseif dc==ac.levels.WARN then
+print("WARN: "..bd)elseif dc==ac.levels.ERROR then print("ERROR: "..bd)end end)_b.reloadAll()bc.takeSnapShot()db:load()
+local cc=ab:new()
+cc:addCommand("list","List system components. Usage: list <inventory|tank|item|fluid|reload> [page]",bb.execute,bb.complete)
+cc:addCommand("job","Manage transfer jobs. Usage: job <list|create|edit|save|delete> [name]",cb.execute,cb.complete)
+cc:addCommand("log","Manage logging level. Usage: log set <debug|info|warn|error>",function(dc)local _d={}for bd in string.gmatch(dc,"%S+")do
+table.insert(_d,bd)end
+if#_d<2 then local bd="unknown"
+for cd,dd in pairs(ac.levels)do if
+dd==ac.currentLevel then bd=string.lower(cd)break end end;print("Current log level: "..bd)
+print("Usage: log set <debug|info|warn|error>")return end;local ad=string.lower(_d[2])
+if ad=="set"then if#_d<3 then
+print("Usage: log set <debug|info|warn|error>")return end;local bd=string.upper(_d[3])
+if
+ac.levels[bd]then ac.currentLevel=ac.levels[bd]
+print("Log level set to: "..string.lower(bd))else
+print("Invalid log level. Use: debug, info, warn, or error")end else print("Usage: log set <debug|info|warn|error>")end end,function(dc)
+local _d={}
+for ad in string.gmatch("log "..dc,"%S+")do table.insert(_d,ad)end
+if#_d==2 then return ab.filterSuggestions({"set"},_d[2])elseif#_d==3 and
+_d[2]=="set"then return
+ab.filterSuggestions({"debug","info","warn","error"},_d[3])end;return{}end)
+parallel.waitForAll(function()while true do cc:run()end end,function()while true do _c.run()
 os.sleep(0.2)end end) end
 modules["wrapper.PeripheralWrapper"] = function() local c=require("utils.Logger")local d={}
 TYPES={DEFAULT_INVENTORY=1,UNLIMITED_PERIPHERAL_INVENTORY=2,TANK=3,REDSTONE=4}d.loadedPeripherals={}
@@ -48,8 +67,8 @@ _a.transferItemTo=function(aa,ba,ca)
 if aa.isDefaultInventory()then local da=_a.size()local _b=0
 for slot=1,da do
 local ab=_a.getItemDetail(slot)
-if ab~=nil and ab.name==ba then
-local bb=_a.pushItems(aa.getName(),slot,ca)if bb==0 then return _b end;_b=_b+bb;ca=ca-bb end;if ca<=0 then return _b end end;return _b elseif aa.isUnlimitedPeripheralInventory()then local da=0
+if ab~=nil and ab.name==ba then local bb=math.min(ab.count,ca)
+local cb=_a.pushItems(aa.getName(),slot,bb)if cb==0 then return _b end;_b=_b+cb;ca=ca-cb end;if ca<=0 then return _b end end;return _b elseif aa.isUnlimitedPeripheralInventory()then local da=0
 while da<ca do
 local _b=aa.pullItem(_a.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end;return 0 end
 _a.transferItemFrom=function(aa,ba,ca)
@@ -61,10 +80,10 @@ local bb=_a.pullItems(aa.getName(),slot,ca)if bb==0 then return _b end;_b=_b+bb;
 while da<ca do
 local _b=aa.pushItem(_a.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end end elseif _a.isUnlimitedPeripheralInventory()then
 _a.getItems=function()return _a.items()end
-_a.transferItemFrom=function(aa,ba,ca)local da=0
+_a.transferItemTo=function(aa,ba,ca)local da=0
 while da<ca do
 local _b=_a.pushItem(aa.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end
-_a.transferItemTo=function(aa,ba,ca)local da=0
+_a.transferItemFrom=function(aa,ba,ca)local da=0
 while da<ca do
 local _b=_a.pullItem(aa.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end else
 error("Peripheral "..
@@ -166,7 +185,7 @@ local db=_b(cb)if#db<2 then
 print("Usage: list <inventory|tank|item|fluid|reload> [page]")return end
 local _c=string.lower(db[2])
 if _c=="reload"then
-print("Reloading peripherals and taking snapshot...")ba:takeSnapShot()print("Reload completed.")return end;local ac=tonumber(db[3])or 1
+print("Reloading peripherals and taking snapshot...")ba.takeSnapShot()print("Reload completed.")return end;local ac=tonumber(db[3])or 1
 if _c=="inventory"then
 local bc=bb(ba.inventories)local cc,dc,_d,ad=ab(bc,ac)
 print(string.format("=== Inventories (Page %d of %d, Total: %d) ===",dc,_d,ad))
@@ -343,7 +362,7 @@ local __a=dc()
 while true do local a_a=__a:run()if a_a=="exit"then break end end elseif cd=="save"then bb:save()print("All jobs saved.")elseif cd=="enable"then if#bd<3 then
 print("Usage: job enable <name>")return end;local dd=bd[3]local __a=bb:getJob(dd)
 if not __a then print(
-"Job '"..dd.."' not found.")return end;__a.enabled=true
+"Job '"..dd.."' not found.")return end;__a.enabled=true;bb:save()
 print("Job '"..dd.."' enabled.")elseif cd=="disable"then
 if#bd<3 then print("Usage: job disable <name>")return end;local dd=bd[3]local __a=bb:getJob(dd)if not __a then
 print("Job '"..dd.."' not found.")return end;__a.enabled=false;bb:save()print("Job '"..dd..
@@ -401,11 +420,12 @@ for ad,bd in ipairs(cc)do if bb(bd,bc)then _d=true;break end end;return dc and n
 local _c=function(bc,cc,dc,_d)
 for ad,bd in pairs(bc)do local cd=bd.getItems()
 for dd,__a in ipairs(cd)do
-if db(__a.name,dc,_d)then
-_b.debug("Transferring item: {} x{}",__a.name,__a.count)local a_a=__a.count
-for b_a,c_a in pairs(cc)do
-while true do
-local d_a=bd.transferItemTo(c_a,__a.name,a_a)a_a=a_a-d_a;if d_a==0 then break end end;if a_a<=0 then break end end end end end end
+if db(__a.name,dc,_d)then local a_a=__a.count
+for b_a,c_a in
+pairs(cc)do
+_b.debug("Transferring item: {} x{}",__a.name,__a.count)while true do local d_a=bd.transferItemTo(c_a,__a.name,a_a)a_a=a_a-d_a;if d_a==
+0 then break end end;if a_a<=0 then
+break end end end end end end
 local ac=function(bc,cc,dc,_d)
 for ad,bd in pairs(bc)do local cd=bd.getFluids()
 for dd,__a in ipairs(cd)do
@@ -458,16 +478,16 @@ local function ba(da,_b)if not da.getItems then return end;local ab=da.getItems(
 _b[cb.name]=true end end
 local function ca(da,_b)if not da.getFluids then return end;local ab=da.getFluids()for bb,cb in ipairs(ab)do
 _b[cb.name]=true end end
-function aa:takeSnapShot()_a.reloadAll()local da=_a.getAll()
+function aa.takeSnapShot()_a.reloadAll()local da=_a.getAll()
 for _b,ab in pairs(da)do if ab.isInventory()then
-self.inventories[_b]=true;ba(ab,self.items)end;if ab.isTank()then
-self.tanks[_b]=true;ca(ab,self.fluids)end end end;return aa end
+aa.inventories[_b]=true;ba(ab,aa.items)end;if ab.isTank()then
+aa.tanks[_b]=true;ca(ab,aa.fluids)end end end;return aa end
 modules["utils.OSUtils"] = function() local c=require("utils.Logger")local d={}
 d.timestampBaseIdGenerate=function()
 local _a=os.epoch("utc")local aa=math.random(1000,9999)return
 tostring(_a).."-"..tostring(aa)end
-d.loadTable=function(_a)local aa={}local ba=fs.open(_a,"r")if ba then
-aa=textutils.unserialize(ba.readAll())ba.close()else return nil end;return aa end
+d.loadTable=function(_a)local aa={}local ba=fs.open(_a,"r")if ba then local ca=ba.readAll()
+aa=textutils.unserialize(ca)ba.close()else return nil end;return aa end
 d.saveTable=function(_a,aa)local ba
 local ca,da=xpcall(function()ba=textutils.serialize(aa)end,function(ab)
 return ab end)if not ca then

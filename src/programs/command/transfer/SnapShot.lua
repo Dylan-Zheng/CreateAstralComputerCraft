@@ -27,7 +27,7 @@ local function addFluidsToSnapshot(peripheral, fluidsTable)
     end
 end
 
-function PeripheralSnapShot:takeSnapShot()
+function PeripheralSnapShot.takeSnapShot()
     -- Reload all peripherals first
     PeripheralWrapper.reloadAll()
     
@@ -35,13 +35,13 @@ function PeripheralSnapShot:takeSnapShot()
 
     for name, peripheral in pairs(allPeripherals) do
         if peripheral.isInventory() then
-            self.inventories[name] = true
-            addItemsToSnapshot(peripheral, self.items)
+            PeripheralSnapShot.inventories[name] = true
+            addItemsToSnapshot(peripheral, PeripheralSnapShot.items)
         end
 
         if peripheral.isTank() then
-            self.tanks[name] = true
-            addFluidsToSnapshot(peripheral, self.fluids)
+            PeripheralSnapShot.tanks[name] = true
+            addFluidsToSnapshot(peripheral, PeripheralSnapShot.fluids)
         end
     end
 end

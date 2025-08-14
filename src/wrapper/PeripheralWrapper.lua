@@ -118,7 +118,8 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
                 for slot = 1, size do
                     local item = peripheral.getItemDetail(slot)
                     if item ~= nil and item.name == itemName then
-                        local transferred = peripheral.pushItems(toPeripheral.getName(), slot, amount)
+                        local toTransfer = math.min(item.count, amount)
+                        local transferred = peripheral.pushItems(toPeripheral.getName(), slot, toTransfer)
                         if transferred == 0 then
                             return totalTransferred
                         end
@@ -182,7 +183,7 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
             return peripheral.items()
         end
 
-        peripheral.transferItemFrom = function(toPeripheral, itemName, amount)
+        peripheral.transferItemTo = function(toPeripheral, itemName, amount)
             local totalTransferred = 0
             while totalTransferred < amount do
                 local transferred = peripheral.pushItem(toPeripheral.getName(), itemName, amount - totalTransferred)
@@ -194,7 +195,7 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
             return totalTransferred
         end
 
-        peripheral.transferItemTo = function(fromPeripheral, itemName, amount)
+        peripheral.transferItemFrom = function(fromPeripheral, itemName, amount)
             local totalTransferred = 0
             while totalTransferred < amount do
                 local transferred = peripheral.pullItem(fromPeripheral.getName(), itemName, amount - totalTransferred)

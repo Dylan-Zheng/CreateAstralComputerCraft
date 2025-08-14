@@ -53,10 +53,10 @@ local transferItems = function(inputInventories, outputInventories, itemFilter, 
         local items = inputPeripheral.getItems()
         for _, item in ipairs(items) do
             if shouldTransferItem(item.name, itemFilter, isBlacklist) then
-                Logger.debug("Transferring item: {} x{}", item.name, item.count)
                 local toTransfer = item.count
                 for outputName, outputPeripheral in pairs(outputInventories) do
                     -- Attempt to transfer the item
+                    Logger.debug("Transferring item: {} x{}", item.name, item.count)
                     while true do
                         local transferred = inputPeripheral.transferItemTo(outputPeripheral, item.name, toTransfer)
                         toTransfer = toTransfer - transferred

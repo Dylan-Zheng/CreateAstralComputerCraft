@@ -52,7 +52,7 @@ function ListCommand.execute(input)
     
     if listType == "reload" then
         print("Reloading peripherals and taking snapshot...")
-        SnapShot:takeSnapShot()
+        SnapShot.takeSnapShot()
         print("Reload completed.")
         return
     end
