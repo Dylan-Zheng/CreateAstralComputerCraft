@@ -8,7 +8,7 @@ local Logger = require("utils.Logger")
 local SnapShot = require("programs.command.transfer.SnapShot")
 
 -- Set logger level
-Logger.currentLevel = Logger.levels.DEBUG
+Logger.currentLevel = Logger.levels.ERROR
 Logger.addPrintFunction(function(level, src, currentline, message)
     message = string.format("[%s:%d] %s", src, currentline, message)
     if level == Logger.levels.DEBUG then

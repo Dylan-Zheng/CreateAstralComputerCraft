@@ -7,7 +7,7 @@ local ab=require("programs.command.CommandLine")
 local bb=require("programs.command.transfer.ListCommand")local cb=require("programs.command.transfer.JobCommand")
 local db=require("programs.command.transfer.JobDataManager")
 local _c=require("programs.command.transfer.JobExecutor")local ac=require("utils.Logger")
-local bc=require("programs.command.transfer.SnapShot")ac.currentLevel=ac.levels.DEBUG
+local bc=require("programs.command.transfer.SnapShot")ac.currentLevel=ac.levels.ERROR
 ac.addPrintFunction(function(dc,_d,ad,bd)
 bd=string.format("[%s:%d] %s",_d,ad,bd)
 if dc==ac.levels.DEBUG then print("DEBUG: "..bd)elseif
