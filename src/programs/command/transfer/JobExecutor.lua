@@ -31,6 +31,11 @@ end
 
 -- Helper function to check if an item/fluid should be transferred based on filters
 local function shouldTransferItem(itemName, itemFilter, isBlacklist)
+
+    if itemName == "minecraft:empty" then
+        return false
+    end
+
     if not itemFilter or #itemFilter == 0 then
         return true
     end

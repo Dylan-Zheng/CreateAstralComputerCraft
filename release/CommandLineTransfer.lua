@@ -414,10 +414,11 @@ if not bc:find("*")then return bc==cc end;local dc=bc:gsub("%*",".*")dc="^"..dc.
 return cc:match(dc)~=nil end;local function cb(bc,cc)
 local dc={}for _d,ad in pairs(cc)do if bb(bc,_d)then dc[_d]=ad end end
 return dc end
-local function db(bc,cc,dc)if not cc or#cc==0 then
-return true end;local _d=false
-for ad,bd in ipairs(cc)do if bb(bd,bc)then _d=true;break end end
-_b.debug("Item {} is {} {}",bc,dc and"blacklist "or"whitelist ",_d and"included"or"excluded")return(dc and not _d)or(not dc and _d)end
+local function db(bc,cc,dc)if bc=="minecraft:empty"then return
+false end;if not cc or#cc==0 then return true end
+local _d=false;for ad,bd in ipairs(cc)do if bb(bd,bc)then _d=true;break end end
+_b.debug("Item {} is {} {}",bc,
+dc and"blacklist "or"whitelist ",_d and"included"or"excluded")return(dc and not _d)or(not dc and _d)end
 local _c=function(bc,cc,dc,_d)
 for ad,bd in pairs(bc)do local cd=bd.getItems()
 for dd,__a in ipairs(cd)do
