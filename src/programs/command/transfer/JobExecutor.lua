@@ -161,6 +161,7 @@ function JobExecutor.load(jobsData)
             JobExecutor.executableJobs[jobName] = {
                 enable = true,
                 exec = function() 
+                    Logger.info("Executing job: {}", jobName)
                     -- Prepare filters
                     local itemFilter = job.filters or {}
                     local isBlacklist = job.isFilterBlacklist or false
