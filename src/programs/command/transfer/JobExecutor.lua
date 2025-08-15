@@ -44,7 +44,7 @@ local function shouldTransferItem(itemName, itemFilter, isBlacklist)
         end
     end
 
-    Logger.debug("Item {} is {}filtered", itemName, isBlacklist and "blacklist " or "whitelist ")
+    Logger.debug("Item {} is {} {}", itemName, isBlacklist and "blacklist " or "whitelist ", isInFilter and "included" or "excluded")
 
     -- Apply blacklist/whitelist logic
     return (isBlacklist and not isInFilter) or (not isBlacklist and isInFilter)

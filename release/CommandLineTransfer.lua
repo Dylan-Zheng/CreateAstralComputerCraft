@@ -417,7 +417,7 @@ return dc end
 local function db(bc,cc,dc)if not cc or#cc==0 then
 return true end;local _d=false
 for ad,bd in ipairs(cc)do if bb(bd,bc)then _d=true;break end end
-_b.debug("Item {} is {}filtered",bc,dc and"blacklist "or"whitelist ")return(dc and not _d)or(not dc and _d)end
+_b.debug("Item {} is {} {}",bc,dc and"blacklist "or"whitelist ",_d and"included"or"excluded")return(dc and not _d)or(not dc and _d)end
 local _c=function(bc,cc,dc,_d)
 for ad,bd in pairs(bc)do local cd=bd.getItems()
 for dd,__a in ipairs(cd)do
