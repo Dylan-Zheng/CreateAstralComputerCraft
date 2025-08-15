@@ -58,6 +58,7 @@ end
 local transferItems = function(inputInventories, outputInventories, itemFilter, isBlacklist)
     for inputName, inputPeripheral in pairs(inputInventories) do
         local items = inputPeripheral.getItems()
+        Logger.debug("Checking input inventory: {}", inputName)
         for _, item in ipairs(items) do
             Logger.debug("Found item: {} x{}", item.name, item.count)
             if shouldTransferItem(item.name, itemFilter, isBlacklist) then
@@ -161,7 +162,6 @@ function JobExecutor.load(jobsData)
             JobExecutor.executableJobs[jobName] = {
                 enable = true,
                 exec = function() 
-                    Logger.info("Executing job: {}", jobName)
                     -- Prepare filters
                     local itemFilter = job.filters or {}
                     local isBlacklist = job.isFilterBlacklist or false
