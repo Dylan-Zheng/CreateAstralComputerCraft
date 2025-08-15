@@ -43,15 +43,18 @@ local function shouldTransferItem(itemName, itemFilter, isBlacklist)
             break
         end
     end
-    
+
+    Logger.debug("Item {} is {}filtered", itemName, isBlacklist and "blacklist " or "whitelist ")
+
     -- Apply blacklist/whitelist logic
-    return isBlacklist and not isInFilter or not isBlacklist and isInFilter
+    return (isBlacklist and not isInFilter) or (not isBlacklist and isInFilter)
 end
 
 local transferItems = function(inputInventories, outputInventories, itemFilter, isBlacklist)
     for inputName, inputPeripheral in pairs(inputInventories) do
         local items = inputPeripheral.getItems()
         for _, item in ipairs(items) do
+            Logger.debug("Found item: {} x{}", item.name, item.count)
             if shouldTransferItem(item.name, itemFilter, isBlacklist) then
                 local toTransfer = item.count
                 for outputName, outputPeripheral in pairs(outputInventories) do

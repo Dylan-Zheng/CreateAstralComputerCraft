@@ -416,13 +416,14 @@ local dc={}for _d,ad in pairs(cc)do if bb(bc,_d)then dc[_d]=ad end end
 return dc end
 local function db(bc,cc,dc)if not cc or#cc==0 then
 return true end;local _d=false
-for ad,bd in ipairs(cc)do if bb(bd,bc)then _d=true;break end end;return dc and not _d or not dc and _d end
+for ad,bd in ipairs(cc)do if bb(bd,bc)then _d=true;break end end
+_b.debug("Item {} is {}filtered",bc,dc and"blacklist "or"whitelist ")return(dc and not _d)or(not dc and _d)end
 local _c=function(bc,cc,dc,_d)
 for ad,bd in pairs(bc)do local cd=bd.getItems()
 for dd,__a in ipairs(cd)do
+_b.debug("Found item: {} x{}",__a.name,__a.count)
 if db(__a.name,dc,_d)then local a_a=__a.count
-for b_a,c_a in
-pairs(cc)do
+for b_a,c_a in pairs(cc)do
 _b.debug("Transferring item: {} x{}",__a.name,__a.count)while true do local d_a=bd.transferItemTo(c_a,__a.name,a_a)a_a=a_a-d_a;if d_a==
 0 then break end end;if a_a<=0 then
 break end end end end end end
