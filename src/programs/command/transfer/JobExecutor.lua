@@ -168,11 +168,13 @@ function JobExecutor.load(jobsData)
                     
                     -- Transfer items if there are inventories configured
                     if next(inputInventoriesPeripheral) and next(outputInventoriesPeripheral) then
+                        Logger.debug("Executing job: {} for item", jobName)
                         transferItems(inputInventoriesPeripheral, outputInventoriesPeripheral, itemFilter, isBlacklist)
                     end
                     
                     -- Transfer fluids if there are tanks configured
                     if next(inputTanksPeripheral) and next(outputTanksPeripheral) then
+                        Logger.debug("Executing job: {} for fluid", jobName)
                         transferFluids(inputTanksPeripheral, outputTanksPeripheral, itemFilter, isBlacklist)
                     end
                 end

@@ -449,8 +449,10 @@ for c_a,d_a in pairs(b_a)do cd[c_a]=d_a end end end
 if _d.outputTanks then for __a,a_a in ipairs(_d.outputTanks)do local b_a=cb(a_a,cc)
 for c_a,d_a in pairs(b_a)do dd[c_a]=d_a end end end
 ab.executableJobs[dc]={enable=true,exec=function()local __a=_d.filters or{}
-local a_a=_d.isFilterBlacklist or false;if next(ad)and next(bd)then _c(ad,bd,__a,a_a)end;if
-next(cd)and next(dd)then ac(cd,dd,__a,a_a)end end}else ab.executableJobs[dc]=nil end end end
+local a_a=_d.isFilterBlacklist or false;if next(ad)and next(bd)then
+_b.debug("Executing job: {} for item",dc)_c(ad,bd,__a,a_a)end;if next(cd)and
+next(dd)then _b.debug("Executing job: {} for fluid",dc)
+ac(cd,dd,__a,a_a)end end}else ab.executableJobs[dc]=nil end end end
 function ab.run()
 for bc,cc in pairs(ab.executableJobs)do
 if cc.enable then local dc,_d=pcall(cc.exec)if not dc then
