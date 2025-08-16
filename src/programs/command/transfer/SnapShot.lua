@@ -12,6 +12,7 @@ local function addItemsToSnapshot(peripheral, itemsTable)
     if not peripheral.getItems then return end
     
     local items = peripheral.getItems()
+    if not items then return end
     for _, item in ipairs(items) do
         itemsTable[item.name] = true
     end
@@ -22,6 +23,7 @@ local function addFluidsToSnapshot(peripheral, fluidsTable)
     if not peripheral.getFluids then return end
     
     local fluids = peripheral.getFluids()
+    if not fluids then return end
     for _, fluid in ipairs(fluids) do
         fluidsTable[fluid.name] = true
     end

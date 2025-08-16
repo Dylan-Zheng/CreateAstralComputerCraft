@@ -479,10 +479,10 @@ local aa=tostring(c):gsub("{}",function()local ba=d[_a]_a=_a+1
 return tostring(ba)end)return aa end;return b end
 modules["programs.command.transfer.SnapShot"] = function() local _a=require("wrapper.PeripheralWrapper")
 local aa={inventories={},tanks={},items={},fluids={}}
-local function ba(da,_b)if not da.getItems then return end;local ab=da.getItems()for bb,cb in ipairs(ab)do
-_b[cb.name]=true end end
-local function ca(da,_b)if not da.getFluids then return end;local ab=da.getFluids()for bb,cb in ipairs(ab)do
-_b[cb.name]=true end end
+local function ba(da,_b)if not da.getItems then return end;local ab=da.getItems()
+if not ab then return end;for bb,cb in ipairs(ab)do _b[cb.name]=true end end
+local function ca(da,_b)if not da.getFluids then return end;local ab=da.getFluids()
+if not ab then return end;for bb,cb in ipairs(ab)do _b[cb.name]=true end end
 function aa.takeSnapShot()_a.reloadAll()local da=_a.getAll()
 for _b,ab in pairs(da)do if ab.isInventory()then
 aa.inventories[_b]=true;ba(ab,aa.items)end;if ab.isTank()then
