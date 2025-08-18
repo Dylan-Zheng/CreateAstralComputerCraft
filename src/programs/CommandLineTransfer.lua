@@ -5,7 +5,7 @@ local JobCommand = require("programs.command.transfer.JobCommand")
 local JobDataManager = require("programs.command.transfer.JobDataManager")
 local JobExecutor = require("programs.command.transfer.JobExecutor")
 local Logger = require("utils.Logger")
-local SnapShot = require("programs.command.transfer.SnapShot")
+local SnapShot = require("programs.common.SnapShot")
 
 -- Set logger level
 Logger.currentLevel = Logger.levels.ERROR

@@ -102,7 +102,7 @@ function ConfirmMessageBox:confirm()
     if self.onConfirm then
         local success, error = pcall(self.onConfirm)
         if not success then
-            -- Handle error silently or log if needed
+            Logger.error("Error in ConfirmMessageBox onConfirm callback: " .. tostring(error))
         end
     end
     self:close()

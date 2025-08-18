@@ -1,4 +1,4 @@
-local SnapShot = require("programs.command.transfer.SnapShot")
+local SnapShot = require("programs.common.SnapShot")
 local CommandLine = require("programs.command.CommandLine")
 
 local ListCommand = {}

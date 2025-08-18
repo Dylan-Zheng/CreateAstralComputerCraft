@@ -1,0 +1,12 @@
+local basalt = require("libraries.basalt")
+local Logger = require("utils.Logger")
+local StoreManager = require("programs.recipe.manager.StoreManager")
+local ItemSelectedListBox = require("elements.ItemSelectedListBox")
+local SnapShot = require("programs.common.SnapShot")
+local TriggerView = require("programs.recipe.manager.TriggerView")
+local MessageBox = require("elements.MessageBox")
+local ConfirmMessageBox = require("elements.ConfirmMessageBox")
+local RecipeList = require("programs.recipe.manager.RecipeList")
+local Utils = require("programs.recipe.manager.Utils")
+local ScrollableFrame = require("elements.ScrollableFrame")
+

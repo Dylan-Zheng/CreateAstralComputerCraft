@@ -3,8 +3,8 @@ local PeripheralWrapper = require("wrapper.PeripheralWrapper")
 local OSUtils = require("utils.OSUtils")
 local Logger = require("utils.Logger")
 local ItemSelectedListBox = require("elements.ItemSelectedListBox")
-local TransferJobManager = require("programs.transfer.TransferJobManager")
-
+local Trigger = require("programs.recipe.manager.Trigger")
+local SnapShot = require("programs.common.SnapShot")
 local MessageBox = require("elements.MessageBox")
 local ConfirmMessageBox = require("elements.ConfirmMessageBox")
 
@@ -14,17 +14,17 @@ local textutils = textutils
 ---@diagnostic disable-next-line: undefined-global
 local colors = colors
 
-local Triggers = {}
+local TriggerView = {}
 
-Triggers.__index = Triggers
+TriggerView.__index = TriggerView
 
 -- Trigger types
-local TYPES = TransferJobManager.TRIGGER_TYPES
+local TYPES = Trigger.TYPES
 -- Condition types
-local CONDITION_TYPES = TransferJobManager.TRIGGER_CONDITION_TYPES
+local CONDITION_TYPES = Trigger.CONDITION_TYPES
 
-function Triggers:new(pframe)
-    local instance = setmetatable({}, Triggers)
+function TriggerView:new(pframe)
+    local instance = setmetatable({}, TriggerView)
 
     instance.selectNodeData = {}
 
@@ -120,42 +120,11 @@ function Triggers:new(pframe)
                 callback = function(self)
                     instance:updateUIForTriggerType()
                 end
-            },
-            {
-                text = "Item Count at Slots",
-                value = TYPES.ITEM_COUNT_AT_SLOTS,
-                callback = function(self)
-                    instance:updateUIForTriggerType()
-                end
             }
         })
 
-    instance.targetLabel = instance.nodeDetailsFrame:addLabel()
-        :setPosition(2, instance.triggerTypeDropdown:getY() + 2)
-        :setBackground(colors.gray)
-        :setForeground(colors.white)
-        :setText("Target:")
-    
-    instance.selectedTargetLabel = instance.nodeDetailsFrame:addLabel()
-        :setPosition(instance.targetLabel:getX() + instance.targetLabel:getWidth() + 1, instance.targetLabel:getY())
-        :setAutoSize(false)
-        :setSize(instance.nodeDetailsFrame:getWidth() - instance.targetLabel:getWidth() - 9, 1)
-        :setBackground(colors.black)
-        :setForeground(colors.white)
-        :setText("")
-    
-    instance.selectTargetBtn = instance.nodeDetailsFrame:addButton()
-        :setPosition(instance.nodeDetailsFrame:getWidth() - 5, instance.targetLabel:getY())
-        :setSize(5, 1)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-        :setText("...")
-        :onClick(function()
-            instance:openTargetSelector()
-        end)
-    
     instance.itemLabel = instance.nodeDetailsFrame:addLabel()
-        :setPosition(2, instance.selectedTargetLabel:getY() + 1)
+        :setPosition(2, instance.triggerTypeDropdown:getY() + 2)
         :setBackground(colors.gray)
         :setForeground(colors.white)
         :setText("Item:")
@@ -220,17 +189,6 @@ function Triggers:new(pframe)
         :setText("0")
         :setPlaceholder("0")
         :setPattern("[0-9]") -- 只允许输入数字
-
-    instance.slotButton = instance.nodeDetailsFrame:addButton()
-        :setPosition(instance.amountInput:getX() + instance.amountInput:getWidth() + 2, instance.amountInput:getY())
-        :setSize(8, 1)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-        :setText("Slot")
-        :setVisible(false) -- 默认隐藏
-        :onClick(function()
-            instance:openSlotSelector()
-        end)
 
     instance.modifyNodeBtn = instance.nodeDetailsFrame:addButton()
         :setPosition(instance.nodeDetailsFrame:getWidth() - 27, instance.amountInput:getY() + 2)
@@ -310,7 +268,7 @@ function Triggers:new(pframe)
     return instance
 end
 
-function Triggers:open(tree, saveCallback)
+function TriggerView:open(tree, saveCallback)
     self.tree = tree or {
         id = "root"
     }
@@ -325,7 +283,7 @@ function Triggers:open(tree, saveCallback)
     self:updateDetails()
 end
 
-function Triggers:addNode(tree, parentNode, node, data)
+function TriggerView:addNode(tree, parentNode, node, data)
     node.data = data or {}
     if parentNode then
         if not parentNode.children then
@@ -340,7 +298,7 @@ function Triggers:addNode(tree, parentNode, node, data)
 end
 
 -- 获取当前选中的触发器类型
-function Triggers:getSelectedTriggerType()
+function TriggerView:getSelectedTriggerType()
     local selectedItems = self.triggerTypeDropdown:getSelectedItems()
     if #selectedItems > 0 then
         return selectedItems[1].value
@@ -349,7 +307,7 @@ function Triggers:getSelectedTriggerType()
 end
 
 -- 设置触发器类型选择
-function Triggers:setTriggerType(triggerType)
+function TriggerView:setTriggerType(triggerType)
     local items = self.triggerTypeDropdown.get("items")
     for i, item in ipairs(items) do
         if item.value == triggerType then
@@ -370,7 +328,7 @@ function Triggers:setTriggerType(triggerType)
 end
 
 -- 设置条件类型选择
-function Triggers:setConditionType(conditionType)
+function TriggerView:setConditionType(conditionType)
     local items = self.conditionTypeDropdown.get("items")
     for i, item in ipairs(items) do
         if item.value == conditionType then
@@ -390,7 +348,7 @@ function Triggers:setConditionType(conditionType)
 end
 
 -- 获取当前选中的条件类型
-function Triggers:getSelectedConditionType()
+function TriggerView:getSelectedConditionType()
     local selectedItems = self.conditionTypeDropdown:getSelectedItems()
     if #selectedItems > 0 then
         return selectedItems[1].value
@@ -399,14 +357,14 @@ function Triggers:getSelectedConditionType()
 end
 
 -- 获取数量输入的数值
-function Triggers:getAmountValue()
+function TriggerView:getAmountValue()
     local text = self.amountInput.get("text")
     local amount = tonumber(text)
     return amount or 0
 end
 
 -- 设置数量输入的数值
-function Triggers:setAmountValue(amount)
+function TriggerView:setAmountValue(amount)
     if type(amount) == "number" and amount >= 0 then
         self.amountInput.set("text", tostring(math.floor(amount)))
         return true
@@ -414,7 +372,7 @@ function Triggers:setAmountValue(amount)
     return false
 end
 
-function Triggers:flattenTreeNodes(nodes, expandedNodes, level, result)
+function TriggerView:flattenTreeNodes(nodes, expandedNodes, level, result)
     result = result or {}
     level = level or 0
 
@@ -427,7 +385,7 @@ function Triggers:flattenTreeNodes(nodes, expandedNodes, level, result)
     return result
 end
 
-function Triggers:openParentNodeSelector()
+function TriggerView:openParentNodeSelector()
 
     local nodes = self.conditionTree.get("nodes")
     local expandedNodes = self.conditionTree.get("expandedNodes")
@@ -478,108 +436,27 @@ function Triggers:openParentNodeSelector()
     
 end
 
--- 打开目标选择器
-function Triggers:openTargetSelector()
+-- 打开物品/流体选择器
+function TriggerView:openItemSelector()
     local selectedTriggerType = self:getSelectedTriggerType()
-    local peripherals = {}
     local listItems = {}
     
-    -- 重新加载外设以获取最新信息
-    PeripheralWrapper.reloadAll()
-    
-    -- 根据触发器类型获取对应的外设
     if selectedTriggerType == TYPES.ITEM_COUNT then
-        -- Item Count: 获取 DEFAULT_INVENTORY 和 UNLIMITED_PERIPHERAL_INVENTORY
-        peripherals = PeripheralWrapper.getByTypes({1, 2}) -- DEFAULT_INVENTORY=1, UNLIMITED_PERIPHERAL_INVENTORY=2
-    elseif selectedTriggerType == TYPES.FLUID_COUNT then
-        -- Fluid Count: 获取 TANK
-        peripherals = PeripheralWrapper.getByTypes({3}) -- TANK=3
-    elseif selectedTriggerType == TYPES.ITEM_COUNT_AT_SLOTS then
-        -- Item Count at Slots: 获取 DEFAULT_INVENTORY
-        peripherals = PeripheralWrapper.getByTypes({1}) -- DEFAULT_INVENTORY=1
-    else
-        -- 默认情况或未知类型
-        peripherals = {}
-    end
-
-    local currentSelectedPeripheralId = self.selectNodeData and self.selectNodeData.targetPeripheralId or nil
-
-    -- 转换为 ItemSelectedListBox 需要的格式
-    for _, peripheral in pairs(peripherals) do
-        if peripheral.getId() == currentSelectedPeripheralId then
+        -- 从SnapShot获取物品名称
+        for itemName, _ in pairs(SnapShot.items) do
             table.insert(listItems, {
-            text = peripheral.getId() or "Unknown",
-            selected = true,
-            data = peripheral
-        })
-        else
-            table.insert(listItems, {
-                text = peripheral.getId() or "Unknown",
-                data = peripheral
+                text = itemName,
+                data = {type = "item", name = itemName}
             })
         end
         
-    end
-    
-    -- 打开选择器
-    self.itemListBox:open(listItems, false, {
-        confirm = function(selectedItems)
-            if self.selectNodeData == nil then
-                self.selectNodeData = {}
-            end
-            self.selectNodeData.targetPeripheralId = selectedItems[1].data.getId()
-            self.selectedTargetLabel:setText(StringUtils.ellipsisMiddle(self.selectNodeData.targetPeripheralId, self.selectedTargetLabel:getWidth()))
-            -- 更新槽位按钮
-            self:updateSlotButton()
-        end
-    })
-end
-
--- 打开物品/流体选择器
-function Triggers:openItemSelector()
-    local selectedTriggerType = self:getSelectedTriggerType()
-    local listItems = {}
-    
-    if selectedTriggerType == TYPES.ITEM_COUNT or selectedTriggerType == TYPES.ITEM_COUNT_AT_SLOTS then
-        -- 获取所有库存外设的物品
-        local inventoryPeripherals = PeripheralWrapper.getByTypes({1, 2}) or {}
-        
-        -- 收集所有物品并去重
-        local itemsTable = {}
-        for _, peripheral in pairs(inventoryPeripherals) do
-            if peripheral.getItems then
-                local items = peripheral.getItems()
-                for _, item in ipairs(items) do
-                    if not itemsTable[item.name] then
-                        itemsTable[item.name] = true
-                        table.insert(listItems, {
-                            text = item.name,
-                            data = {type = "item", name = item.name}
-                        })
-                    end
-                end
-            end
-        end
-        
     elseif selectedTriggerType == TYPES.FLUID_COUNT then
-        -- 获取所有储罐外设的流体
-        local tankPeripherals = PeripheralWrapper.getByTypes({3}) or {} -- TANK=3
-        
-        -- 收集所有流体并去重
-        local fluidsTable = {}
-        for _, peripheral in pairs(tankPeripherals) do
-            if peripheral.getFluids then
-                local fluids = peripheral.getFluids()
-                for _, fluid in ipairs(fluids) do
-                    if not fluidsTable[fluid.name] then
-                        fluidsTable[fluid.name] = true
-                        table.insert(listItems, {
-                            text = fluid.name,
-                            data = {type = "fluid", name = fluid.name}
-                        })
-                    end
-                end
-            end
+        -- 从SnapShot获取流体名称
+        for fluidName, _ in pairs(SnapShot.fluids) do
+            table.insert(listItems, {
+                text = fluidName,
+                data = {type = "fluid", name = fluidName}
+            })
         end
     end
     
@@ -622,99 +499,8 @@ function Triggers:openItemSelector()
     })
 end
 
--- 打开槽位选择器
-function Triggers:openSlotSelector()
-    local selectedTriggerType = self:getSelectedTriggerType()
-    
-    -- 只有在 ITEM_COUNT_AT_SLOTS 类型时才显示槽位选择器
-    if selectedTriggerType ~= TYPES.ITEM_COUNT_AT_SLOTS then
-        return
-    end
-    
-    local listItems = {}
-    
-    -- 如果有选中的目标外设，获取其槽位数量
-    if self.selectNodeData and self.selectNodeData.targetPeripheralId then
-        -- 确保外设已加载
-        PeripheralWrapper.reloadAll()
-        local peripheral = PeripheralWrapper.getByName(self.selectNodeData.targetPeripheralId)
-        if peripheral and peripheral.size then
-            local slotCount = peripheral.size()
-            
-            -- 添加所有槽位到列表
-            for i = 1, slotCount do
-                local isSelected = (self.selectNodeData.selectedSlot == i)
-                table.insert(listItems, {
-                    text = "Slot " .. i,
-                    data = {slotId = i},
-                    selected = isSelected
-                })
-            end
-        else
-            -- 如果无法获取槽位信息，显示默认槽位
-            table.insert(listItems, {
-                text = "Slot 1",
-                data = {slotId = 1},
-                selected = true
-            })
-        end
-    else
-        -- 没有选中目标外设时的提示
-        table.insert(listItems, {
-            text = "Select Target First",
-            data = nil
-        })
-    end
-    
-    -- 打开选择器
-    self.itemListBox:open(listItems, false, {
-        confirm = function(selectedItems)
-            if selectedItems[1].data then
-                if self.selectNodeData == nil then
-                    self.selectNodeData = {}
-                end
-                self.selectNodeData.selectedSlot = selectedItems[1].data.slotId
-                self.slotButton:setText("Slot " .. self.selectNodeData.selectedSlot)
-            end
-        end
-    })
-end
-
--- 更新槽位按钮
-function Triggers:updateSlotButton()
-    local selectedTriggerType = self:getSelectedTriggerType()
-    
-    if selectedTriggerType == TYPES.ITEM_COUNT_AT_SLOTS then
-        -- 显示槽位按钮
-        self.slotButton:setVisible(true)
-        
-        -- 如果有选中的槽位，显示槽位号码
-        if self.selectNodeData and self.selectNodeData.selectedSlot then
-            self.slotButton:setText("Slot " .. self.selectNodeData.selectedSlot)
-        else
-            -- 没有选中槽位时的默认状态
-            if self.selectNodeData and self.selectNodeData.targetPeripheralId then
-                self.slotButton:setText("Select Slot")
-            else
-                self.slotButton:setText("Select Target")
-            end
-        end
-    else
-        -- 隐藏槽位按钮
-        self.slotButton:setVisible(false)
-    end
-end
-
--- 获取选中的槽位
-function Triggers:getSelectedSlot()
-    if self.selectNodeData and self.selectNodeData.selectedSlot then
-        return self.selectNodeData.selectedSlot
-    end
-    return nil
-end
-
 -- 根据触发器类型更新UI
-function Triggers:updateUIForTriggerType()
+function TriggerView:updateUIForTriggerType()
     local selectedTriggerType = self:getSelectedTriggerType()
     
     if selectedTriggerType == TYPES.FLUID_COUNT then
@@ -722,13 +508,10 @@ function Triggers:updateUIForTriggerType()
     else
         self.itemLabel:setText("Item:")
     end
-    
-    -- 更新槽位按钮
-    self:updateSlotButton()
 end
 
 -- 更新节点详情区域
-function Triggers:updateDetails(nodeData)
+function TriggerView:updateDetails(nodeData)
     if nodeData == nil then
         -- 清空所有字段，设置为默认值
         self.selectNodeData = {}
@@ -736,16 +519,12 @@ function Triggers:updateDetails(nodeData)
         -- 重置UI元素
         self.nodeNameInput:setText("unnamed")
         self.displayedParentNodelabel:setText("root")
-        self.selectedTargetLabel:setText("")
         self.selectedItemLabel:setText("")
         self.amountInput:setText("0")
         
         -- 重置下拉菜单到默认选择
         self:setTriggerType(TYPES.ITEM_COUNT)
         self:setConditionType(CONDITION_TYPES.COUNT_GREATER)
-        
-        -- 重置槽位按钮
-        self.slotButton:setText("Slot")
         
         -- 更新UI状态
         self:updateUIForTriggerType()
@@ -756,7 +535,6 @@ function Triggers:updateDetails(nodeData)
         self.selectNodeData = {
             parentNodeId = nodeData.parentNodeId or "",
             parentNodeName = nodeData.parentNodeName or "root",
-            targetPeripheralId = nodeData.targetPeripheralId or "",
             name = nodeData.name or "unnamed",
             id = nodeData.id or OSUtils.timestampBaseIdGenerate(),
             triggerType = nodeData.triggerType or TYPES.ITEM_COUNT,
@@ -764,26 +542,17 @@ function Triggers:updateDetails(nodeData)
             itemName = nodeData.itemName or "",
             itemType = nodeData.itemType or "item",
             amount = nodeData.amount or 0,
-            selectedSlot = nodeData.selectedSlot,
         }
         
         -- 更新UI元素
         self.nodeNameInput:setText(self.selectNodeData.name)
         self.displayedParentNodelabel:setText(self.selectNodeData.parentNodeName)
-        self.selectedTargetLabel:setText(StringUtils.ellipsisMiddle(self.selectNodeData.targetPeripheralId or "", self.selectedTargetLabel:getWidth()))
         self.selectedItemLabel:setText(StringUtils.ellipsisMiddle(self.selectNodeData.itemName or "", self.selectedItemLabel:getWidth()))
         self.amountInput:setText(tostring(self.selectNodeData.amount))
         
         -- 设置下拉菜单选择
         self:setTriggerType(self.selectNodeData.triggerType)
         self:setConditionType(self.selectNodeData.triggerConditionType)
-        
-        -- 更新槽位按钮
-        if self.selectNodeData.selectedSlot then
-            self.slotButton:setText("Slot " .. self.selectNodeData.selectedSlot)
-        else
-            self.slotButton:setText("Slot")
-        end
         
         -- 更新UI状态
         self:updateUIForTriggerType()
@@ -793,7 +562,7 @@ function Triggers:updateDetails(nodeData)
 end
 
 -- 添加节点到树中
-function Triggers:addNodeToTree()
+function TriggerView:addNodeToTree()
     
     -- 更新selectNodeData中的当前值
     self.selectNodeData.name = self.nodeNameInput:getText() or "unnamed"
@@ -865,7 +634,7 @@ function Triggers:addNodeToTree()
 end
 
 -- 修改选中的节点
-function Triggers:modifySelectedNode()
+function TriggerView:modifySelectedNode()
     if not self.selectedTreeNode or not self.selectedTreeNode.data then
         return
     end
@@ -906,7 +675,7 @@ function Triggers:modifySelectedNode()
 end
 
 -- 将节点移动到新的父节点
-function Triggers:moveNodeToNewParent(node, newParentId)
+function TriggerView:moveNodeToNewParent(node, newParentId)
     if not node then
         return
     end
@@ -944,7 +713,7 @@ function Triggers:moveNodeToNewParent(node, newParentId)
 end
 
 -- 从父节点中移除节点（不依赖parent字段）
-function Triggers:removeNodeFromParent(nodeToRemove)
+function TriggerView:removeNodeFromParent(nodeToRemove)
     if not nodeToRemove then
         return false
     end
@@ -954,7 +723,7 @@ function Triggers:removeNodeFromParent(nodeToRemove)
 end
 
 -- 递归查找并移除节点
-function Triggers:removeNodeRecursive(parentNode, nodeToRemove)
+function TriggerView:removeNodeRecursive(parentNode, nodeToRemove)
     if not parentNode or not parentNode.children then
         return false
     end
@@ -978,7 +747,7 @@ function Triggers:removeNodeRecursive(parentNode, nodeToRemove)
 end
 
 -- 根据ID查找节点
-function Triggers:findNodeById(node, targetId)
+function TriggerView:findNodeById(node, targetId)
     if not node then
         return nil
     end
@@ -1002,7 +771,7 @@ function Triggers:findNodeById(node, targetId)
 end
 
 -- 验证selectNodeData的有效性
-function Triggers:validateSelectNodeData()
+function TriggerView:validateSelectNodeData()
     local errors = {}
     
     -- 检查name是否为空
@@ -1018,30 +787,6 @@ function Triggers:validateSelectNodeData()
     
     -- 根据trigger type验证
     if self.selectNodeData.triggerType == TYPES.ITEM_COUNT then
-        -- Item Count: peripheral必须是type 1或2，itemType必须是item
-        if not self.selectNodeData.targetPeripheralId or self.selectNodeData.targetPeripheralId == "" then
-            table.insert(errors, "Target peripheral is required for Item Count trigger")
-        else
-            -- 验证peripheral类型
-            PeripheralWrapper.reloadAll()
-            local peripheral = PeripheralWrapper.getByName(self.selectNodeData.targetPeripheralId)
-            if peripheral then
-                local peripheralTypes = peripheral.getTypes()
-                local isValidType = false
-                for _, pType in ipairs(peripheralTypes) do
-                    if pType == 1 or pType == 2 then
-                        isValidType = true
-                        break
-                    end
-                end
-                if not isValidType then
-                    table.insert(errors, "Target peripheral must be inventory type (type 1 or 2) for Item Count trigger")
-                end
-            else
-                table.insert(errors, "Target peripheral not found")
-            end
-        end
-        
         -- 验证itemType
         if not self.selectNodeData.itemType or self.selectNodeData.itemType ~= "item" then
             table.insert(errors, "Item type must be 'item' for Item Count trigger")
@@ -1053,30 +798,6 @@ function Triggers:validateSelectNodeData()
         end
         
     elseif self.selectNodeData.triggerType == TYPES.FLUID_COUNT then
-        -- Fluid Count: peripheral必须是type 3，itemType必须是fluid
-        if not self.selectNodeData.targetPeripheralId or self.selectNodeData.targetPeripheralId == "" then
-            table.insert(errors, "Target peripheral is required for Fluid Count trigger")
-        else
-            -- 验证peripheral类型
-            PeripheralWrapper.reloadAll()
-            local peripheral = PeripheralWrapper.getByName(self.selectNodeData.targetPeripheralId)
-            if peripheral then
-                local peripheralTypes = peripheral.getTypes()
-                local isValidType = false
-                for _, pType in ipairs(peripheralTypes) do
-                    if pType == 3 then
-                        isValidType = true
-                        break
-                    end
-                end
-                if not isValidType then
-                    table.insert(errors, "Target peripheral must be tank type (type 3) for Fluid Count trigger")
-                end
-            else
-                table.insert(errors, "Target peripheral not found")
-            end
-        end
-        
         -- 验证itemType
         if not self.selectNodeData.itemType or self.selectNodeData.itemType ~= "fluid" then
             table.insert(errors, "Item type must be 'fluid' for Fluid Count trigger")
@@ -1085,46 +806,6 @@ function Triggers:validateSelectNodeData()
         -- 验证itemName (fluid name)
         if not self.selectNodeData.itemName or self.selectNodeData.itemName == "" then
             table.insert(errors, "Fluid name is required for Fluid Count trigger")
-        end
-        
-    elseif self.selectNodeData.triggerType == TYPES.ITEM_COUNT_AT_SLOTS then
-        -- Item Count at Slots: peripheral必须是type 1，itemType必须是item
-        if not self.selectNodeData.targetPeripheralId or self.selectNodeData.targetPeripheralId == "" then
-            table.insert(errors, "Target peripheral is required for Item Count at Slots trigger")
-        else
-            -- 验证peripheral类型
-            PeripheralWrapper.reloadAll()
-            local peripheral = PeripheralWrapper.getByName(self.selectNodeData.targetPeripheralId)
-            if peripheral then
-                local peripheralTypes = peripheral.getTypes()
-                local isValidType = false
-                for _, pType in ipairs(peripheralTypes) do
-                    if pType == 1 then
-                        isValidType = true
-                        break
-                    end
-                end
-                if not isValidType then
-                    table.insert(errors, "Target peripheral must be inventory type (type 1) for Item Count at Slots trigger")
-                end
-            else
-                table.insert(errors, "Target peripheral not found")
-            end
-        end
-        
-        -- 验证itemType
-        if not self.selectNodeData.itemType or self.selectNodeData.itemType ~= "item" then
-            table.insert(errors, "Item type must be 'item' for Item Count at Slots trigger")
-        end
-        
-        -- 验证itemName
-        if not self.selectNodeData.itemName or self.selectNodeData.itemName == "" then
-            table.insert(errors, "Item name is required for Item Count at Slots trigger")
-        end
-        
-        -- 验证selectedSlot
-        if not self.selectNodeData.selectedSlot or self.selectNodeData.selectedSlot <= 0 then
-            table.insert(errors, "Valid slot selection is required for Item Count at Slots trigger")
         end
         
     else
@@ -1145,7 +826,7 @@ function Triggers:validateSelectNodeData()
 end
 
 -- 删除选中的节点
-function Triggers:deleteSelectedNode()
+function TriggerView:deleteSelectedNode()
     if not self.selectedTreeNode or not self.selectedTreeNode.data then
         return
     end
@@ -1167,7 +848,7 @@ function Triggers:deleteSelectedNode()
 end
 
 -- 根据ID删除节点
-function Triggers:deleteNodeById(nodeId)
+function TriggerView:deleteNodeById(nodeId)
     if not nodeId then
         return false
     end
@@ -1194,7 +875,7 @@ function Triggers:deleteNodeById(nodeId)
 end
 
 -- Save trigger statement and call the callback
-function Triggers:saveTriggerStatement()
+function TriggerView:saveTriggerStatement()
     if self.saveCallback then
         -- 直接使用原始树，因为没有循环引用了
         self.saveCallback(self.tree)
@@ -1203,9 +884,9 @@ function Triggers:saveTriggerStatement()
 end
 
 -- Close the trigger interface
-function Triggers:close()
+function TriggerView:close()
     self.frame:setVisible(false)
     self.saveCallback = nil -- Clear the callback
 end
 
-return Triggers
+return TriggerView

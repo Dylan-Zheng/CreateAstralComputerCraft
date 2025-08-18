@@ -2,6 +2,15 @@ local Logger = require("utils.Logger")
 
 local OSUtils = {}
 
+OSUtils.SIDES = {
+    TOP = "top",
+    BOTTOM = "bottom",
+    LEFT = "left",
+    RIGHT = "right",
+    FRONT = "front",
+    BACK = "back"
+}
+
 OSUtils.timestampBaseIdGenerate = function()
     local timestamp = os.epoch("utc")
     local random = math.random(1000, 9999)

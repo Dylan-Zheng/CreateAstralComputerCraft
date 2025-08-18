@@ -1,6 +1,5 @@
 local basalt = require("libraries.basalt")
 
-
 local ItemSelectedListBox = {}
 
 ItemSelectedListBox.__index = ItemSelectedListBox
@@ -111,6 +110,7 @@ function ItemSelectedListBox:open(items, multiSelection, callbacks)
     self.items = items or {}
     self.list:setItems(self.items)
     self.list:setMultiSelection(multiSelection or false)
+    self.list:setOffset(0)
     self.callbacks = callbacks or {}
     self.frame:setVisible(true)
 end
