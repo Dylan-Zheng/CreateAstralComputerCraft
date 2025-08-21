@@ -69,4 +69,16 @@ StringUtils.getAbbreviation = function(str)
     return abbr
 end
 
+StringUtils.matchWildcard = function(pattern, text)
+    if not pattern:find("*") then
+        return pattern == text
+    end
+    
+    -- Convert wildcard pattern to lua pattern
+    local luaPattern = pattern:gsub("%*", ".*")
+    luaPattern = "^" .. luaPattern .. "$"
+
+    return text:match(luaPattern) ~= nil
+end
+
 return StringUtils

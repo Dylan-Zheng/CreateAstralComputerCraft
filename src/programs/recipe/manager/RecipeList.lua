@@ -7,14 +7,6 @@ function RecipeList:new(pframe, x, y, width, height)
     
     local this = setmetatable({}, RecipeList)
 
-    local onSelectedCallback = nil
-
-    local onNewCallback = nil
-
-    local onDelCallback = nil
-
-    local getDisplayRecipeListFn = nil
-
     this.pframe = pframe
 
     this.selectedRecipe = nil
@@ -41,7 +33,7 @@ function RecipeList:new(pframe, x, y, width, height)
         :setForeground(colors.white)
         :onClick(function()
             local searchText = this.searchInput:getText():lower()
-            this.recipeList:setItems(getDisplayRecipeList(searchText))
+            this.recipeList:setItems(this.getDisplayRecipeListFn(searchText))
         end)
 
     this.clearBtn = this.innerFrame:addButton()
@@ -52,7 +44,7 @@ function RecipeList:new(pframe, x, y, width, height)
         :setForeground(colors.white)
         :onClick(function()
             this.searchInput:setText("")
-            this.recipeList:setItems(getDisplayRecipeList())
+            this.recipeList:setItems(this.getDisplayRecipeListFn())
         end)
 
     this.recipeList = this.innerFrame:addList()

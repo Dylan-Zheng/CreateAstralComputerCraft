@@ -10,45 +10,30 @@ local RecipeList = require("programs.recipe.manager.RecipeList")
 local Utils = require("programs.recipe.manager.Utils")
 local ScrollableFrame = require("elements.ScrollableFrame")
 
-local BasinRecipeTab = {}
-BasinRecipeTab.__index = BasinRecipeTab
-
-local BlazeBurnerDropDownNames = {
-    [StoreManager.BLAZE_BURN_TYPE.NONE] = "None",
-    [StoreManager.BLAZE_BURN_TYPE.LAVA] = "Lava",
-    [StoreManager.BLAZE_BURN_TYPE.HELLFIRE] = "Hellfire",
-}
-
-local getBlazeBurnerDisplayItems = function(selectedValue)
-    local items = {}
-    for key, value in pairs(StoreManager.BLAZE_BURN_TYPE) do
-        table.insert(items, {
-            text = BlazeBurnerDropDownNames[value],
-            value = value,
-            selected = value == selectedValue,
-        })
-    end
-    return items
-end
+local CommonRecipeTab = {}
+CommonRecipeTab.__index = CommonRecipeTab
 
 local getDisplayRecipeList = function(filterText)
-    local recipes = StoreManager.getAllRecipesByType(StoreManager.MACHINE_TYPES.basin)
+    local recipes = StoreManager.getAllRecipesByType(StoreManager.MACHINE_TYPES.common)
     local displayList = {}
 
+    if recipes == nil then
+        return displayList
+    end
     for _, recipe in ipairs(recipes) do
-        if not filterText or recipe.name:lower():find(filterText:lower()) then
+        local searchText = recipe.name or ""
+        if not filterText or searchText:lower():find(filterText:lower()) then
             table.insert(displayList, {
                 text = recipe.name,
                 id = recipe.id
             })
         end
     end
-
     return displayList
 end
 
-function BasinRecipeTab:new(pframe)
-    local this = setmetatable({}, BasinRecipeTab)
+function CommonRecipeTab:new(pframe)
+    local this = setmetatable({}, CommonRecipeTab)
 
     this.selectedRecipe = nil
 
@@ -62,24 +47,19 @@ function BasinRecipeTab:new(pframe)
 
     this.recipeListBox = RecipeList:new(this.innerFrame, 1, 1, 22, this.innerFrame:getHeight())
         :setOnSelected(function(recipe)
-            this.selectedRecipe = StoreManager.getRecipeByTypeAndId(StoreManager.MACHINE_TYPES.basin, recipe.id)
+            this.selectedRecipe = StoreManager.getRecipeByTypeAndId(StoreManager.MACHINE_TYPES.common, recipe.id)
             if this.selectedRecipe then
                 this.nameInput:setText(this.selectedRecipe.name or "")
-                this.inputItemLabel:setText("Input Item: " .. (this.selectedRecipe.input.items and #this.selectedRecipe.input.items or 0))
-                this.inputFluidLabel:setText("Input Fluid: " .. (this.selectedRecipe.input.fluids and #this.selectedRecipe.input.fluids or 0))
-                this.outputItemLabel:setText("Output Item: " .. (this.selectedRecipe.output.items and #this.selectedRecipe.output.items or 0))
-                this.outputFluidLabel:setText("Output Fluid: " .. (this.selectedRecipe.output.fluids and #this.selectedRecipe.output.fluids or 0))
-                this.outputItemKeepAmountLabel:setText("Keep Amount: " .. (this.selectedRecipe.output.keepItemsAmount or 0))
-                this.outputFluidKeepAmountLabel:setText("Keep Amount: " .. (this.selectedRecipe.output.keepFluidsAmount or 0))
-                this.blazeBurnerDropdown:setItems(getBlazeBurnerDisplayItems(this.selectedRecipe.blazeBurner))
+                this.inputItemLabel:setText("Input Item: " .. (this.selectedRecipe.input and this.selectedRecipe.input.items and #this.selectedRecipe.input.items or 0))
+                this.inputFluidLabel:setText("Input Fluid: " .. (this.selectedRecipe.input and this.selectedRecipe.input.fluids and #this.selectedRecipe.input.fluids or 0))
+                this.outputItemLabel:setText("Output Item: " .. (this.selectedRecipe.output and this.selectedRecipe.output.items and #this.selectedRecipe.output.items or 0))
+                this.outputFluidLabel:setText("Output Fluid: " .. (this.selectedRecipe.output and this.selectedRecipe.output.fluids and #this.selectedRecipe.output.fluids or 0))
             else
                 this.nameInput:setText("")
                 this.inputItemLabel:setText("Input Item:")
                 this.inputFluidLabel:setText("Input Fluid:")
                 this.outputItemLabel:setText("Output Item:")
                 this.outputFluidLabel:setText("Output Fluid:")
-                this.outputItemKeepAmountLabel:setText("Keep Amount:")
-                this.outputFluidKeepAmountLabel:setText("Keep Amount:")
             end
         end)
         :setOnNew(function()
@@ -89,8 +69,6 @@ function BasinRecipeTab:new(pframe)
             this.inputFluidLabel:setText("Input Fluid:")
             this.outputItemLabel:setText("Output Item:")
             this.outputFluidLabel:setText("Output Fluid:")
-            this.outputItemKeepAmountLabel:setText("Keep Amount:")
-            this.outputFluidKeepAmountLabel:setText("Keep Amount:")
         end)
         :setOnDel(function(recipe)
             if this.selectedRecipe == nil or this.selectedRecipe.id == nil then
@@ -98,25 +76,21 @@ function BasinRecipeTab:new(pframe)
                 return
             end
             this.confirmMessageBox:open("Confirm", "Are you sure to delete the selected recipe: " .. this.selectedRecipe.name .. "?", function()
-                local success, errMsg = StoreManager.removeRecipe(StoreManager.MACHINE_TYPES.basin, this.selectedRecipe.id)
+                local success, errMsg = StoreManager.removeRecipe(StoreManager.MACHINE_TYPES.common, this.selectedRecipe.id)
                 if not success then
                     this.messageBox:open("Error", "Failed to delete recipe! " .. tostring(errMsg))
                     return
                 end
-                    this.selectedRecipe = nil
-                    this.nameInput:setText("")
-                    this.inputItemLabel:setText("Input Item:")
-                    this.inputFluidLabel:setText("Input Fluid:")
-                    this.outputItemLabel:setText("Output Item:")
-                    this.outputFluidLabel:setText("Output Fluid:")
-                    this.outputItemKeepAmountLabel:setText("Keep Amount:")
-                    this.outputFluidKeepAmountLabel:setText("Keep Amount:")
-                    this.recipeListBox:refreshRecipeList()
+                this.selectedRecipe = nil
+                this.nameInput:setText("")
+                this.inputItemLabel:setText("Input Item:")
+                this.inputFluidLabel:setText("Input Fluid:")
+                this.outputItemLabel:setText("Output Item:")
+                this.outputFluidLabel:setText("Output Fluid:")
+                this.recipeListBox:refreshRecipeList()
             end)
         end)
         :setGetDisplayRecipeListFn(getDisplayRecipeList)
-
-    
 
     this.detailsFrame = this.innerFrame:addFrame()
         :setPosition(this.recipeListBox.innerFrame:getX() + this.recipeListBox.innerFrame:getWidth(), 2)
@@ -253,24 +227,9 @@ function BasinRecipeTab:new(pframe)
             end})
         end)
 
-    this.outputItemKeepAmountLabel = this.detailsFrame:addLabel()
-        :setText("Keep Amount:")
-        :setPosition(2, this.outputItemLabel:getY() + this.outputItemLabel:getHeight() + 1)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-
-
-    this.outputItemKeepAmountInput = this.detailsFrame:addInput()
-        :setPosition(this.outputItemKeepAmountLabel:getX() + this.outputItemKeepAmountLabel:getWidth() + 1, this.outputItemKeepAmountLabel:getY())
-        :setSize(this.detailsFrame:getWidth() - this.outputItemKeepAmountLabel:getWidth() - 4, 1)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-        :setPattern("[0-9]")
-        :setText("0")
-
     this.outputFluidLabel = this.detailsFrame:addLabel()
         :setText("Output Fluid:")
-        :setPosition(2, this.outputItemKeepAmountLabel:getY() + this.outputItemKeepAmountLabel:getHeight() + 1)
+        :setPosition(2, this.outputItemLabel:getY() + this.outputItemLabel:getHeight() + 1)
         :setBackground(colors.lightGray)
         :setForeground(colors.white)
 
@@ -307,36 +266,9 @@ function BasinRecipeTab:new(pframe)
             end})
         end)
 
-    this.outputFluidKeepAmountLabel = this.detailsFrame:addLabel()
-        :setText("Keep Amount:")
-        :setPosition(2, this.outputFluidLabel:getY() + this.outputFluidLabel:getHeight() + 1)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-
-    this.outputFluidKeepAmountInput = this.detailsFrame:addInput()
-        :setPosition(this.outputFluidKeepAmountLabel:getX() + this.outputFluidKeepAmountLabel:getWidth() + 1, this.outputFluidKeepAmountLabel:getY())
-        :setSize(this.detailsFrame:getWidth() - this.outputFluidKeepAmountLabel:getWidth() - 4, 1)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-        :setText("0")
-        :setPattern("[0-9]")
-
-    this.blazeBurnerLabel = this.detailsFrame:addLabel()
-        :setText("Blaze Burner:")
-        :setPosition(2, this.outputFluidKeepAmountLabel:getY() + this.outputFluidKeepAmountLabel:getHeight() + 1)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-
-    this.blazeBurnerDropdown = this.detailsFrame:addDropdown()
-        :setPosition(this.blazeBurnerLabel:getX() + this.blazeBurnerLabel:getWidth() + 1, this.blazeBurnerLabel:getY())
-        :setSize(this.detailsFrame:getWidth() - this.blazeBurnerLabel:getWidth() - 4, 1)
-        :setBackground(colors.lightGray)
-        :setForeground(colors.white)
-        :setItems(getBlazeBurnerDisplayItems(StoreManager.BLAZE_BURN_TYPE.NONE))
-
     local setTriggerBtnText = "Set Trigger"
     this.setTriggerBtn = this.detailsFrame:addButton()
-        :setPosition(2, this.blazeBurnerLabel:getY() + this.blazeBurnerLabel:getHeight() + 1)
+        :setPosition(2, this.outputFluidLabel:getY() + this.outputFluidLabel:getHeight() + 1)
         :setSize(#setTriggerBtnText, 1)
         :setText(setTriggerBtnText)
         :setBackground(colors.lightGray)
@@ -373,21 +305,17 @@ function BasinRecipeTab:new(pframe)
                 return
             end
             this.selectedRecipe.name = this.nameInput:getText()
-            this.selectedRecipe.output = this.selectedRecipe.output or {}
-            this.selectedRecipe.output.keepItemsAmount = tonumber(this.outputItemKeepAmountInput:getText()) or 0
-            this.selectedRecipe.output.keepFluidsAmount = tonumber(this.outputFluidKeepAmountInput:getText()) or 0
-            this.selectedRecipe.blazeBurner = this.blazeBurnerDropdown:getSelectedItem() and this.blazeBurnerDropdown:getSelectedItem().value or StoreManager.BLAZE_BURN_TYPE.NONE
 
             if this.selectedRecipe.id == nil then
                 -- New recipe
-                local success, errMsg = StoreManager.addRecipe(StoreManager.MACHINE_TYPES.basin, this.selectedRecipe)
+                local success, errMsg = StoreManager.addRecipe(StoreManager.MACHINE_TYPES.common, this.selectedRecipe)
                 if not success then
                     this.messageBox:open("Error", "Failed to add recipe! " .. tostring(errMsg))
                     return
                 end
             else
                 -- Existing recipe
-                local success, errMsg = StoreManager.updateRecipe(StoreManager.MACHINE_TYPES.basin, this.selectedRecipe)
+                local success, errMsg = StoreManager.updateRecipe(StoreManager.MACHINE_TYPES.common, this.selectedRecipe)
                 if not success then
                     this.messageBox:open("Error", "Failed to update recipe! " .. tostring(errMsg))
                     return
@@ -397,7 +325,7 @@ function BasinRecipeTab:new(pframe)
             this.messageBox:open("Success", "Recipe saved successfully.")
         end)
 
-        this.detailsFrame:addLabel():setPosition(1, saveBtn:getY() + 1):setText("")
+    this.detailsFrame:addLabel():setPosition(1, saveBtn:getY() + 1):setText("")
 
     ScrollableFrame.setScrollable(this.detailsFrame, true, colors.gray, colors.lightGray, colors.gray, colors.white)
     this.itemListBox = ItemSelectedListBox:new(this.pframe)
@@ -408,8 +336,8 @@ function BasinRecipeTab:new(pframe)
     return this
 end
 
-function BasinRecipeTab:init()
+function CommonRecipeTab:init()
     self.recipeListBox:refreshRecipeList()
 end
 
-return BasinRecipeTab
+return CommonRecipeTab

@@ -110,7 +110,7 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
             return items, itemsTable
         end
 
-        -- add transferItemFrom method (renamed from pullItem)
+        -- add transferItemTo method (renamed from pushItems)
         peripheral.transferItemTo = function(toPeripheral, itemName, amount)
             if toPeripheral.isDefaultInventory() then
                 local size = peripheral.size()
@@ -145,7 +145,7 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
             return 0
         end
 
-        -- add transferItemTo method (renamed from pushItem)
+        -- add transferItemFrom method (renamed from pullItems)
         peripheral.transferItemFrom = function(fromPeripheral, itemName, amount)
             if fromPeripheral.isDefaultInventory() then
                 local size = fromPeripheral.size()
@@ -179,8 +179,75 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
         end
         -- for UNLIMITED_PERIPHERAL_INVENTORY
     elseif peripheral.isUnlimitedPeripheralInventory() then
-        peripheral.getItems = function()
-            return peripheral.items()
+        if string.find(peripheral.getName(), "crafting_storage") then
+            peripheral.getItems = function()
+                local items = peripheral.items()
+                for _, item in ipairs(items) do
+                    item.displayName = item.name
+                    item.name = item.technicalName
+                end
+                return items
+            end
+
+            peripheral.getItemFinder = function(item_name)
+                local cacheIndex = nil
+                return function()
+                    local items = peripheral.items()
+                    if not items or #items == 0 then
+                        return nil -- No items in the container
+                    end
+                    if cacheIndex ~= nil and items[cacheIndex] and items[cacheIndex].technicalName == item_name then
+                        local item, index = items[cacheIndex], cacheIndex
+                        item.displayName = item.name
+                        item.name = item.technicalName
+                        return item, index
+                    end
+                    -- If cache is invalid or not set, find the item in the list again
+                    for index, item in ipairs(items) do
+                        if item.technicalName == item_name then
+                            cacheIndex = index -- Cache the index for future calls
+                            item.displayName = item.name
+                            item.name = item.technicalName
+                            return item, cacheIndex -- Return the found item
+                        end
+                    end
+                    return nil
+                end
+            end
+        else
+            peripheral.getItems = function()
+                return peripheral.items()
+            end
+
+            peripheral.getItemFinder = function(item_name)
+                local cacheIndex = nil
+                return function()
+                    local items = peripheral.items()
+                    if not items or #items == 0 then
+                        return nil -- No items in the container
+                    end
+                    if cacheIndex ~= nil and items[cacheIndex] and items[cacheIndex].name == item_name then
+                        local item, index = items[cacheIndex], cacheIndex
+                        return item, index
+                    end
+                    -- If cache is invalid or not set, find the item in the list again
+                    for index, item in ipairs(items) do
+                        if item.name == item_name then
+                            cacheIndex = index      -- Cache the index for future calls
+                            return item, cacheIndex -- Return the found item
+                        end
+                    end
+                    return nil
+                end
+            end
+        end
+
+        peripheral._itemFinders = {}
+        peripheral.getItem = function(item_name)
+            if peripheral._itemFinders[item_name] == nil then
+                peripheral._itemFinders[item_name] = peripheral.getItemFinder(item_name)
+            end
+            return peripheral._itemFinders[item_name]()
         end
 
         peripheral.transferItemTo = function(toPeripheral, itemName, amount)
@@ -207,7 +274,9 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
             return totalTransferred
         end
     else
-        error("Peripheral " .. peripheral.getName() .. " types " .. table.concat(PeripheralWrapper.getTypes(peripheral), ", ") .. " is not an inventory")
+        error("Peripheral " ..
+            peripheral.getName() ..
+            " types " .. table.concat(PeripheralWrapper.getTypes(peripheral), ", ") .. " is not an inventory")
     end
 end
 
@@ -234,6 +303,35 @@ PeripheralWrapper.addTankMethods = function(peripheral)
             fluidTable[tank.name].amount = fluidTable[tank.name].amount + tank.amount
         end
         return fluids
+    end
+
+    peripheral.getFluidFinder = function(fluid_name)
+        local cacheIndex = nil
+        return function()
+            local fluids = peripheral.tanks()
+            if not fluids or #fluids == 0 then
+                return nil -- No items in the container
+            end
+            if cacheIndex ~= nil and fluids[cacheIndex] and fluids[cacheIndex].name == fluid_name then
+                return fluids[cacheIndex], cacheIndex
+            end
+            -- If cache is invalid or not set, find the item in the list again
+            for index, fluid in ipairs(fluids) do
+                if fluid.name == fluid_name then
+                    cacheIndex = index    -- Cache the index for future calls
+                    return fluid, cacheIndex -- Return the found item
+                end
+            end
+            return nil
+        end
+    end
+
+    peripheral._fluidFinders = {}
+    peripheral.getFluid = function(fluidName)
+        if peripheral._fluidFinders[fluidName] == nil then
+            peripheral._fluidFinders[fluidName] = peripheral.getFluidFinder(fluidName)
+        end
+        return peripheral._fluidFinders[fluidName]()
     end
 
     peripheral.transferFluidTo = function(toPeripheral, fluidName, amount)
@@ -360,12 +458,16 @@ PeripheralWrapper.addPeripherals = function(peripheralName)
 end
 
 PeripheralWrapper.reloadAll = function()
+    PeripheralWrapper.loadedPeripherals = {}
     for _, name in ipairs(peripheral.getNames()) do
         PeripheralWrapper.addPeripherals(name)
     end
 end
 
 PeripheralWrapper.getAll = function()
+    if PeripheralWrapper.loadedPeripherals == nil then
+        PeripheralWrapper.reloadAll()
+    end
     return PeripheralWrapper.loadedPeripherals
 end
 
@@ -390,6 +492,20 @@ PeripheralWrapper.getByTypes = function(types)
                 matchedPeripherals[name] = peripheral
                 break
             end
+        end
+    end
+    return matchedPeripherals
+end
+
+PeripheralWrapper.getAllPeripheralsNameContains = function(partOfName)
+    if partOfName == nil or partOfName == "" then
+        error("Part of name input cannot be nil or empty")
+    end
+    local matchedPeripherals = {}
+    for name, peripheral in pairs(PeripheralWrapper.getAll()) do
+        Logger.debug("Checking peripheral: {}", name)
+        if string.find(name, partOfName) then
+            matchedPeripherals[name] = peripheral
         end
     end
     return matchedPeripherals

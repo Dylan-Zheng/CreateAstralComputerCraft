@@ -1,11 +1,36 @@
 local basalt = require("libraries.basalt")
+local Logger = require("utils.Logger")
+
+local function simpleMatch(str, pat)
+    -- 将模式转换为正则表达式
+    local regex = pat
+        :gsub("([%^%$%(%)%%%.%[%]%+%-])", "%%%1")     -- 转义特殊字符
+        :gsub("%*", ".*")                             -- * 转换为 .*
+        :gsub("%?", ".")                              -- ? 转换为 .
+
+    -- 在字符串中查找匹配
+    return str:find(regex) ~= nil
+end
+
+-- 通配符匹配函数
+local function wildcardMatch(text, pattern)
+    -- 如果没有通配符，使用普通的字符串查找
+    if not pattern:find("[*?]") then
+        return text:lower():find(pattern:lower(), 1, true) ~= nil
+    end
+
+    text = text:lower()
+    pattern = pattern:lower()
+
+    -- 简化的通配符匹配 - 支持子字符串匹配
+    return simpleMatch(text, pattern)
+end
 
 local ItemSelectedListBox = {}
 
 ItemSelectedListBox.__index = ItemSelectedListBox
 
 function ItemSelectedListBox:new(pframe, frameBg, bg, fg, searchPlaceholderColor)
-
     local instance = setmetatable({}, ItemSelectedListBox)
 
     frameBg = frameBg or colors.lightGray
@@ -26,26 +51,20 @@ function ItemSelectedListBox:new(pframe, frameBg, bg, fg, searchPlaceholderColor
 
     instance.searchInput = instance.frame:addInput()
         :setPosition(2, 2)
-        :setSize(instance.frame:getWidth() - 6, 1)
+        :setSize(instance.frame:getWidth() - 4, 1)
         :setBackground(bg)
         :setForeground(fg)
         :setPlaceholderColor(searchPlaceholderColor)
-        :setPlaceholder("Search...")
-
-    instance.searchBtn = instance.frame:addButton()
-        :setPosition(instance.searchInput:getX() + instance.searchInput:getWidth() + 1, instance.searchInput:getY())
-        :setSize(1, 1)
-        :setText("S")
-        :setBackground(bg)
-        :setForeground(fg)
-        :onClick(function()
-            local text = instance.searchInput:getText()
+        :setPlaceholder("Search... (* = any, ? = one char)")
+        :onChange("text", function(self, text)
+            -- 实时搜索功能
             if text == nil or text == "" then
                 instance.list:setItems(instance.items)
             else
                 local filtered = {}
                 for _, item in pairs(instance.items) do
-                    if item.text:find(text) then
+                    -- 搜索时保留已选择的项目或使用通配符匹配搜索文本的项目
+                    if item.selected or wildcardMatch(item.text, text) then
                         table.insert(filtered, item)
                     end
                 end
@@ -54,7 +73,7 @@ function ItemSelectedListBox:new(pframe, frameBg, bg, fg, searchPlaceholderColor
         end)
 
     instance.cleanInputBtn = instance.frame:addButton()
-        :setPosition(instance.searchBtn:getX() + instance.searchBtn:getWidth() + 1, instance.searchBtn:getY())
+        :setPosition(instance.searchInput:getX() + instance.searchInput:getWidth() + 1, instance.searchInput:getY())
         :setSize(1, 1)
         :setText("C")
         :setBackground(bg)
@@ -69,6 +88,17 @@ function ItemSelectedListBox:new(pframe, frameBg, bg, fg, searchPlaceholderColor
         :setSize(instance.frame:getWidth() - 2, instance.frame:getHeight() - instance.searchInput:getHeight() - 5)
         :setBackground(bg)
         :setForeground(fg)
+        :onSelect(function(_, _, item)
+            if instance.list:getMultiSelection() then
+                return
+            else
+                if self.selectedItem == item then
+                    item.selected = false
+                else
+                    self.selectedItem = item
+                end
+            end
+        end)
 
     instance.confirmBtn = instance.frame:addButton()
         :setText("Confirm")
@@ -83,7 +113,7 @@ function ItemSelectedListBox:new(pframe, frameBg, bg, fg, searchPlaceholderColor
                     table.insert(selectedItems, item)
                 end
             end
-            
+
             if instance.callbacks.confirm ~= nil then
                 instance.callbacks.confirm(selectedItems)
             end
@@ -111,8 +141,17 @@ function ItemSelectedListBox:open(items, multiSelection, callbacks)
     self.list:setItems(self.items)
     self.list:setMultiSelection(multiSelection or false)
     self.list:setOffset(0)
+    self.selectedItem = nil
     self.callbacks = callbacks or {}
     self.frame:setVisible(true)
+    if not multiSelection then
+        for _, item in ipairs(self.items) do
+            if item.selected then
+                self.selectedItem = item
+                return
+            end
+        end
+    end
 end
 
 function ItemSelectedListBox:close()

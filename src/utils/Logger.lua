@@ -3,6 +3,12 @@ local Logger = {
     printFunctions = {}
 }
 
+Logger.useDefault = function()
+    Logger.addPrintFunction(function(level, src, currentline, message)
+        print(string.format("[%s][%s:%d] %s", level, src, currentline, message))
+    end)
+end
+
 Logger.levels = {
     DEBUG = 1,
     INFO = 2,

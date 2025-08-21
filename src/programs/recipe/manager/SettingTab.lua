@@ -94,7 +94,7 @@ function SettingTab:new(pframe)
             local channel = tonumber(this.channelInput:getText())
             local secret = this.secretInput:getText()
             if side and channel and secret and peripheral.getType(side) == "modem" then
-                Communicator.listencloseAllChannels()
+                Communicator.closeAllChannels()
                 Logger.info(string.format("Modem setting saved: side=%s, channel=%d, secret=%s", side, channel, secret))
                 Communicator.open(side, channel, "recipe", secret)
                 Communicator.saveSettings()

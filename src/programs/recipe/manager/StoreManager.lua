@@ -5,16 +5,24 @@ local StoreManager = {
     machines = {
         depot = {},
         basin = {},
-        crafter = {},
-        turtle = {}
+        belt = {},
+        common = {}
     }
 }
 
 StoreManager.MACHINE_TYPES = {
     depot = "depot",
     basin = "basin",
-    crafter = "crafter",
-    turtle = "turtle"
+    belt = "belt",
+    common = "common",
+}
+
+StoreManager.DEPOT_TYPES = {
+    NONE = 0,
+    FIRE = 1,
+    SOUL_FIRE = 2,
+    LAVA = 3,
+    WATER = 4,
 }
 
 StoreManager.BLAZE_BURN_TYPE = {
@@ -138,6 +146,117 @@ local RecipeValidator = {
         
         return true
     end,
+    belt = function(recipe)
+        -- 检查recipe是否为table
+        if type(recipe) ~= "table" then
+            return false, "Belt recipe must be a table, got: " .. type(recipe)
+        end
+        
+        -- 检查input字段 (必需)
+        if recipe.input == nil or type(recipe.input) ~= "string" or recipe.input == "" then
+            return false, "Belt recipe input must be a non-empty string: " .. tostring(recipe.input)
+        end
+        
+        -- 检查output字段 (必需)
+        if recipe.output == nil or type(recipe.output) ~= "string" or recipe.output == "" then
+            return false, "Belt recipe output must be a non-empty string: " .. tostring(recipe.output)
+        end
+        
+        -- 检查incomplete字段 (可选)
+        if recipe.incomplete ~= nil then
+            if type(recipe.incomplete) ~= "string" or recipe.incomplete == "" then
+                return false, "Belt recipe incomplete must be a non-empty string if present: " .. tostring(recipe.incomplete)
+            end
+        end
+        
+        -- trigger字段是可选的，如果存在则检查其为table
+        if recipe.trigger ~= nil and type(recipe.trigger) ~= "table" then
+            return false, "Belt recipe trigger must be a table if present: " .. tostring(recipe.trigger)
+        end
+        
+        return true
+    end,
+    common = function(recipe)
+        -- 检查recipe是否为table
+        if type(recipe) ~= "table" then
+            return false, "Common recipe must be a table, got: " .. type(recipe)
+        end
+        
+        -- 检查name字段
+        if recipe.name == nil or type(recipe.name) ~= "string" or recipe.name == "" then
+            return false, "Common recipe name must be a non-empty string: " .. tostring(recipe.name)
+        end
+        
+        -- 检查input字段
+        if recipe.input == nil or type(recipe.input) ~= "table" then
+            return false, "Common recipe input must be a table: " .. tostring(recipe.input)
+        end
+        
+        -- 检查input.items和input.fluids
+        local hasInputItems = recipe.input.items and type(recipe.input.items) == "table" and #recipe.input.items > 0
+        local hasInputFluids = recipe.input.fluids and type(recipe.input.fluids) == "table" and #recipe.input.fluids > 0
+        
+        if not hasInputItems and not hasInputFluids then
+            return false, "Common recipe must have at least one input item or fluid"
+        end
+        
+        -- 验证input.items中的每个item都是字符串
+        if hasInputItems then
+            for i, item in ipairs(recipe.input.items) do
+                if type(item) ~= "string" or item == "" then
+                    return false, "Common recipe input item at index " .. i .. " must be a non-empty string: " .. tostring(item)
+                end
+            end
+        end
+        
+        -- 验证input.fluids中的每个fluid都是字符串
+        if hasInputFluids then
+            for i, fluid in ipairs(recipe.input.fluids) do
+                if type(fluid) ~= "string" or fluid == "" then
+                    return false, "Common recipe input fluid at index " .. i .. " must be a non-empty string: " .. tostring(fluid)
+                end
+            end
+        end
+        
+        -- 检查output字段
+        if recipe.output == nil or type(recipe.output) ~= "table" then
+            return false, "Common recipe output must be a table: " .. tostring(recipe.output)
+        end
+        
+        -- 检查output.items和output.fluids
+        local hasOutputItems = recipe.output.items and type(recipe.output.items) == "table" and #recipe.output.items > 0
+        local hasOutputFluids = recipe.output.fluids and type(recipe.output.fluids) == "table" and #recipe.output.fluids > 0
+        
+        if not hasOutputItems and not hasOutputFluids then
+            return false, "Common recipe must have at least one output item or fluid"
+        end
+        
+        -- 验证output.items中的每个item都是字符串
+        if hasOutputItems then
+            for i, item in ipairs(recipe.output.items) do
+                if type(item) ~= "string" or item == "" then
+                    return false, "Common recipe output item at index " .. i .. " must be a non-empty string: " .. tostring(item)
+                end
+            end
+        end
+        
+        -- 验证output.fluids中的每个fluid都是字符串
+        if hasOutputFluids then
+            for i, fluid in ipairs(recipe.output.fluids) do
+                if type(fluid) ~= "string" or fluid == "" then
+                    return false, "Common recipe output fluid at index " .. i .. " must be a non-empty string: " .. tostring(fluid)
+                end
+            end
+        end
+        
+        -- trigger字段是可选的，如果存在则检查其为table
+        if recipe.trigger ~= nil and type(recipe.trigger) ~= "table" then
+            return false, "Common recipe trigger must be a table if present: " .. tostring(recipe.trigger)
+        end
+        
+        return true
+    end,
+   
 }
 
 local logIfNotValidMachineType = function(machineType)

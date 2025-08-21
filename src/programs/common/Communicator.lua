@@ -47,6 +47,7 @@ function CommunicationChannel:new(side, channel, protocol, secret)
                 payload = data
             }, this.secret)
         }
+        Logger.debug("Sending message on side {}, channel {}: {}", this.side, this.channel, textutils.serialize(message))
         this.modem.transmit(this.channel, this.channel, textutils.serialize(message))
     end
 
@@ -108,6 +109,7 @@ end
 function Communicator.listen()
     while true do
         local _, side, channel, _, serializedMessage, distance = os.pullEvent("modem_message")
+        Logger.debug("Received message on side {}, channel {}, distance {}: {}", side, channel, distance, serializedMessage)
         if isOpened(side, channel) then
             local success, err = pcall(function()
                 handleSerializedMessage(side, channel, serializedMessage)
@@ -138,7 +140,7 @@ function Communicator.close(side, channel, protocol)
     end
 end
 
-function Communicator.listencloseAllChannels()
+function Communicator.closeAllChannels()
     for side, channels in pairs(Communicator.communicationChannels) do
         for channel, protocols in pairs(channels) do
             for protocol, instance in pairs(protocols) do
@@ -201,6 +203,21 @@ function Communicator.getSettings()
     end
     return settings
 end
+
+
+function Communicator.getOpenChannels()
+    local openChannels = {}
+    for side, channels in pairs(Communicator.communicationChannels) do
+        for channel, protocols in pairs(channels) do
+            for protocol, _ in pairs(protocols) do
+                table.insert(openChannels, Communicator.communicationChannels[side][channel][protocol])
+            end
+        end
+    end
+    return openChannels
+end
+
+
 
 return Communicator
 

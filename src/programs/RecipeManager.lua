@@ -4,9 +4,12 @@ local DepotRecipeTab = require("programs.recipe.manager.DepotRecipeTab")
 local StoreManager = require("programs.recipe.manager.StoreManager")
 local SnapShot = require("programs.common.SnapShot")
 local Logger = require("utils.Logger")
-local SettringTab = require("programs.recipe.manager.SettingTab")
+local SettingTab = require("programs.recipe.manager.SettingTab")
 local Communicator = require("programs.common.Communicator")
 local BasinRecipeTab = require("programs.recipe.manager.BasinRecipeTab")
+local BeltRecipeTab = require("programs.recipe.manager.BeltRecipeTab")
+local CommonRecipeTab = require("programs.recipe.manager.CommonRecipeTab")
+
 
 -- LOGGER SETUP
 local basaltLogEnabled = true
@@ -33,6 +36,13 @@ end
 StoreManager.init()
 SnapShot.takeSnapShot()
 Communicator.loadSettings()
+local openChannel = Communicator.getOpenChannels()[1]
+
+openChannel.addMessageHandler("getRecipesReq", function(eventCode, payload, senderId)
+    local recipes = StoreManager.getAllRecipesByType(payload)
+    openChannel.send("getRecipesRes", recipes, senderId)
+end)
+
 
 local main = basalt.getMainFrame()
 
@@ -41,13 +51,19 @@ local tabView = TabView:new(main:addFrame(), 1, 1, main:getWidth(), main:getHeig
 local depotTab = tabView:createTab("Depot")
 local basinTab = tabView:createTab("Basin")
 local beltTab = tabView:createTab("Belt")
+local commonTab = tabView:createTab("Common")
 
 local settingTab = tabView:createTab("Settings")
 
 DepotRecipeTab:new(depotTab.frame):init()
 BasinRecipeTab:new(basinTab.frame):init()
-SettringTab:new(settingTab.frame):init()
+BeltRecipeTab:new(beltTab.frame):init()
+CommonRecipeTab:new(commonTab.frame):init()
+SettingTab:new(settingTab.frame):init()
 
 tabView:init()
 
-basalt.run()
+parallel.waitForAll(
+    basalt.run,
+    Communicator.listen
+)

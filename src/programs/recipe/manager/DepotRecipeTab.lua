@@ -13,6 +13,27 @@ local Utils = require("programs.recipe.manager.Utils")
 ---@diagnostic disable-next-line: undefined-global
 local colors = colors
 
+local DepotTypeName = {
+    [StoreManager.DEPOT_TYPES.NONE] = "None",
+    [StoreManager.DEPOT_TYPES.FIRE] = "Fire",
+    [StoreManager.DEPOT_TYPES.SOUL_FIRE] = "Soul Fire",
+    [StoreManager.DEPOT_TYPES.LAVA] = "Lava",
+    [StoreManager.DEPOT_TYPES.WATER] = "Water",
+}
+
+local getDepotTypeDisplayItems = function(selectedValue)
+    local items = {}
+    for key, value in pairs(StoreManager.DEPOT_TYPES) do
+        table.insert(items, {
+            text = DepotTypeName[value],
+            value = value,
+            selected = value == selectedValue,
+        })
+    end
+    return items
+end
+
+
 DepotRecipeTab = {}
 DepotRecipeTab.__index = DepotRecipeTab
 
@@ -62,6 +83,7 @@ function DepotRecipeTab:new(pframe)
                 if this.selectedRecipe then
                     this.inputLabel:setText("In: " .. StringUtils.ellipsisMiddle(this.selectedRecipe.input, this.inputLabel:getWidth() - 4))
                     this.outputLabel:setText("Out: " .. #this.selectedRecipe.output)
+                    this.depotTypeDropdown:setItems(getDepotTypeDisplayItems(this.selectedRecipe.depotType))
                 else
                     this.messageBox:open("Error", "Recipe not found!")
                 end
@@ -69,8 +91,9 @@ function DepotRecipeTab:new(pframe)
                 this.selectedRecipe = nil
                 this.inputLabel:setText("In: ")
                 this.outputLabel:setText("Out: ")
+                this.depotTypeDropdown:setItems(getDepotTypeDisplayItems())
             end
-            this:refreshRecipeList()
+            this.recipeListBox:refreshRecipeList()
         end)
         :setOnNew(function()
             this:addNewRecipe()
@@ -89,7 +112,7 @@ function DepotRecipeTab:new(pframe)
                     this.selectedRecipe = nil
                     this.inputLabel:setText("In: ")
                     this.outputLabel:setText("Out: ")
-                    this:refreshRecipeList()
+                    this.recipeListBox:refreshRecipeList()
                     this.messageBox:open("Success", "Recipe deleted successfully!")
             end)
             
@@ -171,10 +194,27 @@ function DepotRecipeTab:new(pframe)
                 this.itemListBox:close()
             end})
         end)
-    
+
+    this.typeLabel = this.detailFrame:addLabel()
+        :setPosition(2, this.outputLabel:getY() + this.outputLabel:getHeight() + 1)
+        :setText("Type: ")
+        :setBackground(colors.gray)
+        :setForeground(colors.white)
+
+    this.depotTypeDropdown = this.detailFrame:addDropdown()
+        :setPosition(this.typeLabel:getX() + this.typeLabel:getWidth() + 1, this.typeLabel:getY())
+        :setBackground(colors.lightGray)
+        :setForeground(colors.white)
+        :setSize(10, 1)
+        :setItems(getDepotTypeDisplayItems())
+        :onSelect(function(_, _, item)
+            this.selectedRecipe = this.selectedRecipe or {}
+            this.selectedRecipe.depotType = item.value
+        end)
+
     local setTiggerBtnText = "Set Trigger"
     this.setTriggerBtn = this.detailFrame:addButton()
-        :setPosition(2, this.outputLabel:getY() + this.outputLabel:getHeight() + 1)
+        :setPosition(2, this.depotTypeDropdown:getY() + this.depotTypeDropdown:getHeight() + 1)
         :setSize(#setTiggerBtnText, 1)
         :setText(setTiggerBtnText)
         :setBackground(colors.lightGray)
@@ -217,7 +257,7 @@ function DepotRecipeTab:new(pframe)
                     this.messageBox:open("Error", "Failed to update recipe!")
                     return
                 end
-                this:refreshRecipeList()
+                this.recipeListBox:refreshRecipeList()
                 this.messageBox:open("Success", "Recipe updated successfully!")
                 return
             else 
@@ -227,17 +267,14 @@ function DepotRecipeTab:new(pframe)
                     return
                 end
                 this.selectedRecipe.id = id
-                this:refreshRecipeList()
+                this.recipeListBox:refreshRecipeList()
                 this.messageBox:open("Success", "Recipe added successfully!")
             end
         end)
 
     this.itemListBox = ItemSelectedListBox:new(this.pframe)
-
     this.trigger = TriggerView:new(this.pframe)
-
     this.messageBox = MessageBox:new(this.pframe)
-
     this.confirmMessageBox = ConfirmMessageBox:new(this.pframe)
     
     return this
@@ -247,10 +284,6 @@ function DepotRecipeTab:addNewRecipe()
     self.selectedRecipe = nil
     self.inputLabel:setText("In: ")
     self.outputLabel:setText("Out: ")
-end
-
-function DepotRecipeTab:refreshRecipeList()
-    self.recipeListBox:refreshRecipeList()
 end
 
 function DepotRecipeTab:init()
