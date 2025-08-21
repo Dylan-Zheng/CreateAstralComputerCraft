@@ -2,11 +2,20 @@ local Logger = require("utils.Logger")
 
 local PeripheralWrapper = {}
 
-TYPES = {
+local TYPES = {
     DEFAULT_INVENTORY = 1,
     UNLIMITED_PERIPHERAL_INVENTORY = 2,
     TANK = 3,
     REDSTONE = 4,
+}
+
+PeripheralWrapper.SIDES = {
+    "top",
+    "bottom",
+    "left",
+    "right",
+    "front",
+    "back"
 }
 
 PeripheralWrapper.loadedPeripherals = {}
@@ -29,6 +38,10 @@ PeripheralWrapper.wrap = function(peripheralName)
 
     if wrappedPeripheral.isTank() then
         PeripheralWrapper.addTankMethods(wrappedPeripheral)
+    end
+
+    if wrappedPeripheral.isRedstone() then
+        PeripheralWrapper.addRedstoneMethods(wrappedPeripheral)
     end
 
     return wrappedPeripheral
@@ -108,6 +121,14 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
                 itemsTable[item.name].count = itemsTable[item.name].count + item.count
             end
             return items, itemsTable
+        end
+
+        peripheral.getItem = function(item_name)
+            local _, itemsTable = peripheral.getItems()
+            if itemsTable[item_name] then
+                return itemsTable[item_name]
+            end
+            return nil
         end
 
         -- add transferItemTo method (renamed from pushItems)
@@ -365,6 +386,55 @@ PeripheralWrapper.addTankMethods = function(peripheral)
     end
 end
 
+PeripheralWrapper.addRedstoneMethods = function(peripheral)
+    if peripheral == nil then
+        error("Peripheral cannot be nil")
+    end
+
+    if not PeripheralWrapper.isRedstone(peripheral) then
+        error("Peripheral is not a redstone peripheral")
+    end
+
+    peripheral.setOutputSignals = function(isEmited, ...)
+        local sides = {...}
+         if not sides or #sides == 0 then
+            sides = PeripheralWrapper.SIDES
+        end
+        for _, side in ipairs(sides) do
+            if peripheral.getOutput(side) ~= isEmited then
+                peripheral.setOutput(side, isEmited)
+            end
+        end
+    end
+
+    peripheral.getInputSignals = function(...)
+        local sides = {...}
+        if not sides or #sides == 0 then
+            sides = PeripheralWrapper.SIDES
+        end
+        for _, side in ipairs(sides) do
+            if peripheral.getInput(side) then
+                return true
+            end
+        end
+        return false
+    end
+
+    peripheral.getOutputSignals = function(...)
+        local sides = {...}
+        if not sides or #sides == 0 then
+            sides = PeripheralWrapper.SIDES
+        end
+        local signals = {}
+        for _, side in ipairs(sides) do
+            signals[side] = peripheral.getOutput(side)
+        end
+        return signals
+    end
+
+
+end
+
 PeripheralWrapper.getTypes = function(peripheral)
     if peripheral._types ~= nil then
         return peripheral._types
@@ -379,7 +449,7 @@ PeripheralWrapper.getTypes = function(peripheral)
     if peripheral.tanks ~= nil then
         table.insert(types, TYPES.TANK)
     end
-    if peripheral.redstone ~= nil then
+    if peripheral.getInput ~= nil then
         table.insert(types, TYPES.REDSTONE)
     end
     peripheral._types = types

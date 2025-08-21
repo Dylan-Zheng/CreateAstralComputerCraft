@@ -5,6 +5,8 @@ local OSUtils = require("utils.OSUtils")
 local Trigger = require("programs.recipe.manager.Trigger")
 local PeripheralWrapper = require("wrapper.PeripheralWrapper")
 local TableUtils = require("utils.TableUtils")
+local BlazeBurnerFeederFactory = require("programs.common.BlazeBurnerFeederFactory")
+local StoreManager = require("programs.recipe.manager.StoreManager")
 
 Logger.useDefault()
 Logger.currentLevel = Logger.levels.ERROR
@@ -64,26 +66,54 @@ local function saveRecipes()
     OSUtils.saveTable("cabasin_recipes", recipes)
 end
 
-local getAllBasinAndBlazeBurnerNames = function()
+local getflattedGroupMachineNames = function(groups)
+    local flatted = {}
+
+    for _, group in pairs(groups) do
+        for _, basin in ipairs(group.basins) do
+            flatted[basin] = true
+        end
+        for _, burner in ipairs(group.blazeBurners) do
+            flatted[burner] = true
+        end
+        for _, redstone in ipairs(group.redstones or {}) do
+            flatted[redstone] = true
+        end
+    end
+
+    return flatted
+end
+
+local getGroupMachineNames = function(flattedExistingGroupMachines)
     local names = peripheral.getNames()
     local basins = {}
     local blazeBurners = {}
-    for _, name in pairs(names) do 
-        if name:find("basin") then
-            table.insert(basins, name)
-        end
-        if name:find("blaze_burner") then
-            table.insert(blazeBurners, name)
+    local redstones = {}
+    for _, name in pairs(names) do
+        if not flattedExistingGroupMachines[name] then
+            if name:find("basin") then
+                table.insert(basins, name)
+            end
+            if name:find("blaze_burner") then
+                table.insert(blazeBurners, name)
+            end
+            if name:find("redrouter") then
+                table.insert(redstones, name)
+            end
         end
     end
-    return basins, blazeBurners
+    return {
+        basins = basins,
+        blazeBurners = blazeBurners,
+        redstones = redstones
+    }
 end
 
 -- Display recipes with pagination
 local function displayRecipes(recipeList, page, pageSize, location)
     page = page or 1
     pageSize = pageSize or 5
-    location = location or "local"  -- Default to local for backward compatibility
+    location = location or "local" -- Default to local for backward compatibility
 
     if #recipeList == 0 then
         print("No recipes found.")
@@ -126,17 +156,10 @@ local function displayGroups()
     end
 
     print("=== Basin Groups ===")
+    local groupCount = 0
     for name, group in pairs(groups) do
-        print(string.format("%s:", name))
-        print(string.format("  Basins: %d", #group.basins))
-        for i, basin in ipairs(group.basins) do
-            print(string.format("    %d. %s", i, basin))
-        end
-        print(string.format("  Blaze Burners: %d", #group.blazeBurners))
-        for i, burner in ipairs(group.blazeBurners) do
-            print(string.format("    %d. %s", i, burner))
-        end
-        print()
+        groupCount = groupCount + 1
+        print(string.format("%d. %s - Basins: %d, Burners: %d", groupCount, name, #group.basins, #group.blazeBurners))
     end
 end
 
@@ -156,7 +179,6 @@ local function displayLinks()
     for recipeName, groupName in pairs(recipeLinks) do
         print(string.format("%s -> %s", recipeName, groupName))
     end
-    print(string.format("Total: %d links", linkCount))
 end
 
 -- Command line interface
@@ -177,29 +199,29 @@ local function createCommandLine()
         end
 
         local groupName = parts[2]
-        
+
         -- Get current basins and blaze burners
-        local basins, blazeBurners = getAllBasinAndBlazeBurnerNames()
-        
+
         -- Create group entry
-        groups[groupName] = {
-            name = groupName,
-            basins = basins,
-            blazeBurners = blazeBurners
-        }
-        
+        local group = getGroupMachineNames(getflattedGroupMachineNames(groups))
+        groups[groupName] = group
+
         -- Save to file
         saveGroups()
-        
+
         print("Group '" .. groupName .. "' created successfully:")
         print("  Name: " .. groupName)
-        print("  Basins: " .. #basins .. " found")
-        for i, basin in ipairs(basins) do
+        print("  Basins: " .. #group.basins .. " found")
+        for i, basin in ipairs(group.basins) do
             print("    " .. i .. ". " .. basin)
         end
-        print("  Blaze Burners: " .. #blazeBurners .. " found")
-        for i, burner in ipairs(blazeBurners) do
+        print("  Blaze Burners: " .. #group.blazeBurners .. " found")
+        for i, burner in ipairs(group.blazeBurners) do
             print("    " .. i .. ". " .. burner)
+        end
+        print("  Redstone Routers: " .. #group.redstones .. " found")
+        for i, redstone in ipairs(group.redstones) do
+            print("    " .. i .. ". " .. redstone)
         end
     end, function(text)
         -- No completion for group names as they are user-defined
@@ -225,7 +247,7 @@ local function createCommandLine()
         end
 
         local listType = parts[2]
-        
+
         if listType == "group" then
             displayGroups()
         elseif listType == "link" then
@@ -235,10 +257,10 @@ local function createCommandLine()
                 print("Usage: list recipe [remote|local] [page]")
                 return
             end
-            
+
             local location = parts[3]
             local page = tonumber(parts[4]) or 1
-            
+
             if location == "local" then
                 displayRecipes(recipes, page, nil, "local")
             elseif location == "remote" then
@@ -261,8 +283,8 @@ local function createCommandLine()
         for word in text:gmatch("%S+") do
             table.insert(parts, word)
         end
-
-        if #parts == 1 then
+        local numOfParts = #parts
+        if (numOfParts == 0 or numOfParts == 1) and text:sub(-1) ~= " " then
             -- 补全第二个参数 "recipe" or "group" or "link"
             local partial = text:match("%S+$") or ""
             local suggestions = {}
@@ -273,12 +295,12 @@ local function createCommandLine()
                 end
             end
             return suggestions
-        elseif #parts == 2 then
+        elseif (numOfParts == 1 and text:sub(-1) == " ") or numOfParts == 2 then
             -- 如果第二个参数是 "recipe"，补全第三个参数 "remote"/"local" (CADepot order)
-            if parts[2] == "recipe" then
+            if parts[1] == "recipe" then
                 local partial = text:match("%S+$") or ""
                 local suggestions = {}
-                local options = { "remote", "local" }  -- CADepot order: remote first
+                local options = { "remote", "local" } -- CADepot order: remote first
                 for _, option in ipairs(options) do
                     if option:find(partial, 1, true) == 1 then
                         table.insert(suggestions, option:sub(#partial + 1))
@@ -354,10 +376,10 @@ local function createCommandLine()
                 newRecipe[key] = value
             end
         end
-        
+
         table.insert(recipes, newRecipe)
         saveRecipes()
-        
+
         print("Recipe '" .. recipeName .. "' added successfully")
     end, function(text)
         -- Provide completion for remote recipe names
@@ -489,6 +511,130 @@ local function createCommandLine()
         return suggestions
     end)
 
+    -- Delete command (group or recipe)
+    cli:addCommand("delete", "Delete group or recipe", function(input)
+        local parts = {}
+        for word in input:gmatch("%S+") do
+            table.insert(parts, word)
+        end
+
+        if #parts < 3 then
+            print("Usage: delete [group|recipe] [name]")
+            print("Examples:")
+            print("  delete group production     - Delete group by name")
+            print("  delete recipe SteelRecipe   - Delete recipe by name")
+            return
+        end
+
+        local deleteType = parts[2]
+        local itemName = parts[3]
+
+        if deleteType == "group" then
+            -- Check if group exists
+            if not groups[itemName] then
+                print("Group '" .. itemName .. "' not found")
+                print("Use 'list group' to see available groups")
+                return
+            end
+
+            -- Check if any recipes are linked to this group
+            local linkedRecipes = {}
+            for recipeName, groupName in pairs(recipeLinks) do
+                if groupName == itemName then
+                    table.insert(linkedRecipes, recipeName)
+                end
+            end
+
+            if #linkedRecipes > 0 then
+                print("Cannot delete group '" .. itemName .. "' - it has linked recipes:")
+                for i, recipeName in ipairs(linkedRecipes) do
+                    print("  " .. i .. ". " .. recipeName)
+                end
+                print("Use 'unlink [recipe_name]' to unlink recipes first")
+                return
+            end
+
+            -- Delete group
+            groups[itemName] = nil
+            saveGroups()
+            print("Group '" .. itemName .. "' deleted successfully")
+        elseif deleteType == "recipe" then
+            -- Check if recipe exists locally
+            local recipeIndex = nil
+            for i, recipe in ipairs(recipes) do
+                if recipe.name == itemName then
+                    recipeIndex = i
+                    break
+                end
+            end
+
+            if not recipeIndex then
+                print("Recipe '" .. itemName .. "' not found in local recipes")
+                print("Use 'list recipe local' to see available recipes")
+                return
+            end
+
+            -- Check if recipe is linked to any group
+            if recipeLinks[itemName] then
+                print("Cannot delete recipe '" ..
+                    itemName .. "' - it is linked to group '" .. recipeLinks[itemName] .. "'")
+                print("Use 'unlink " .. itemName .. "' to unlink the recipe first")
+                return
+            end
+
+            -- Delete recipe
+            table.remove(recipes, recipeIndex)
+            saveRecipes()
+            print("Recipe '" .. itemName .. "' deleted successfully")
+        else
+            print("Usage: delete [group|recipe] [name]")
+            print("Available delete types: group, recipe")
+        end
+    end, function(text)
+        local parts = {}
+        for word in text:gmatch("%S+") do
+            table.insert(parts, word)
+        end
+
+        local numOfParts = #parts
+        if (numOfParts == 0 or numOfParts == 1) and text:sub(-1) ~= " " then
+            -- Provide completion for delete type: group or recipe
+            local suggestions = {}
+            local partial = text:match("%S+$") or ""
+            local options = { "group", "recipe" }
+            for _, option in ipairs(options) do
+                if option:find(partial, 1, true) == 1 then
+                    table.insert(suggestions, option:sub(#partial + 1))
+                end
+            end
+            return suggestions
+        elseif (numOfParts == 1 and text:sub(-1) == " ") or numOfParts == 2 then
+            -- Provide completion based on delete type
+            local deleteType = parts[1]
+            local partial = text:match("%S+$") or ""
+            local suggestions = {}
+
+            if deleteType == "group" then
+                -- Provide completion for group names
+                for groupName, _ in pairs(groups) do
+                    if groupName:find(partial, 1, true) == 1 then
+                        table.insert(suggestions, groupName:sub(#partial + 1))
+                    end
+                end
+            elseif deleteType == "recipe" then
+                -- Provide completion for local recipe names
+                for _, recipe in ipairs(recipes) do
+                    if recipe.name and recipe.name:find(partial, 1, true) == 1 then
+                        local suggestion = recipe.name:sub(#partial + 1)
+                        table.insert(suggestions, suggestion)
+                    end
+                end
+            end
+            return suggestions
+        end
+        return {}
+    end)
+
     -- Reboot command
     cli:addCommand("reboot", "Reboot the program", function(input)
         print("Rebooting...")
@@ -527,7 +673,7 @@ if args ~= nil and #args > 0 then
                 print("CaBasin Manager - Network Mode")
                 print("Connected to channel " .. channel .. " on " .. side)
                 print("Type 'help' for available commands or 'exit' to quit")
-                
+
                 while true do
                     local success, result = pcall(function() cli:run() end)
                     if not success then
@@ -539,4 +685,145 @@ if args ~= nil and #args > 0 then
     end
 end
 
+PeripheralWrapper.reloadAll()
+local storages = PeripheralWrapper.getAllPeripheralsNameContains("crafting_storage")
+local key = next(storages) -- Assuming only one storage is available
+local storage = storages[key]
 
+
+
+local linkedRecipes = {}
+local init = function()
+    local recipeMap = {}
+    for name, recipe in pairs(recipes) do
+        recipeMap[recipe.name] = recipe
+    end
+
+    -- Initialize LinkedRecipe with existing links
+    for recipeName, groupName in pairs(recipeLinks) do
+        linkedRecipes[recipeName] = {
+            recipe = recipeMap[recipeName],
+        }
+        local group = {
+            name = groupName,
+            basins = {},
+            blazeBurnerFeeders = {},
+            redstones = {},
+        }
+
+        for _, basin in ipairs(groups[groupName].basins) do
+            print("Wrapping basin: " .. basin)
+            table.insert(group.basins, PeripheralWrapper.wrap(basin))
+        end
+
+        for _, blazeBurner in ipairs(groups[groupName].blazeBurners) do
+            print("Wrapping blaze burner: " .. blazeBurner)
+            local blazeBurner = PeripheralWrapper.wrap(blazeBurner)
+            local fuelType    = nil;
+            if recipeMap[recipeName].blazeBurner == StoreManager.BLAZE_BURN_TYPE.LAVA then
+                fuelType = BlazeBurnerFeederFactory.Types.LAVA
+            elseif recipeMap[recipeName].blazeBurner == StoreManager.BLAZE_BURN_TYPE.HELLFIRE then
+                fuelType = BlazeBurnerFeederFactory.Types.HELLFIRE
+            end
+            local feeder = BlazeBurnerFeederFactory.getFeeder(storage, blazeBurner, fuelType)
+            table.insert(group.blazeBurnerFeeders, feeder)
+        end
+
+        for _, redstone in ipairs(groups[groupName].redstones) do
+            print("Wrapping redstone: " .. redstone)
+            table.insert(group.redstones, PeripheralWrapper.wrap(redstone))
+        end
+
+        linkedRecipes[recipeName].group = group
+    end
+end
+
+local getItemFromStorage = function(type, itemName)
+    if type == "item" then
+        return storage.getItem(itemName)
+    elseif type == "fluid" then
+        return storage.getFluid(itemName)
+    end
+    return nil
+end
+
+local runLink = function(link)
+    local recipe = link.recipe
+    local group = link.group
+    for _, basin in ipairs(group.basins) do
+        local input = recipe.input
+        if input.items ~= nil then
+            -- Transfer items to basin
+            for _, itemName in ipairs(input.items) do
+                local basinItem = basin.getItem(itemName)
+                local count = basinItem and basinItem.count or 0
+                if count < 16 then
+                    storage.transferItemTo(basin, itemName, 16 - count)
+                end
+            end
+        end
+        if input.fluids ~= nil then
+            for _, fluidName in ipairs(input.fluids) do
+                local basinFluid = basin.getFluid(fluidName)
+                local amount = basinFluid and basinFluid.amount or 0
+                if amount < 1000 then
+                    storage.transferFluidTo(basin, fluidName, 1000 - amount)
+                end
+            end
+        end
+        local output = recipe.output
+        if output.items ~= nil then
+            -- Transfer items from basin to storage
+            for _, itemName in ipairs(output.items) do
+                local itemKeepAmount = recipe.output.keepItemsAmount or 0
+                local item = basin.getItem(itemName)
+                if item ~= nil and item.count > itemKeepAmount then
+                    storage.transferItemFrom(basin, itemName, item.count - itemKeepAmount)
+                end
+            end
+        end
+        if output.fluids ~= nil then
+            -- Transfer fluids from basin to storage
+            for _, fluidName in ipairs(output.fluids) do
+                local fluidKeepAmount = recipe.output.keepFluidsAmount or 0
+                local fluid = basin.getFluid(fluidName)
+                if fluid ~= nil and fluid.amount > fluidKeepAmount then
+                    storage.transferFluidFrom(basin, fluidName, fluid.amount - fluidKeepAmount)
+                end
+            end
+        end
+    end
+end
+
+local feedBlazeBurners = function(feeders)
+    for _, feeder in ipairs(feeders) do
+        feeder:feed()
+    end
+end
+
+local checkAndRunRecipes = function()
+    while true do
+        for recipeName, link in pairs(linkedRecipes) do
+            local isTriggered = Trigger.eval(link.recipe.trigger, getItemFromStorage)
+            local redstones = link.group.redstones
+
+            if redstones ~= nil then
+                for _, red in ipairs(redstones) do
+                    red.setOutputSignals(not isTriggered)
+                end
+            end
+
+            if (isTriggered) then
+                runLink(link)
+                feedBlazeBurners(link.group.blazeBurnerFeeders)
+            end
+        end
+        os.sleep(1)
+    end
+end
+
+init()
+
+while true do
+    checkAndRunRecipes()
+end
