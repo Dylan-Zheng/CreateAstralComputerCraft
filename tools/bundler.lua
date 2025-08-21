@@ -142,12 +142,12 @@ local function bundle()
         for _, req in ipairs(allRequires) do
             if modules[req] then
                 table.insert(outputMinified,
-                    string.format('modules["%s"] = function() %s end\n', req, modules[req].minified))
-                table.insert(output, string.format('modules["%s"] = function() %s end\n', req, modules[req].content))
+                    string.format('modules["%s"] = function(...) %s end\n', req, modules[req].minified))
+                table.insert(output, string.format('modules["%s"] = function(...) %s end\n', req, modules[req].content))
             end
         end
-        table.insert(outputMinified, string.format('return modules["%s"]()', name))
-        table.insert(output, string.format('return modules["%s"]()', name))
+        table.insert(outputMinified, string.format('return modules["%s"](...)\n', name))
+        table.insert(output, string.format('return modules["%s"](...)\n', name))
 
         local path = "build/" .. name:gsub("^programs%.", "") .. ".lua"
         local out = io.open(path, "w")
