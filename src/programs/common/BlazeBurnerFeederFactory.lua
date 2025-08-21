@@ -21,7 +21,7 @@ BlazeBurnerFeederFactory.getFeeder = function(from, to, type, refill_time_interv
         start_timestamp = 0,
         reset = function(self)
             self.start_timestamp = os.epoch()
-        end,s
+        end,
         feed = function(self)
             local curr_timestamp = os.epoch()
             if curr_timestamp - self.start_timestamp >= refill_time_interval then
