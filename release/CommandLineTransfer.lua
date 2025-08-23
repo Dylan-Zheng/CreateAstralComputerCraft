@@ -2,12 +2,12 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CommandLineTransfer"] = function() local _b=require("wrapper.PeripheralWrapper")
+modules["programs.CommandLineTransfer"] = function(...) local _b=require("wrapper.PeripheralWrapper")
 local ab=require("programs.command.CommandLine")
 local bb=require("programs.command.transfer.ListCommand")local cb=require("programs.command.transfer.JobCommand")
 local db=require("programs.command.transfer.JobDataManager")
 local _c=require("programs.command.transfer.JobExecutor")local ac=require("utils.Logger")
-local bc=require("programs.command.transfer.SnapShot")ac.currentLevel=ac.levels.ERROR
+local bc=require("programs.common.SnapShot")ac.currentLevel=ac.levels.ERROR
 ac.addPrintFunction(function(dc,_d,ad,bd)
 bd=string.format("[%s:%d] %s",_d,ad,bd)
 if dc==ac.levels.DEBUG then print("DEBUG: "..bd)elseif
@@ -35,109 +35,158 @@ _d[2]=="set"then return
 ab.filterSuggestions({"debug","info","warn","error"},_d[3])end;return{}end)
 parallel.waitForAll(function()while true do cc:run()end end,function()while true do _c.run()
 os.sleep(0.2)end end) end
-modules["wrapper.PeripheralWrapper"] = function() local c=require("utils.Logger")local d={}
-TYPES={DEFAULT_INVENTORY=1,UNLIMITED_PERIPHERAL_INVENTORY=2,TANK=3,REDSTONE=4}d.loadedPeripherals={}
-d.wrap=function(_a)if _a==nil or _a==""then
-error("Peripheral name cannot be nil or empty")end;local aa=peripheral.wrap(_a)
-d.addBaseMethods(aa,_a)if aa==nil then
-error("Failed to wrap peripheral '".._a.."'")end;if aa.isInventory()then
-d.addInventoryMethods(aa)end
-if aa.isTank()then d.addTankMethods(aa)end;return aa end
-d.addBaseMethods=function(_a,aa)
-if _a==nil then error("Peripheral cannot be nil")end;if _a.getTypes==nil then _a._types=d.getTypes(_a)
-_a.getTypes=function()return _a._types end end
-if _a.isTypeOf==nil then _a.isTypeOf=function(ba)return
-d.isTypeOf(_a,ba)end end;_a._id=aa;_a.getName=function()return _a._id end
-_a.getId=function()return _a._id end;_a._isInventory=d.isInventory(_a)
-_a.isInventory=function()return _a._isInventory end;_a._isTank=d.isTank(_a)
-_a.isTank=function()return _a._isTank end;_a._isRedstone=d.isRedstone(_a)
-_a.isRedstone=function()return _a._isRedstone end
-_a._isDefaultInventory=d.isTypeOf(_a,TYPES.DEFAULT_INVENTORY)
-_a.isDefaultInventory=function()return _a._isDefaultInventory end
-_a._isUnlimitedPeripheralInventory=d.isTypeOf(_a,TYPES.UNLIMITED_PERIPHERAL_INVENTORY)
-_a.isUnlimitedPeripheralInventory=function()return _a._isUnlimitedPeripheralInventory end end
-d.addInventoryMethods=function(_a)
-if d.isTypeOf(_a,TYPES.DEFAULT_INVENTORY)then
-_a.getItems=function()local aa={}local ba={}
-for ca,da in
-pairs(_a.list())do if aa[da.name]==nil then aa[da.name]={name=da.name,count=0}
-table.insert(ba,aa[da.name])end;aa[da.name].count=
-aa[da.name].count+da.count end;return ba,aa end
-_a.transferItemTo=function(aa,ba,ca)
-if aa.isDefaultInventory()then local da=_a.size()local _b=0
-for slot=1,da do
-local ab=_a.getItemDetail(slot)
-if ab~=nil and ab.name==ba then local bb=math.min(ab.count,ca)
-local cb=_a.pushItems(aa.getName(),slot,bb)if cb==0 then return _b end;_b=_b+cb;ca=ca-cb end;if ca<=0 then return _b end end;return _b elseif aa.isUnlimitedPeripheralInventory()then local da=0
-while da<ca do
-local _b=aa.pullItem(_a.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end;return 0 end
-_a.transferItemFrom=function(aa,ba,ca)
-if aa.isDefaultInventory()then local da=aa.size()local _b=0
-for slot=1,da do
-local ab=aa.getItemDetail(slot)
-if ab~=nil and ab.name==ba then
-local bb=_a.pullItems(aa.getName(),slot,ca)if bb==0 then return _b end;_b=_b+bb;ca=ca-bb end;if ca<=0 then return _b end end;return _b elseif aa.isUnlimitedPeripheralInventory()then local da=0
-while da<ca do
-local _b=aa.pushItem(_a.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end end elseif _a.isUnlimitedPeripheralInventory()then
-_a.getItems=function()return _a.items()end
-_a.transferItemTo=function(aa,ba,ca)local da=0
-while da<ca do
-local _b=_a.pushItem(aa.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end
-_a.transferItemFrom=function(aa,ba,ca)local da=0
-while da<ca do
-local _b=_a.pullItem(aa.getName(),ba,ca-da)if _b==0 then return da end;da=da+_b end;return da end else
-error("Peripheral "..
-_a.getName().." types "..table.concat(d.getTypes(_a),", ")..
-" is not an inventory")end end
-d.addTankMethods=function(_a)
-if _a==nil then error("Peripheral cannot be nil")end
-if not d.isTank(_a)then error("Peripheral is not a tank")end
-_a.getFluids=function()local aa={}local ba={}
-for ca,da in pairs(_a.tanks())do
-if aa[da.name]==nil then
-aa[da.name]={name=da.name,amount=0}table.insert(ba,aa[da.name])end
-aa[da.name].amount=aa[da.name].amount+da.amount end;return ba end
-_a.transferFluidTo=function(aa,ba,ca)if aa.isTank()==false then
-error(string.format("Peripheral '%s' is not a tank",aa.getName()))end;local da=0;while da<ca do local _b=_a.pushFluid(aa.getName(),
-ca-da,ba)if _b==0 then return da end
-da=da+_b end;return da end
-_a.transferFluidFrom=function(aa,ba,ca)if aa.isTank()==false then
-error(string.format("Peripheral '%s' is not a tank",aa.getName()))end;local da=0;while da<ca do local _b=_a.pullFluid(aa.getName(),
-ca-da,ba)if _b==0 then return da end
-da=da+_b end;return da end end
-d.getTypes=function(_a)if _a._types~=nil then return _a._types end;local aa={}if _a.list~=nil then
-table.insert(aa,TYPES.DEFAULT_INVENTORY)end;if _a.items~=nil then
-table.insert(aa,TYPES.UNLIMITED_PERIPHERAL_INVENTORY)end;if _a.tanks~=nil then
-table.insert(aa,TYPES.TANK)end;if _a.redstone~=nil then
-table.insert(aa,TYPES.REDSTONE)end;_a._types=aa;return aa end
-d.isInventory=function(_a)local aa=d.getTypes(_a)
-if _a._isInventory~=nil then return _a._isInventory end;for ba,ca in ipairs(aa)do
-if ca==TYPES.DEFAULT_INVENTORY or
-ca==TYPES.UNLIMITED_PERIPHERAL_INVENTORY then _a._isInventory=true;return true end end
-_a._isInventory=false;return false end
-d.isTank=function(_a)local aa=d.getTypes(_a)
-if _a._isTank~=nil then return _a._isTank end
-for ba,ca in ipairs(aa)do if ca==TYPES.TANK then _a._isTank=true;return true end end;_a._isTank=false;return false end
-d.isRedstone=function(_a)local aa=d.getTypes(_a)
-if _a._isRedstone~=nil then return _a._isRedstone end;for ba,ca in ipairs(aa)do
-if ca==TYPES.REDSTONE then _a._isRedstone=true;return true end end;_a._isRedstone=false;return false end
-d.isTypeOf=function(_a,aa)
-if _a==nil then error("Peripheral cannot be nil")end;if aa==nil then error("Type cannot be nil")end
-local ba=d.getTypes(_a)for ca,da in ipairs(ba)do if da==aa then return true end end;return false end
-d.addPeripherals=function(_a)
-if _a==nil then error("Peripheral name cannot be nil")end;local aa=d.wrap(_a)
-if aa~=nil then d.loadedPeripherals[_a]=aa end end
-d.reloadAll=function()for _a,aa in ipairs(peripheral.getNames())do
-d.addPeripherals(aa)end end;d.getAll=function()return d.loadedPeripherals end
-d.getByName=function(_a)
+modules["wrapper.PeripheralWrapper"] = function(...) local d=require("utils.Logger")local _a={}
+local aa={DEFAULT_INVENTORY=1,UNLIMITED_PERIPHERAL_INVENTORY=2,TANK=3,REDSTONE=4}_a.SIDES={"top","bottom","left","right","front","back"}
+_a.loadedPeripherals={}
+_a.wrap=function(ba)if ba==nil or ba==""then
+error("Peripheral name cannot be nil or empty")end;local ca=peripheral.wrap(ba)
+_a.addBaseMethods(ca,ba)if ca==nil then
+error("Failed to wrap peripheral '"..ba.."'")end;if ca.isInventory()then
+_a.addInventoryMethods(ca)end
+if ca.isTank()then _a.addTankMethods(ca)end
+if ca.isRedstone()then _a.addRedstoneMethods(ca)end;return ca end
+_a.addBaseMethods=function(ba,ca)
+if ba==nil then error("Peripheral cannot be nil")end;if ba.getTypes==nil then ba._types=_a.getTypes(ba)
+ba.getTypes=function()return ba._types end end
+if ba.isTypeOf==nil then ba.isTypeOf=function(da)return
+_a.isTypeOf(ba,da)end end;ba._id=ca;ba.getName=function()return ba._id end
+ba.getId=function()return ba._id end;ba._isInventory=_a.isInventory(ba)
+ba.isInventory=function()return ba._isInventory end;ba._isTank=_a.isTank(ba)
+ba.isTank=function()return ba._isTank end;ba._isRedstone=_a.isRedstone(ba)
+ba.isRedstone=function()return ba._isRedstone end
+ba._isDefaultInventory=_a.isTypeOf(ba,aa.DEFAULT_INVENTORY)
+ba.isDefaultInventory=function()return ba._isDefaultInventory end
+ba._isUnlimitedPeripheralInventory=_a.isTypeOf(ba,aa.UNLIMITED_PERIPHERAL_INVENTORY)
+ba.isUnlimitedPeripheralInventory=function()return ba._isUnlimitedPeripheralInventory end end
+_a.addInventoryMethods=function(ba)
+if _a.isTypeOf(ba,aa.DEFAULT_INVENTORY)then
+ba.getItems=function()local ca={}local da={}
+for _b,ab in
+pairs(ba.list())do if ca[ab.name]==nil then ca[ab.name]={name=ab.name,count=0}
+table.insert(da,ca[ab.name])end;ca[ab.name].count=
+ca[ab.name].count+ab.count end;return da,ca end
+ba.getItem=function(ca)local da,_b=ba.getItems()if _b[ca]then return _b[ca]end;return nil end
+ba.transferItemTo=function(ca,da,_b)
+if ca.isDefaultInventory()then local ab=ba.size()local bb=0
+for slot=1,ab do
+local cb=ba.getItemDetail(slot)
+if cb~=nil and cb.name==da then local db=math.min(cb.count,_b)
+local _c=ba.pushItems(ca.getName(),slot,db)if _c==0 then return bb end;bb=bb+_c;_b=_b-_c end;if _b<=0 then return bb end end;return bb elseif ca.isUnlimitedPeripheralInventory()then local ab=0
+while ab<_b do
+local bb=ca.pullItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end;return 0 end
+ba.transferItemFrom=function(ca,da,_b)
+if ca.isDefaultInventory()then local ab=ca.size()local bb=0
+for slot=1,ab do
+local cb=ca.getItemDetail(slot)
+if cb~=nil and cb.name==da then
+local db=ba.pullItems(ca.getName(),slot,_b)if db==0 then return bb end;bb=bb+db;_b=_b-db end;if _b<=0 then return bb end end;return bb elseif ca.isUnlimitedPeripheralInventory()then local ab=0
+while ab<_b do
+local bb=ca.pushItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end end elseif ba.isUnlimitedPeripheralInventory()then
 if
-_a==nil then error("Peripheral name cannot be nil")end
-if d.loadedPeripherals[_a]==nil then d.addPeripherals(_a)end;return d.loadedPeripherals[_a]end
-d.getByTypes=function(_a)if _a==nil or#_a==0 then
-error("Types cannot be nil or empty")end;local aa={}
-for ba,ca in pairs(d.getAll())do for da,_b in ipairs(_a)do if
-d.isTypeOf(ca,_b)then aa[ba]=ca;break end end end;return aa end;return d end
-modules["programs.command.CommandLine"] = function() local ba={}ba.__index=ba
+string.find(ba.getName(),"crafting_storage")then
+ba.getItems=function()local ca=ba.items()for da,_b in ipairs(ca)do _b.displayName=_b.name
+_b.name=_b.technicalName end;return ca end
+ba.getItemFinder=function(ca)local da=nil
+return
+function()local _b=ba.items()
+if not _b or#_b==0 then return nil end
+if da~=nil and _b[da]and _b[da].technicalName==ca then
+local ab,bb=_b[da],da;ab.displayName=ab.name;ab.name=ab.technicalName;return ab,bb end
+for ab,bb in ipairs(_b)do if bb.technicalName==ca then da=ab;bb.displayName=bb.name
+bb.name=bb.technicalName;return bb,da end end;return nil end end else ba.getItems=function()return ba.items()end
+ba.getItemFinder=function(ca)
+local da=nil
+return
+function()local _b=ba.items()if not _b or#_b==0 then return nil end
+if
+da~=nil and _b[da]and _b[da].name==ca then local ab,bb=_b[da],da;return ab,bb end
+for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return nil end end end;ba._itemFinders={}
+ba.getItem=function(ca)if ba._itemFinders[ca]==nil then
+ba._itemFinders[ca]=ba.getItemFinder(ca)end
+return ba._itemFinders[ca]()end
+ba.transferItemTo=function(ca,da,_b)local ab=0
+while ab<_b do
+local bb=ba.pushItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end
+ba.transferItemFrom=function(ca,da,_b)local ab=0
+while ab<_b do
+local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end else
+error("Peripheral "..
+ba.getName().." types "..table.concat(_a.getTypes(ba),", ")..
+" is not an inventory")end end
+_a.addTankMethods=function(ba)
+if ba==nil then error("Peripheral cannot be nil")end
+if not _a.isTank(ba)then error("Peripheral is not a tank")end
+ba.getFluids=function()local ca={}local da={}
+for _b,ab in pairs(ba.tanks())do
+if ca[ab.name]==nil then
+ca[ab.name]={name=ab.name,amount=0}table.insert(da,ca[ab.name])end
+ca[ab.name].amount=ca[ab.name].amount+ab.amount end;return da end
+ba.getFluidFinder=function(ca)local da=nil
+return
+function()local _b=ba.tanks()
+if not _b or#_b==0 then return nil end
+if da~=nil and _b[da]and _b[da].name==ca then return _b[da],da end
+for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return nil end end;ba._fluidFinders={}
+ba.getFluid=function(ca)if ba._fluidFinders[ca]==nil then
+ba._fluidFinders[ca]=ba.getFluidFinder(ca)end
+return ba._fluidFinders[ca]()end
+ba.transferFluidTo=function(ca,da,_b)if ca.isTank()==false then
+error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pushFluid(ca.getName(),
+_b-ab,da)if bb==0 then return ab end
+ab=ab+bb end;return ab end
+ba.transferFluidFrom=function(ca,da,_b)if ca.isTank()==false then
+error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pullFluid(ca.getName(),
+_b-ab,da)if bb==0 then return ab end
+ab=ab+bb end;return ab end end
+_a.addRedstoneMethods=function(ba)
+if ba==nil then error("Peripheral cannot be nil")end;if not _a.isRedstone(ba)then
+error("Peripheral is not a redstone peripheral")end
+ba.setOutputSignals=function(ca,...)local da={...}if
+not da or#da==0 then da=_a.SIDES end;for _b,ab in ipairs(da)do if ba.getOutput(ab)~=ca then
+ba.setOutput(ab,ca)end end end
+ba.getInputSignals=function(...)local ca={...}if not ca or#ca==0 then ca=_a.SIDES end
+for da,_b in
+ipairs(ca)do if ba.getInput(_b)then return true end end;return false end
+ba.getOutputSignals=function(...)local ca={...}if not ca or#ca==0 then ca=_a.SIDES end
+local da={}for _b,ab in ipairs(ca)do da[ab]=ba.getOutput(ab)end;return da end end
+_a.getTypes=function(ba)if ba._types~=nil then return ba._types end;local ca={}if ba.list~=nil then
+table.insert(ca,aa.DEFAULT_INVENTORY)end;if ba.items~=nil then
+table.insert(ca,aa.UNLIMITED_PERIPHERAL_INVENTORY)end;if ba.tanks~=nil then
+table.insert(ca,aa.TANK)end;if ba.getInput~=nil then
+table.insert(ca,aa.REDSTONE)end;ba._types=ca;return ca end
+_a.isInventory=function(ba)local ca=_a.getTypes(ba)
+if ba._isInventory~=nil then return ba._isInventory end;for da,_b in ipairs(ca)do
+if
+_b==aa.DEFAULT_INVENTORY or _b==aa.UNLIMITED_PERIPHERAL_INVENTORY then ba._isInventory=true;return true end end
+ba._isInventory=false;return false end
+_a.isTank=function(ba)local ca=_a.getTypes(ba)
+if ba._isTank~=nil then return ba._isTank end
+for da,_b in ipairs(ca)do if _b==aa.TANK then ba._isTank=true;return true end end;ba._isTank=false;return false end
+_a.isRedstone=function(ba)local ca=_a.getTypes(ba)
+if ba._isRedstone~=nil then return ba._isRedstone end;for da,_b in ipairs(ca)do
+if _b==aa.REDSTONE then ba._isRedstone=true;return true end end;ba._isRedstone=false;return false end
+_a.isTypeOf=function(ba,ca)
+if ba==nil then error("Peripheral cannot be nil")end;if ca==nil then error("Type cannot be nil")end
+local da=_a.getTypes(ba)for _b,ab in ipairs(da)do if ab==ca then return true end end;return false end
+_a.addPeripherals=function(ba)
+if ba==nil then error("Peripheral name cannot be nil")end;local ca=_a.wrap(ba)
+if ca~=nil then _a.loadedPeripherals[ba]=ca end end
+_a.reloadAll=function()_a.loadedPeripherals={}for ba,ca in ipairs(peripheral.getNames())do
+_a.addPeripherals(ca)end end
+_a.getAll=function()
+if _a.loadedPeripherals==nil then _a.reloadAll()end;return _a.loadedPeripherals end
+_a.getByName=function(ba)
+if ba==nil then error("Peripheral name cannot be nil")end
+if _a.loadedPeripherals[ba]==nil then _a.addPeripherals(ba)end;return _a.loadedPeripherals[ba]end
+_a.getByTypes=function(ba)if ba==nil or#ba==0 then
+error("Types cannot be nil or empty")end;local ca={}
+for da,_b in pairs(_a.getAll())do for ab,bb in ipairs(ba)do if
+_a.isTypeOf(_b,bb)then ca[da]=_b;break end end end;return ca end
+_a.getAllPeripheralsNameContains=function(ba)if ba==nil or ba==""then
+error("Part of name input cannot be nil or empty")end;local ca={}
+for da,_b in pairs(_a.getAll())do
+d.debug("Checking peripheral: {}",da)if string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
+modules["programs.command.CommandLine"] = function(...) local ba={}ba.__index=ba
 function ba.filterSuggestions(cb,db)local _c={}
 local ac=string.lower(db or"")for bc,cc in ipairs(cb)do local dc=string.lower(cc)
 if dc:find(ac,1,true)==1 then
@@ -172,7 +221,7 @@ if ac then return ac.func(cb)else local bc=bb(self,db)
 if bc then print(
 "Unknown command: "..db)
 print("Do you mean \""..bc.."\"?")else print("Unknown command: "..db)end end end;function ba:changeSuffix(cb)self.suffix=cb end;return ba end
-modules["programs.command.transfer.ListCommand"] = function() local ba=require("programs.command.transfer.SnapShot")
+modules["programs.command.transfer.ListCommand"] = function(...) local ba=require("programs.common.SnapShot")
 local ca=require("programs.command.CommandLine")local da={}local function _b(cb)local db={}
 for _c in string.gmatch(cb,"%S+")do table.insert(db,_c)end;return db end
 local function ab(cb,db,_c)_c=_c or 10
@@ -203,7 +252,7 @@ if#db==2 then
 local ac={"inventory","tank","item","fluid","reload"}return ca.filterSuggestions(ac,db[2])elseif#db==3 and
 string.lower(db[2])~="reload"then
 local ac={"1","2","3","4","5","6","7","8","9","10"}return ca.filterSuggestions(ac,db[3])end;return _c end;return da end
-modules["programs.command.transfer.JobCommand"] = function() local ab=require("programs.command.transfer.SnapShot")
+modules["programs.command.transfer.JobCommand"] = function(...) local ab=require("programs.common.SnapShot")
 local bb=require("programs.command.transfer.JobDataManager")local cb=require("programs.command.CommandLine")local db={}
 local function _c(ad)local bd={}for cd in
 string.gmatch(ad,"%S+")do table.insert(bd,cd)end;return bd end
@@ -287,14 +336,16 @@ print("Usage: add <input|output|filter> [inventory|tank] <name1> [name2] ...")en
 if#cd==2 then
 local __a={"input","output","filter"}return cb.filterSuggestions(__a,cd[2])elseif#cd==3 and(cd[2]=="input"or
 cd[2]=="output")then
-local __a={"inventory","tank"}return cb.filterSuggestions(__a,cd[3])elseif#cd>=4 then local __a=cd[#cd]
+local __a={"inventory","tank"}return cb.filterSuggestions(__a,cd[3])elseif
+#cd>=2 and cd[2]=="filter"then print(cd[2],cd[3])local __a={}for a_a,b_a in pairs(ab.items)do
+table.insert(__a,a_a)end;for a_a,b_a in pairs(ab.fluids)do
+table.insert(__a,a_a)end
+return cb.filterSuggestions(__a,lastArg)elseif#cd>=4 and(cd[2]=="input"or cd[2]=="output")then
 if
-cd[2]=="input"or cd[2]=="output"then
-if cd[3]=="inventory"then local a_a={}for b_a,c_a in
-pairs(ab.inventories)do table.insert(a_a,b_a)end;return
-cb.filterSuggestions(a_a,__a)elseif cd[3]=="tank"then local a_a={}for b_a,c_a in pairs(ab.tanks)do
-table.insert(a_a,b_a)end;return cb.filterSuggestions(a_a,__a)end elseif cd[2]=="filter"then local a_a={}
-for b_a,c_a in pairs(ab.items)do table.insert(a_a,b_a)end;return cb.filterSuggestions(a_a,__a)end end;return dd end)
+cd[3]=="inventory"then local __a={}for a_a,b_a in pairs(ab.inventories)do
+table.insert(__a,a_a)end
+return cb.filterSuggestions(__a,lastArg)elseif cd[3]=="tank"then local __a={}
+for a_a,b_a in pairs(ab.tanks)do table.insert(__a,a_a)end;return cb.filterSuggestions(__a,lastArg)end end;return dd end)
 bc:addCommand("remove","Remove components from job. Usage: remove <input|output> <inventory|tank> <name1> [name2]... OR remove filter <name1> [name2]...",function(bd)
 local cd=_c(bd)if#cd<3 then
 print("Usage: remove <input|output|filter> [inventory|tank] <name1> [name2] ...")return end
@@ -382,7 +433,7 @@ local dd={"list","create","edit","save","enable","disable","delete"}return cb.fi
 #bd==3 and(bd[2]=="edit"or bd[2]==
 "delete"or bd[2]=="enable"or
 bd[2]=="disable")then local dd=ac()return cb.filterSuggestions(dd,bd[3])end;return cd end;return db end
-modules["programs.command.transfer.JobDataManager"] = function() local ba=require("utils.OSUtils")
+modules["programs.command.transfer.JobDataManager"] = function(...) local ba=require("utils.OSUtils")
 local ca=require("programs.command.transfer.JobExecutor")local da=require("utils.Logger")
 local _b={INPUT_INVENTORY="inputInventory",OUTPUT_INVENTORY="outputInventory",INPUT_TANK="inputTank",OUTPUT_TANK="outputTank",FILTER="filter"}
 local ab={[_b.INPUT_INVENTORY]="inputInventories",[_b.OUTPUT_INVENTORY]="outputInventories",[_b.INPUT_TANK]="inputTanks",[_b.OUTPUT_TANK]="outputTanks",[_b.FILTER]="filters"}local bb={jobs={},JOB_COMPONENT_TYPES=_b}
@@ -408,7 +459,7 @@ _c.isFilterBlacklist=db end
 function bb:disableJob(cb)
 local db=self:getJob(cb)if not db then return end;db.enabled=false;self:save()end;function bb:enableJob(cb)local db=self:getJob(cb)if not db then return end;db.enabled=true
 self:save()end;return bb end
-modules["programs.command.transfer.JobExecutor"] = function() local da=require("wrapper.PeripheralWrapper")
+modules["programs.command.transfer.JobExecutor"] = function(...) local da=require("wrapper.PeripheralWrapper")
 local _b=require("utils.Logger")local ab={}ab.executableJobs={}local function bb(bc,cc)
 if not bc:find("*")then return bc==cc end;local dc=bc:gsub("%*",".*")dc="^"..dc.."$"
 return cc:match(dc)~=nil end;local function cb(bc,cc)
@@ -458,12 +509,15 @@ for bc,cc in pairs(ab.executableJobs)do
 if cc.enable then local dc,_d=pcall(cc.exec)if not dc then
 cc.enable=false
 print(string.format("Job '%s' encountered an error and has been disabled: %s",bc,_d))end end end end;return ab end
-modules["utils.Logger"] = function() local b={currentLevel=1,printFunctions={}}
-b.levels={DEBUG=1,INFO=2,WARN=3,ERROR=4}
-b.addPrintFunction=function(c)table.insert(b.printFunctions,c)end
+modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
+b.useDefault=function()
+b.addPrintFunction(function(c,d,_a,aa)
+print(string.format("[%s][%s:%d] %s",c,d,_a,aa))end)end;b.levels={DEBUG=1,INFO=2,WARN=3,ERROR=4}b.addPrintFunction=function(c)
+table.insert(b.printFunctions,c)end
 b.print=function(c,d,_a,aa,...)
-if c>=b.currentLevel then local ba=b.formatBraces(aa,...)for ca,da in
-ipairs(b.printFunctions)do da(c,d,_a,ba)end end end
+if
+c>=b.currentLevel then local ba=b.formatBraces(aa,...)for ca,da in ipairs(b.printFunctions)do
+da(c,d,_a,ba)end end end
 b.custom=function(c,d,...)local _a=debug.getinfo(2,"l").currentline
 local aa=debug.getinfo(2,"S").short_src;b.print(c,aa,_a,d,...)end
 b.debug=function(c,...)local d=debug.getinfo(2,"l").currentline
@@ -477,22 +531,33 @@ local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.ERROR,_a,d,c,...)end
 b.formatBraces=function(c,...)local d={...}local _a=1
 local aa=tostring(c):gsub("{}",function()local ba=d[_a]_a=_a+1
 return tostring(ba)end)return aa end;return b end
-modules["programs.command.transfer.SnapShot"] = function() local _a=require("wrapper.PeripheralWrapper")
-local aa={inventories={},tanks={},items={},fluids={}}
-local function ba(da,_b)if not da.getItems then return end;local ab=da.getItems()
-if not ab then return end
-for bb,cb in ipairs(ab)do if cb.name then _b[cb.name]=true end end end
-local function ca(da,_b)if not da.getFluids then return end;local ab=da.getFluids()
-if not ab then return end
-for bb,cb in ipairs(ab)do if cb.name then _b[cb.name]=true end end end
-function aa.takeSnapShot()_a.reloadAll()local da=_a.getAll()
-for _b,ab in pairs(da)do if ab.isInventory()then
-aa.inventories[_b]=true;ba(ab,aa.items)end;if ab.isTank()then
-aa.tanks[_b]=true;ca(ab,aa.fluids)end end end;return aa end
-modules["utils.OSUtils"] = function() local c=require("utils.Logger")local d={}
-d.timestampBaseIdGenerate=function()
-local _a=os.epoch("utc")local aa=math.random(1000,9999)return
-tostring(_a).."-"..tostring(aa)end
+modules["programs.common.SnapShot"] = function(...) local ba=require("wrapper.PeripheralWrapper")
+local ca=require("utils.Logger")local da={inventories={},tanks={},items={},fluids={}}
+local function _b(cb,db)
+if not cb.getItems then return end;local _c=cb.getItems()if not _c then return end;for ac,bc in ipairs(_c)do if bc.name then
+db[bc.name]=true end end end
+local function ab(cb,db)if not cb.getFluids then return end;local _c=cb.getFluids()
+if not _c then return end
+for ac,bc in ipairs(_c)do if bc.name then db[bc.name]=true end end end
+local function bb(cb,db)if not fs.exists(cb)then return false end
+local _c=fs.open(cb,"r")if not _c then return false end;local ac=0;while true do local bc=_c.readLine()
+if not bc then break end;bc=bc:match("^%s*(.-)%s*$")
+if bc~=""then db[bc]=true;ac=ac+1 end end
+_c.close()return true,ac end
+function da.takeSnapShot()ba.reloadAll()local cb=ba.getAll()
+for db,_c in pairs(cb)do if _c.isInventory()then
+da.inventories[db]=true;_b(_c,da.items)end;if _c.isTank()then
+da.tanks[db]=true;ab(_c,da.fluids)end end;da.loadFromFiles()end;function da.loadFromFiles()bb("item_names",da.items)
+bb("fluid_names",da.fluids)end;function da.loadFromFilesOnly()da.items={}
+da.fluids={}da.loadFromFiles()end;function da.reset()
+da.inventories={}da.tanks={}da.items={}da.fluids={}end
+function da.getItemCount()
+local cb=0;for db in pairs(da.items)do cb=cb+1 end;return cb end
+function da.getFluidCount()local cb=0;for db in pairs(da.fluids)do cb=cb+1 end;return cb end;return da end
+modules["utils.OSUtils"] = function(...) local c=require("utils.Logger")local d={}
+d.SIDES={TOP="top",BOTTOM="bottom",LEFT="left",RIGHT="right",FRONT="front",BACK="back"}
+d.timestampBaseIdGenerate=function()local _a=os.epoch("utc")
+local aa=math.random(1000,9999)return tostring(_a).."-"..tostring(aa)end
 d.loadTable=function(_a)local aa={}local ba=fs.open(_a,"r")if ba then local ca=ba.readAll()
 aa=textutils.unserialize(ca)ba.close()else return nil end;return aa end
 d.saveTable=function(_a,aa)local ba
@@ -501,4 +566,4 @@ return ab end)if not ca then
 c.error("Failed to serialize table for {}, error: {}",_a,da)return end;local _b=fs.open(_a,"w")if _b then
 _b.write(ba)_b.close()else
 c.error("Failed to open file for writing: {}",_a)end end;return d end
-return modules["programs.CommandLineTransfer"]()
+return modules["programs.CommandLineTransfer"](...)

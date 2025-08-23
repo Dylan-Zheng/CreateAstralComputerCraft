@@ -225,29 +225,31 @@ local function getOrCreateSubCommand()
         elseif #args == 3 and (args[2] == "input" or args[2] == "output") then
             local types = {"inventory", "tank"}
             return CommandLine.filterSuggestions(types, args[3])
-        elseif #args >= 4 then
-            -- For the last argument, suggest available peripherals or items from snapshot
-            local lastArg = args[#args]
-            if args[2] == "input" or args[2] == "output" then
-                if args[3] == "inventory" then
-                    local inventoryArray = {}
-                    for name, _ in pairs(SnapShot.inventories) do
-                        table.insert(inventoryArray, name)
-                    end
-                    return CommandLine.filterSuggestions(inventoryArray, lastArg)
-                elseif args[3] == "tank" then
-                    local tankArray = {}
-                    for name, _ in pairs(SnapShot.tanks) do
-                        table.insert(tankArray, name)
-                    end
-                    return CommandLine.filterSuggestions(tankArray, lastArg)
+        elseif #args >= 2 and args[2] == "filter" then
+            -- Handle filter completion for args >= 3
+            print(args[2], args[3])
+            local itemArray = {}
+            for name, _ in pairs(SnapShot.items) do
+                table.insert(itemArray, name)
+            end
+            for name, _ in pairs(SnapShot.fluids) do
+                table.insert(itemArray, name)
+            end
+            return CommandLine.filterSuggestions(itemArray, lastArg)
+        elseif #args >= 4 and (args[2] == "input" or args[2] == "output") then
+            -- For the last argument, suggest available peripherals from snapshot
+            if args[3] == "inventory" then
+                local inventoryArray = {}
+                for name, _ in pairs(SnapShot.inventories) do
+                    table.insert(inventoryArray, name)
                 end
-            elseif args[2] == "filter" then
-                local itemArray = {}
-                for name, _ in pairs(SnapShot.items) do
-                    table.insert(itemArray, name)
+                return CommandLine.filterSuggestions(inventoryArray, lastArg)
+            elseif args[3] == "tank" then
+                local tankArray = {}
+                for name, _ in pairs(SnapShot.tanks) do
+                    table.insert(tankArray, name)
                 end
-                return CommandLine.filterSuggestions(itemArray, lastArg)
+                return CommandLine.filterSuggestions(tankArray, lastArg)
             end
         end
         
