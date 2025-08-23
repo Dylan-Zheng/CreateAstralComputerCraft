@@ -218,6 +218,7 @@ local function getOrCreateSubCommand()
     end, function(argsText)
         local args = parseArgs("add " .. argsText)
         local suggestions = {}
+        local lastArg = args[#args] or ""
         
         if #args == 2 then
             local directions = {"input", "output", "filter"}
@@ -227,7 +228,6 @@ local function getOrCreateSubCommand()
             return CommandLine.filterSuggestions(types, args[3])
         elseif #args >= 2 and args[2] == "filter" then
             -- Handle filter completion for args >= 3
-            print(args[2], args[3])
             local itemArray = {}
             for name, _ in pairs(SnapShot.items) do
                 table.insert(itemArray, name)

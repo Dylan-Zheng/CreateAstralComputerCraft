@@ -4,7 +4,8 @@ CommandLine.__index = CommandLine
 -- Helper function to filter suggestions and return only the untyped part
 function CommandLine.filterSuggestions(candidates, partial)
     local filtered = {}
-    local partialLower = string.lower(partial or "")
+    partial = partial or ""
+    local partialLower = string.lower(partial)
     
     for _, candidate in ipairs(candidates) do
         local candidateLower = string.lower(candidate)

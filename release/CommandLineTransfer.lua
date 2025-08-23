@@ -187,8 +187,8 @@ error("Part of name input cannot be nil or empty")end;local ca={}
 for da,_b in pairs(_a.getAll())do
 d.debug("Checking peripheral: {}",da)if string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
 modules["programs.command.CommandLine"] = function(...) local ba={}ba.__index=ba
-function ba.filterSuggestions(cb,db)local _c={}
-local ac=string.lower(db or"")for bc,cc in ipairs(cb)do local dc=string.lower(cc)
+function ba.filterSuggestions(cb,db)local _c={}db=db or""
+local ac=string.lower(db)for bc,cc in ipairs(cb)do local dc=string.lower(cc)
 if dc:find(ac,1,true)==1 then
 local _d=cc:sub(#db+1)if _d~=""then table.insert(_c,_d)end end end
 return _c end
@@ -332,20 +332,19 @@ for i=4,#cd do table.insert(b_a,cd[i])end
 bb:addComponentToJob(cc,a_a,table.unpack(b_a))
 print("Added "..#b_a.." "..__a.."(s)")else print("Invalid component type")end else
 print("Usage: add <input|output|filter> [inventory|tank] <name1> [name2] ...")end end,function(bd)local cd=_c(
-"add "..bd)local dd={}
+"add "..bd)local dd={}local __a=cd[#cd]or""
 if#cd==2 then
-local __a={"input","output","filter"}return cb.filterSuggestions(__a,cd[2])elseif#cd==3 and(cd[2]=="input"or
+local a_a={"input","output","filter"}return cb.filterSuggestions(a_a,cd[2])elseif#cd==3 and(cd[2]=="input"or
 cd[2]=="output")then
-local __a={"inventory","tank"}return cb.filterSuggestions(__a,cd[3])elseif
-#cd>=2 and cd[2]=="filter"then print(cd[2],cd[3])local __a={}for a_a,b_a in pairs(ab.items)do
-table.insert(__a,a_a)end;for a_a,b_a in pairs(ab.fluids)do
-table.insert(__a,a_a)end
-return cb.filterSuggestions(__a,lastArg)elseif#cd>=4 and(cd[2]=="input"or cd[2]=="output")then
-if
-cd[3]=="inventory"then local __a={}for a_a,b_a in pairs(ab.inventories)do
-table.insert(__a,a_a)end
-return cb.filterSuggestions(__a,lastArg)elseif cd[3]=="tank"then local __a={}
-for a_a,b_a in pairs(ab.tanks)do table.insert(__a,a_a)end;return cb.filterSuggestions(__a,lastArg)end end;return dd end)
+local a_a={"inventory","tank"}return cb.filterSuggestions(a_a,cd[3])elseif
+#cd>=2 and cd[2]=="filter"then local a_a={}
+for b_a,c_a in pairs(ab.items)do table.insert(a_a,b_a)end
+for b_a,c_a in pairs(ab.fluids)do table.insert(a_a,b_a)end;return cb.filterSuggestions(a_a,__a)elseif#cd>=4 and(cd[2]=="input"or
+cd[2]=="output")then
+if cd[3]=="inventory"then local a_a={}for b_a,c_a in
+pairs(ab.inventories)do table.insert(a_a,b_a)end;return
+cb.filterSuggestions(a_a,__a)elseif cd[3]=="tank"then local a_a={}for b_a,c_a in pairs(ab.tanks)do
+table.insert(a_a,b_a)end;return cb.filterSuggestions(a_a,__a)end end;return dd end)
 bc:addCommand("remove","Remove components from job. Usage: remove <input|output> <inventory|tank> <name1> [name2]... OR remove filter <name1> [name2]...",function(bd)
 local cd=_c(bd)if#cd<3 then
 print("Usage: remove <input|output|filter> [inventory|tank] <name1> [name2] ...")return end
