@@ -2,7 +2,7 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.AE2Crafter"] = function() local db=require("libraries.basalt")
+modules["programs.AE2Crafter"] = function(...) local db=require("libraries.basalt")
 local _c=require("elements.TabView")local ac=require("programs.ae2.crafter.CraftingListTab")
 local bc=require("utils.Logger")local cc=require("programs.ae2.crafter.TurtleCraft")
 local dc=require("elements.LogBox")local _d=false;db.LOGGER.setEnabled(_d)
@@ -21,7 +21,7 @@ dd.frame:getWidth()-2,dd.frame:getHeight()-2,colors.white,colors.gray)
 cc.setPrintFunction(function(b_a)a_a:addLog(b_a)end)bd:init()
 parallel.waitForAll(function()db.run()end,function()cc.listen(function()
 return __a:getMarkTables()end)end) end
-modules["libraries.basalt"] = function() local ba=true;local ca={}local da={}local _b={}local ab={}local bb=require
+modules["libraries.basalt"] = function(...) local ba=true;local ca={}local da={}local _b={}local ab={}local bb=require
 require=function(cb)if(_b[cb..".lua"])then if
 (ab[cb]==nil)then ab[cb]=_b[cb..".lua"]()end
 return ab[cb]end;return bb(cb)end;da["canvas"]={}da["debug"]={}da["reactive"]={}
@@ -2800,7 +2800,7 @@ repeat dd=cd.readLine()if
 __a==tonumber(ad)then _c("\149Line "..ad,colors.cyan)
 _c(dd,colors.lightGray)break end;__a=__a+1 until not dd;cd.close()end end;term.setBackgroundColor(colors.black)
 cb.error(ac)db.errorHandled=true;error()end;return db end;return _b["main.lua"]() end
-modules["elements.TabView"] = function() local _a=require("libraries.basalt")local aa=_a.LOGGER
+modules["elements.TabView"] = function(...) local _a=require("libraries.basalt")local aa=_a.LOGGER
 local ba={LEFT=1,RIGHT=2}local ca={}ca.__index=ca
 function ca:new(da,_b,ab,bb,cb,db,_c,ac,bc)local cc=setmetatable({},ca)cc.frame=da;self.selectedTab=
 nil;self.firstTab=nil;self.lastTab=nil;cc.leftIcon="\17"
@@ -2872,7 +2872,7 @@ self:selectTab(self.tabs[1])end end;function ca:getTabByName(da)
 for _b,ab in ipairs(self.tabs)do if ab.name==da then return ab end end;return nil end;function ca:getTabByIndex(da)if
 da<1 or da>#self.tabs then return nil end
 return self.tabs[da]end;return ca end
-modules["programs.ae2.crafter.CraftingListTab"] = function() local ca=require("utils.StringUtils")
+modules["programs.ae2.crafter.CraftingListTab"] = function(...) local ca=require("utils.StringUtils")
 local da=require("utils.ContainerLoader")local _b=require("utils.OSUtils")
 local ab=require("utils.Logger")local bb=require("elements.MessageBox")
 local cb={1,2,3,10,11,12,19,20,21}local db={}db.__index=db
@@ -2981,12 +2981,15 @@ not self.markTables or not self.markTables[_c.name]then return nil end;return
 self.markTables[_c.name][_c.nbt]end;function db:getRecipes()return self.recipes end;function db:getMarkTables()
 return self.markTables end;function db:init()self:loadRecipes()
 self:updateRcipesList()return self end;return db end
-modules["utils.Logger"] = function() local b={currentLevel=1,printFunctions={}}
-b.levels={DEBUG=1,INFO=2,WARN=3,ERROR=4}
-b.addPrintFunction=function(c)table.insert(b.printFunctions,c)end
+modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
+b.useDefault=function()
+b.addPrintFunction(function(c,d,_a,aa)
+print(string.format("[%s][%s:%d] %s",c,d,_a,aa))end)end;b.levels={DEBUG=1,INFO=2,WARN=3,ERROR=4}b.addPrintFunction=function(c)
+table.insert(b.printFunctions,c)end
 b.print=function(c,d,_a,aa,...)
-if c>=b.currentLevel then local ba=b.formatBraces(aa,...)for ca,da in
-ipairs(b.printFunctions)do da(c,d,_a,ba)end end end
+if
+c>=b.currentLevel then local ba=b.formatBraces(aa,...)for ca,da in ipairs(b.printFunctions)do
+da(c,d,_a,ba)end end end
 b.custom=function(c,d,...)local _a=debug.getinfo(2,"l").currentline
 local aa=debug.getinfo(2,"S").short_src;b.print(c,aa,_a,d,...)end
 b.debug=function(c,...)local d=debug.getinfo(2,"l").currentline
@@ -3000,7 +3003,7 @@ local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.ERROR,_a,d,c,...)end
 b.formatBraces=function(c,...)local d={...}local _a=1
 local aa=tostring(c):gsub("{}",function()local ba=d[_a]_a=_a+1
 return tostring(ba)end)return aa end;return b end
-modules["programs.ae2.crafter.TurtleCraft"] = function() local db=require("utils.ContainerLoader")
+modules["programs.ae2.crafter.TurtleCraft"] = function(...) local db=require("utils.ContainerLoader")
 local _c=require("utils.OSUtils")local ac,bc=next(db.load.item_vaults())
 local cc,dc=next(db.load.ae2_pattern_providers())local _d,ad=next(db.load.droppers())
 local bd,cd=next(db.load.chests())local dd={printFn=print}
@@ -3122,7 +3125,7 @@ local baa=b_a()
 if baa then local caa,daa,_ba=dd.hasMarkedItems(aaa,baa)if caa then c_a=0.2
 local aba=dd.process({markItem=daa,recipe=_ba})
 if not aba then dd.print("Processing failed")dd.clear()c_a=1 end end end end end;os.sleep(c_a)end end;return dd end
-modules["elements.LogBox"] = function() local _a=require("libraries.basalt")
+modules["elements.LogBox"] = function(...) local _a=require("libraries.basalt")
 local aa=require("utils.StringUtils")local ba={}ba.__index=ba;local function ca(da)if not da or da==""then return 0 end
 local _b,ab=da:gsub("\n","")return ab end
 function ba:new(da,_b,ab,bb,cb,db,_c)
@@ -3146,7 +3149,7 @@ local bb=ca(self.text)local cb=self.textBox:getHeight()if bb>cb then self.textBo
 bb-cb+1)end end;function ba:setMaxLines(da)self.maxLines=da or 30 end;function ba:getLineCount()return
 ca(self.text)end;function ba:clear()self.text=""self.logs={}
 self.textBox:setText("")end;return ba end
-modules["utils.StringUtils"] = function() local b={}
+modules["utils.StringUtils"] = function(...) local b={}
 b.split=function(c,d)local _a={}for aa in(c..d):gmatch("(.-)"..d)do
 table.insert(_a,aa)end;return _a end
 b.formatNumber=function(c)
@@ -3164,8 +3167,10 @@ b.ellipsisMiddle=function(c,d)if#c<=d then return c end
 if d<=3 then return string.sub(c,1,d)end;local _a=math.floor((d-3)/2)local aa=d-3 -_a;return string.sub(c,1,_a).."..."..string.sub(c,
 -aa)end
 b.getAbbreviation=function(c)local d=""for _a in string.gmatch(c,"%a+")do
-d=d.._a:sub(1,1):upper()end;return d end;return b end
-modules["utils.ContainerLoader"] = function() 
+d=d.._a:sub(1,1):upper()end;return d end
+b.matchWildcard=function(c,d)if not c:find("*")then return c==d end
+local _a=c:gsub("%*",".*")_a="^".._a.."$"return d:match(_a)~=nil end;return b end
+modules["utils.ContainerLoader"] = function(...) 
 local db={chest_name="minecraft:chest",barrel_name="minecraft:barrel",hopper_name="minecraft:hopper",dropper_name="minecraft:dropper",dispenser_name="minecraft:dispenser",trapped_chest_name="minecraft:trapped_chest",basin_name="create:basin",depot_name="create:depot",belt_name="create:belt",crushing_wheel_name="create:crushing_wheel",tank_name="create:fluid_tank",millstone_name="create:millstone",deployer_name="create:deployer",spout_name="create:spout",item_vaults_name="create:item_vault",mechanical_crafter_name="create:mechanical_crafter",item_drain_name="create:item_drain",liquid_blaze_burner_name="createaddition:liquid_blaze_burner",rolling_mill_name="createaddition:rolling_mill",double_drawers_name="extended_drawers:double_drawer",quad_drawers_name="extended_drawers:quad_drawer",single_drawers_name="extended_drawers:single_drawer",seared_basin_name="tconstruct:seared_basin",seared_melter_name="tconstruct:seared_melter",seared_ingot_tank_name="tconstruct:seared_ingot_tank",seared_table_name="tconstruct:seared_table",seared_heater_name="tconstruct:seared_heater",scorched_drain_name="tconstruct:scorched_drain",foundry_controller_name="tconstruct:foundry_controller",scorched_fuel_tank_name="tconstruct:scorched_fuel_tank",ae2_interface_name="ae2:interface",ae2_pattern_provider_name="ae2:pattern_provider",ae2_1k_crafting_storage_name="ae2:1k_crafting_storage",ae2_4k_crafting_storage_name="ae2:4k_crafting_storage",solid_canning_machine_name="techreborn:solid_canning_machine",industrial_centrifuge_name="techreborn:industrial_centrifuge",industrial_electrolyzer_name="techreborn:industrial_electrolyzer",compressor_name="techreborn:compressor",basic_tank_unit_name="techreborn:basic_tank_unit",grinder_name="techreborn:grinder",chemical_reactor_name="techreborn:chemical_reactor",thermal_generator_name="techreborn:thermal_generator",cryo_freezer_name="ad_astra:cryo_freezer",custom_machine_block_name="custommachinery:custom_machine_block",diamond_chest_name="reinfchest:diamond_chest",copper_cehst_name="reinfchest:copper_chest",transh_can_name="trashcans:item_trash_can",redrouter_name="redrouter",all_tank_unit_name="tank_unit",centrifuge="yttr:centrifuge"}local _c=peripheral.getNames()
 local ac=function(b_a,c_a)local d_a=nil
 return
@@ -3274,32 +3279,37 @@ __a(db.cryo_freezer_name)end,custom_machine_blocks=function()
 return __a(db.custom_machine_block_name)end,diamond_chests=function()return __a(db.diamond_chest_name)end,copper_chests=function()return
 __a(db.copper_cehst_name)end,redrouters=function()return __a(db.redrouter_name)end,all_tank_units=function()return
 __a(db.all_tank_unit_name)end,centrifuges=function()return __a(db.centrifuge)end}return{load=a_a,CONTAINER_NAMES=db,addCommonContainerPropsAndMethods=dd} end
-modules["utils.OSUtils"] = function() local c=require("utils.Logger")local d={}
-d.timestampBaseIdGenerate=function()
-local _a=os.epoch("utc")local aa=math.random(1000,9999)return
-tostring(_a).."-"..tostring(aa)end
-d.loadTable=function(_a)local aa={}local ba=fs.open(_a,"r")if ba then
-aa=textutils.unserialize(ba.readAll())ba.close()else return nil end;return aa end
-d.saveTable=function(_a,aa)local ba=fs.open(_a,"w")
-if ba then
-xpcall(function()
-local ca=textutils.serialize(aa)ba.write(ca)end,function(ca)
-c.error("Failed to save table to {}, error: {}",_a,ca)end)ba.close()end end;return d end
-modules["elements.MessageBox"] = function() local d=require("libraries.basalt")
-local _a=require("utils.StringUtils")local aa={}aa.__index=aa
-function aa:new(ba,ca,da)local _b=setmetatable({},aa)_b.frame=ba
-_b.title="Message"_b.message="No message provided."
-_b.coverFrame=ba:addFrame():setPosition(1,1):setSize(ba:getWidth(),ba:getHeight()):setBackground(colors.black):setForeground(colors.white):setVisible(false)
-_b.boxFrame=_b.coverFrame:addFrame():setPosition(5,2):setSize(ca,da):setBackground(colors.lightGray):setForeground(colors.white)
-_b.titleLabel=_b.boxFrame:addLabel():setText(_b.title):setPosition(2,2):setBackgroundEnabled(true):setBackground(colors.lightGray):setForeground(colors.white)
-_b.textBox=_b.boxFrame:addTextBox():setText(_b.message):setSize(
-_b.boxFrame:getWidth()-2,_b.boxFrame:getHeight()-6):setPosition(2,4):setBackground(colors.lightGray):setForeground(colors.white)
-_b.closeBtn=_b.boxFrame:addButton():setText("Close"):setPosition(
-_b.boxFrame:getWidth()-7,_b.boxFrame:getHeight()-1):setSize(7,1):setBackground(colors.gray):setForeground(colors.white):onClick(function()
-_b:close()end)return _b end
-function aa:open(ba,ca)
-if ba then self.title=ba;self.titleLabel:setText(ba)end;if ca then self.message=ca
-self.textBox:setText(_a.wrapText(ca,self.textBox:getWidth()))end
+modules["utils.OSUtils"] = function(...) local c=require("utils.Logger")local d={}
+d.SIDES={TOP="top",BOTTOM="bottom",LEFT="left",RIGHT="right",FRONT="front",BACK="back"}
+d.timestampBaseIdGenerate=function()local _a=os.epoch("utc")
+local aa=math.random(1000,9999)return tostring(_a).."-"..tostring(aa)end
+d.loadTable=function(_a)local aa={}local ba=fs.open(_a,"r")if ba then local ca=ba.readAll()
+aa=textutils.unserialize(ca)ba.close()else return nil end;return aa end
+d.saveTable=function(_a,aa)local ba
+local ca,da=xpcall(function()ba=textutils.serialize(aa)end,function(ab)
+return ab end)if not ca then
+c.error("Failed to serialize table for {}, error: {}",_a,da)return end;local _b=fs.open(_a,"w")if _b then
+_b.write(ba)_b.close()else
+c.error("Failed to open file for writing: {}",_a)end end;return d end
+modules["elements.MessageBox"] = function(...) local _a=require("libraries.basalt")
+local aa=require("utils.StringUtils")local ba=colors;local ca={}ca.__index=ca
+function ca:new(da,_b,ab)local bb=setmetatable({},ca)
+bb.frame=da;bb.title="Message"bb.message="No message provided."
+bb.coverFrame=da:addFrame():setPosition(1,1):setSize(da:getWidth(),da:getHeight()):setBackground(ba.black):setForeground(ba.white):setVisible(false)local cb=da:getWidth()-2;local db=da:getHeight()-2;local _c=math.min(_b or
+cb,cb)local ac=math.min(ab or db,db)
+local bc=math.floor((
+da:getWidth()-_c)/2)+1
+local cc=math.floor((da:getHeight()-ac)/2)+1
+bb.boxFrame=bb.coverFrame:addFrame():setPosition(bc,cc):setSize(_c,ac):setBackground(ba.lightGray):setForeground(ba.white)
+bb.titleLabel=bb.boxFrame:addLabel():setText(bb.title):setPosition(2,2):setBackgroundEnabled(true):setBackground(ba.lightGray):setForeground(ba.white)
+bb.textBox=bb.boxFrame:addTextBox():setText(bb.message):setSize(
+bb.boxFrame:getWidth()-2,bb.boxFrame:getHeight()-6):setPosition(2,4):setBackground(ba.lightGray):setForeground(ba.white)
+bb.closeBtn=bb.boxFrame:addButton():setText("Close"):setPosition(
+bb.boxFrame:getWidth()-7,bb.boxFrame:getHeight()-1):setSize(7,1):setBackground(ba.gray):setForeground(ba.white):onClick(function()
+bb:close()end)return bb end
+function ca:open(da,_b)
+if da then self.title=da;self.titleLabel:setText(da)end;if _b then self.message=_b
+self.textBox:setText(aa.wrapText(_b,self.textBox:getWidth()))end
 self.coverFrame:setVisible(true)end
-function aa:close()self.coverFrame:setVisible(false)end;return aa end
-return modules["programs.AE2Crafter"]()
+function ca:close()self.coverFrame:setVisible(false)end;return ca end
+return modules["programs.AE2Crafter"](...)
