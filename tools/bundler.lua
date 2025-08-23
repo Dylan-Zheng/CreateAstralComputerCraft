@@ -14,9 +14,9 @@ local function readProgramFilter()
     local file = io.open("tools/program_filter.txt", "r")
     if file then
         for line in file:lines() do
-            -- Trim whitespace and skip empty lines
+            -- Trim whitespace and skip empty lines and comment lines
             line = line:match("^%s*(.-)%s*$")
-            if line and line ~= "" then
+            if line and line ~= "" and not line:match("^%-%-") then
                 filters[line] = true
             end
         end
