@@ -36,11 +36,12 @@ end
 StoreManager.init()
 SnapShot.takeSnapShot()
 Communicator.loadSettings()
-local openChannel = Communicator.getOpenChannels()[1]
-
-openChannel.addMessageHandler("getRecipesReq", function(eventCode, payload, senderId)
-    local recipes = StoreManager.getAllRecipesByType(payload)
-    openChannel.send("getRecipesRes", recipes, senderId)
+pcall(function()
+    local openChannel = Communicator.getOpenChannels()[1]
+    openChannel.addMessageHandler("getRecipesReq", function(eventCode, payload, senderId)
+        local recipes = StoreManager.getAllRecipesByType(payload)
+        openChannel.send("getRecipesRes", recipes, senderId)
+    end)
 end)
 
 
