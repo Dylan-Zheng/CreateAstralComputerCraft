@@ -19,25 +19,17 @@ function RecipeList:new(pframe, x, y, width, height)
 
     this.searchInput = this.innerFrame:addInput()
         :setPosition(2,2)
-        :setSize(16, 1)
+        :setSize(18, 1)
         :setBackground(colors.gray)
         :setForeground(colors.white)
         :setPlaceholderColor(colors.lightGray)
         :setPlaceholder("Search...")
-
-    this.searchBtn = this.innerFrame:addButton()
-        :setPosition(this.searchInput:getX() + this.searchInput:getWidth() + 1, this.searchInput:getY())
-        :setSize(1,1)
-        :setText("S")
-        :setBackground(colors.gray)
-        :setForeground(colors.white)
-        :onClick(function()
-            local searchText = this.searchInput:getText():lower()
-            this.recipeList:setItems(this.getDisplayRecipeListFn(searchText))
+        :onChange("text", function(self, text)
+            this:refreshRecipeList(text)
         end)
 
     this.clearBtn = this.innerFrame:addButton()
-        :setPosition(this.searchBtn:getX() + this.searchBtn:getWidth() + 1, this.searchBtn:getY())
+        :setPosition(this.searchInput:getX() + this.searchInput:getWidth() + 1, this.searchInput:getY())
         :setSize(1,1)
         :setText("C")
         :setBackground(colors.gray)
@@ -97,8 +89,8 @@ function RecipeList:setGetDisplayRecipeListFn(fn)
     return self
 end
 
-function RecipeList:refreshRecipeList()
-    local searchText = self.searchInput:getText():lower()
+function RecipeList:refreshRecipeList(filterText)
+    local searchText = filterText or self.searchInput:getText():lower()
     self.recipeList:setItems(self.getDisplayRecipeListFn(searchText))
 end
 
