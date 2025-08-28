@@ -157,16 +157,20 @@ local function bundle()
         print("Bundled program: " .. path)
 
         local unminifiedCode = table.concat(output)
-        for path in io.lines("tools/build_path.txt") do
-            local otherOutputPath = path .. name:gsub("^programs%.", "") .. ".lua"
-            local otherOutFile = io.open(otherOutputPath, "w")
-            if not otherOutFile then
-                print("Error opening output file: " .. otherOutputPath)
-                os.exit(1)
-            else
-                otherOutFile:write(unminifiedCode)
-                otherOutFile:close()
-                print("Write program: " .. otherOutputPath)
+        for line in io.lines("tools/build_path.txt") do
+            -- Trim whitespace and skip empty lines and comment lines
+            local path = line:match("^%s*(.-)%s*$")
+            if path and path ~= "" and not path:match("^%-%-") then
+                local otherOutputPath = path .. name:gsub("^programs%.", "") .. ".lua"
+                local otherOutFile = io.open(otherOutputPath, "w")
+                if not otherOutFile then
+                    print("Error opening output file: " .. otherOutputPath)
+                    os.exit(1)
+                else
+                    otherOutFile:write(unminifiedCode)
+                    otherOutFile:close()
+                    print("Write program: " .. otherOutputPath)
+                end
             end
         end
     end
