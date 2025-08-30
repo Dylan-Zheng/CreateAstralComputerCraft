@@ -218,7 +218,7 @@ local function bundle()
         
         -- Copy to specific paths as defined in ProgramsAndPaths
         for _, pathConfig in ipairs(buildConfig.programsAndPaths) do
-            if pathConfig.program == name then
+            if pathConfig.program == name and not pathConfig.disabled then
                 for _, pathInfo in ipairs(pathConfig.paths) do
                     copyFileToPath(unminifiedCode, pathInfo.path, pathInfo.rename)
                 end
