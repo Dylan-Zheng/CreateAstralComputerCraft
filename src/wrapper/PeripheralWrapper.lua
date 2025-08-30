@@ -200,7 +200,7 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
         end
         -- for UNLIMITED_PERIPHERAL_INVENTORY
     elseif peripheral.isUnlimitedPeripheralInventory() then
-        if string.find(peripheral.getName(), "crafting_storage") then
+        if string.find(peripheral.getName(), "crafting_storage") or peripheral.getPatternsFor ~= nil then
             peripheral.getItems = function()
                 local items = peripheral.items()
                 for _, item in ipairs(items) do
@@ -530,6 +530,7 @@ end
 PeripheralWrapper.reloadAll = function()
     PeripheralWrapper.loadedPeripherals = {}
     for _, name in ipairs(peripheral.getNames()) do
+        Logger.debug("Loading peripheral: {}", name)
         PeripheralWrapper.addPeripherals(name)
     end
 end
@@ -573,7 +574,6 @@ PeripheralWrapper.getAllPeripheralsNameContains = function(partOfName)
     end
     local matchedPeripherals = {}
     for name, peripheral in pairs(PeripheralWrapper.getAll()) do
-        Logger.debug("Checking peripheral: {}", name)
         if string.find(name, partOfName) then
             matchedPeripherals[name] = peripheral
         end
