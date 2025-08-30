@@ -58,7 +58,7 @@ cc.transferItemFrom(dc,__a.name,__a.count)end end end
 local bd=function(__a,a_a,b_a)cc.transferItemTo(dc,__a,a_a)turtle.select(b_a)
 turtle.suckDown()end
 local cd=function(__a)
-for a_a,b_a in pairs(__a.inputs)do bd(b_a.name,__a.maxInputs,ac[a_a])end end
+for a_a,b_a in pairs(__a.inputs)do bd(b_a,__a.maxInputs,ac[a_a])end end
 local dd=function(__a)
 for a_a,b_a in ipairs(ac)do local c_a=__a.inputs[a_a]
 local d_a=turtle.getItemDetail(b_a)local _aa=nil;if d_a~=nil then _aa=d_a.name end

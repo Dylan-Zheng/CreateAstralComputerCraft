@@ -37,8 +37,8 @@ local getItemToSlot = function(itemName, count, slot)
 end
 
 local getAllInputItem = function(recipe)
-    for i, item in pairs(recipe.inputs) do
-        getItemToSlot(item.name, recipe.maxInputs, CRAFTING_SLOT[i])
+    for i, itemName in pairs(recipe.inputs) do
+        getItemToSlot(itemName, recipe.maxInputs, CRAFTING_SLOT[i])
     end
 end
 
