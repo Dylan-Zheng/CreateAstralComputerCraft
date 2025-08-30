@@ -1,30 +1,40 @@
+-- Load minifier
 local chunk, err = loadfile("tools/minify.lua")
-
 if not chunk then
     print("Error loading file: " .. err)
     os.exit(1)
 end
-
-local shouldMinify = false
-
 local minify = chunk()
 
-local function readProgramFilter()
-    local filters = {}
-    local file = io.open("tools/program_filter.txt", "r")
-    if file then
-        for line in file:lines() do
-            -- Trim whitespace and skip empty lines and comment lines
-            line = line:match("^%s*(.-)%s*$")
-            if line and line ~= "" and not line:match("^%-%-") then
-                filters[line] = true
-            end
-        end
-        file:close()
+-- Load build configuration
+local configChunk, configErr = loadfile("tools/BuildProgramsAndPaths.lua")
+if not configChunk then
+    print("Error loading build configuration: " .. configErr)
+    os.exit(1)
+end
+local buildConfig = configChunk()
+if not buildConfig then
+    print("Error: BuildProgramsAndPaths.lua did not return configuration")
+    os.exit(1)
+end
+
+-- Create filesystem utilities
+local function ensureDirExists(path)
+    local sep = package.config:sub(1, 1)
+    local command
+    if sep == "\\" then
+        -- Windows
+        command = 'if not exist "' .. path .. '" mkdir "' .. path .. '"'
     else
-        print("Warning: build_filter.txt not found, no filters applied")
+        -- Linux/macOS  
+        command = 'mkdir -p "' .. path .. '"'
     end
-    return filters
+    os.execute(command)
+end
+
+local function getDirectoryFromPath(filepath)
+    local sep = package.config:sub(1, 1)
+    return filepath:match("^(.*)" .. sep .. "[^" .. sep .. "]*$") or ""
 end
 
 local function scanDir(dir)
@@ -79,30 +89,25 @@ local function getModulesAndRequire(files)
     return modules
 end
 
-local function getPrograms(modules)
+local function getPrograms(modules, buildProgramsList)
     local programs = {}
-    local filter = readProgramFilter()
-    if next(filter) then
-        for name, module in pairs(modules) do
-            if filter[name] then
-                programs[name] = {
-                    content = module.content,
-                    minified = module.minified,
-                    requires = module.requires
-                }
-            end
-        end
-    else
-        for name, module in pairs(modules) do
-            if name:match("^programs%.[^%.]+$") then
-                programs[name] = {
-                    content = module.content,
-                    minified = module.minified,
-                    requires = module.requires
-                }
-            end
+    
+    -- Convert build programs list to a lookup table
+    local buildFilter = {}
+    for _, programName in ipairs(buildProgramsList) do
+        buildFilter[programName] = true
+    end
+    
+    for name, module in pairs(modules) do
+        if buildFilter[name] then
+            programs[name] = {
+                content = module.content,
+                minified = module.minified,
+                requires = module.requires
+            }
         end
     end
+    
     return programs
 end
 
@@ -127,10 +132,43 @@ local function collectAllRequires(modules, startModule)
     return result
 end
 
+local function copyFileToPath(content, targetPath, rename)
+    local sep = package.config:sub(1, 1)
+    local finalPath = targetPath
+    
+    -- Remove trailing separators from target path
+    while finalPath:sub(-1) == "/" or finalPath:sub(-1) == "\\" do
+        finalPath = finalPath:sub(1, -2)
+    end
+    
+    -- Ensure target directory exists
+    ensureDirExists(finalPath)
+    
+    -- Add filename if rename is specified
+    if rename then
+        finalPath = finalPath .. sep .. rename
+    end
+    
+    local file = io.open(finalPath, "w")
+    if not file then
+        print("Error: Cannot open output file: " .. finalPath)
+        return false
+    end
+    
+    file:write(content)
+    file:close()
+    print("Copied program to: " .. finalPath)
+    return true
+end
+
 local function bundle()
     local files = scanDir("src")
     local modules = getModulesAndRequire(files)
-    local programs = getPrograms(modules)
+    local programs = getPrograms(modules, buildConfig.buildPrograms)
+
+    -- Ensure output directories exist
+    ensureDirExists("build")
+    ensureDirExists("build/unminified")
 
     for name, program in pairs(programs) do
         local outputMinified = { 'local modules = {}\n', 'local loadedModules = {}\n', 'local baseRequire = require\n',
@@ -149,27 +187,40 @@ local function bundle()
         table.insert(outputMinified, string.format('return modules["%s"](...)\n', name))
         table.insert(output, string.format('return modules["%s"](...)\n', name))
 
-        local path = "build/" .. name:gsub("^programs%.", "") .. ".lua"
-        local out = io.open(path, "w")
+        -- Generate minified and unminified content
         local minifiedCode = table.concat(outputMinified)
-        out:write(minifiedCode)
-        out:close()
-        print("Bundled program: " .. path)
-
         local unminifiedCode = table.concat(output)
-        for line in io.lines("tools/build_path.txt") do
-            -- Trim whitespace and skip empty lines and comment lines
-            local path = line:match("^%s*(.-)%s*$")
-            if path and path ~= "" and not path:match("^%-%-") then
-                local otherOutputPath = path .. name:gsub("^programs%.", "") .. ".lua"
-                local otherOutFile = io.open(otherOutputPath, "w")
-                if not otherOutFile then
-                    print("Error opening output file: " .. otherOutputPath)
-                    os.exit(1)
-                else
-                    otherOutFile:write(unminifiedCode)
-                    otherOutFile:close()
-                    print("Write program: " .. otherOutputPath)
+        
+        -- Get the program filename (remove "programs." prefix)
+        local filename = name:gsub("^programs%.", "") .. ".lua"
+        
+        -- Write minified version to build/
+        local minifiedPath = "build/" .. filename
+        local minFile = io.open(minifiedPath, "w")
+        if not minFile then
+            print("Error: Cannot open minified output file: " .. minifiedPath)
+            os.exit(1)
+        end
+        minFile:write(minifiedCode)
+        minFile:close()
+        print("Bundled minified program: " .. minifiedPath)
+        
+        -- Write unminified version to build/unminified/
+        local unminifiedPath = "build/unminified/" .. filename
+        local unminFile = io.open(unminifiedPath, "w")
+        if not unminFile then
+            print("Error: Cannot open unminified output file: " .. unminifiedPath)
+            os.exit(1)
+        end
+        unminFile:write(unminifiedCode)
+        unminFile:close()
+        print("Bundled unminified program: " .. unminifiedPath)
+        
+        -- Copy to specific paths as defined in ProgramsAndPaths
+        for _, pathConfig in ipairs(buildConfig.programsAndPaths) do
+            if pathConfig.program == name then
+                for _, pathInfo in ipairs(pathConfig.paths) do
+                    copyFileToPath(unminifiedCode, pathInfo.path, pathInfo.rename)
                 end
             end
         end
