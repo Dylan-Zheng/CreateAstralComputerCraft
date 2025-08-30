@@ -1,0 +1,60 @@
+-- Configuration template for ComputerCraft program building and deployment
+-- 
+-- Copy this file to BuildProgramsAndPaths.lua and customize the paths for your setup
+-- 
+-- Each program in ProgramsAndPaths can have:
+-- - program: The module name to build (e.g., "programs.PositiveCrafter")
+-- - disabled: If true, the program will be built but NOT copied to target paths
+-- - paths: Array of destination paths where the program should be copied
+--   - path: Target directory path
+--   - rename: Optional filename to rename the copied file
+
+local ProgramsAndPaths = {
+    {
+        program = "programs.PositiveCrafter",
+        disabled = false,
+        paths = {
+            {
+                -- Replace with your actual ComputerCraft computer path
+                path = "C:/path/to/your/minecraft/saves/world/computercraft/computer/10/",
+                rename = "startup.lua",
+            }
+        }
+    },
+    {
+        program = "programs.PositiveCrafterTurtle",
+        disabled = false,
+        paths = {
+            {
+                -- Replace with your actual turtle paths
+                path = "C:/path/to/your/minecraft/saves/world/computercraft/computer/11/",
+                rename = "startup.lua",
+            },
+            {
+                path = "C:/path/to/your/minecraft/saves/world/computercraft/computer/16/",
+                rename = "startup.lua",
+            }
+        }
+    }
+    -- Add more programs as needed...
+}
+
+local BuildPrograms = {
+    "programs.PositiveCrafter",
+    "programs.PositiveCrafterTurtle",
+    "programs.RecipeManager",
+    "programs.CommandLineTransfer",
+    "programs.CaBelt",
+    "programs.CaBasin",
+    "programs.CaDepot",
+    "programs.SimpleTurtleControl",
+    "programs.Transfer"
+    -- Add more programs to build as needed...
+}
+
+local BuildProgramsAndPaths = {}
+
+BuildProgramsAndPaths.programsAndPaths = ProgramsAndPaths
+BuildProgramsAndPaths.buildPrograms = BuildPrograms
+
+return BuildProgramsAndPaths

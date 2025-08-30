@@ -81,6 +81,9 @@ build_filter.txt
 tools/program_filter.txt
 program_filter.txt
 
+# Personal build configuration
+tools/BuildProgramsAndPaths.lua
+
 # Lua specific
 # Compiled Lua files
 *.luac
