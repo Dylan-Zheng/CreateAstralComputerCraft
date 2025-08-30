@@ -5,12 +5,12 @@ require = function(path) if(modules[path])then if(loadedModules[path]==nil)then 
 modules["programs.PositiveCrafterTurtle"] = function(...) 
 local d=require("programs.crafter.positive.TaskDispatchSlave")
 local _a=require("programs.crafter.positive.TurtleCraft")local aa=require("utils.Logger")aa.currentLevel=aa.levels.ERROR
-aa.useDefault()
-parallel.waitForAll(d.run,function()local ba=0.2
+aa.useDefault()print("ID: "..os.getComputerID())
+parallel.waitForAll(d.run,function()
+local ba=0.2
 while true do local ca=d.recipe;local da=false;local _b=false
-if ca then
-da=_a.triggerEval(ca)if not da then d.TaskCompleted()d.recipe=nil end
-_b=_a.storeVerify(ca)if not _b then
+if ca then da=_a.triggerEval(ca)if not da then
+d.TaskCompleted()d.recipe=nil end;_b=_a.storeVerify(ca)if not _b then
 d.TaskFailed("Input items not available in storage")d.recipe=nil end end;if da and _b then _a.craft(ca)else ba=1 end;os.sleep(ba)end end) end
 modules["programs.crafter.positive.TaskDispatchSlave"] = function(...) local da=require("utils.Logger")
 local _b=require("programs.common.Communicator")

@@ -5,6 +5,8 @@ local Logger = require("utils.Logger")
 Logger.currentLevel = Logger.levels.ERROR
 Logger.useDefault()
 
+print("ID: " .. os.getComputerID())
+
 parallel.waitForAll(
     TaskDispatchSlave.run,
     function()
