@@ -1,3 +1,4 @@
+local Logger = require("utils.Logger")
 local Triggers = {}
 
 Triggers.TYPES = {
