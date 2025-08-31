@@ -114,7 +114,7 @@ if not bbb then print(
 "Error: "..tostring(cbb))end end end)end end;daa.reloadAll()
 local bda=daa.getAllPeripheralsNameContains("create:crushing_wheel")
 local cda=daa.getAllPeripheralsNameContains("crafting_storage")local dda=cda[next(cda)]
-local __b=daa.getPeripheralByName("redrouter")local a_b=__b[next(__b)]local b_b=_ba.getLength(bda)
+local __b=daa.getAllPeripheralsNameContains("redrouter")local a_b=__b[next(__b)]local b_b=_ba.getLength(bda)
 local c_b={recipeOnCrusher={},crusherOnUse={},lostTrackCrushers={},init=function(bab)
 for cab,dab in ipairs(bba)do if
 bab.recipeOnCrusher[dab.id]==nil then

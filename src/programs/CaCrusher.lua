@@ -397,7 +397,7 @@ local crushers = PeripheralWrapper.getAllPeripheralsNameContains("create:crushin
 local storages = PeripheralWrapper.getAllPeripheralsNameContains("crafting_storage")
 local storage = storages[next(storages)]
 
-local redrouters = PeripheralWrapper.getPeripheralByName("redrouter")
+local redrouters = PeripheralWrapper.getAllPeripheralsNameContains("redrouter")
 local redrouter = redrouters[next(redrouters)]
 
 local totalCrushers = TableUtils.getLength(crushers)
