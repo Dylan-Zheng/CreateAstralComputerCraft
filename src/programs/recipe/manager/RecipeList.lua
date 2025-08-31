@@ -50,7 +50,7 @@ function RecipeList:new(pframe, x, y, width, height)
 
     this.newButton = this.innerFrame:addButton()
         :setPosition(this.recipeList:getX(), this.recipeList:getY() + this.recipeList:getHeight() + 1)
-        :setSize(7,1)
+        :setSize(5,1)
         :setText("New")
         :setBackground(colors.gray)
         :setForeground(colors.white)
@@ -58,9 +58,19 @@ function RecipeList:new(pframe, x, y, width, height)
             this.onNewCallback()
         end)
 
+    this.updateButton = this.innerFrame:addButton()
+        :setPosition(this.newButton:getX() + this.newButton:getWidth() + 1, this.newButton:getY())
+        :setSize(8,1)
+        :setText(" Update ")
+        :setBackground(colors.gray)
+        :setForeground(colors.white)
+        :onClick(function()
+            this.onUpdateCallback()
+        end)
+
     this.deleteButton = this.innerFrame:addButton()
-        :setPosition(this.newButton:getX() + this.newButton:getWidth() + 6, this.newButton:getY())
-        :setSize(7,1)
+        :setPosition(this.updateButton:getX() + this.updateButton:getWidth() + 1, this.updateButton:getY())
+        :setSize(5,1)
         :setText("Del")
         :setBackground(colors.gray)
         :setForeground(colors.white)
@@ -76,6 +86,11 @@ function RecipeList:setOnSelected(callback)
 end
 function RecipeList:setOnNew(callback)
     self.onNewCallback = callback
+    return self
+end
+
+function RecipeList:setOnUpdate(callback)
+    self.onUpdateCallback = callback
     return self
 end
 

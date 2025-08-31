@@ -1,5 +1,6 @@
 local basalt = require("libraries.basalt")
 local Logger = require("utils.Logger")
+local Communicator = require("programs.common.Communicator")
 local StoreManager = require("programs.recipe.manager.StoreManager")
 local ItemSelectedListBox = require("elements.ItemSelectedListBox")
 local SnapShot = require("programs.common.SnapShot")
@@ -118,6 +119,24 @@ function DepotRecipeTab:new(pframe)
             
         end)
         :setGetDisplayRecipeListFn(getDisplayRecipeList)
+        :setOnUpdate(function()
+            -- Send all depot recipes via Communicator
+            local allRecipes = StoreManager.getAllRecipesByType(StoreManager.MACHINE_TYPES.depot)
+            if Communicator and Communicator.communicationChannels then
+                for side, channels in pairs(Communicator.communicationChannels) do
+                    for channel, topics in pairs(channels) do
+                        for topic, openChannel in pairs(topics) do
+                            if topic == "recipe" then
+                                openChannel.send("update", allRecipes)
+                                Logger.info("Sent {} depot recipes via update event", #allRecipes)
+                            end
+                        end
+                    end
+                end
+            else
+                Logger.warn("Communicator not available for sending updates")
+            end
+        end)
 
     this.detailFrame = this.innerFrame:addFrame()
         :setPosition(this.recipeListBox.innerFrame:getX() + this.recipeListBox.innerFrame:getWidth() + 1, 2)
@@ -152,6 +171,11 @@ function DepotRecipeTab:new(pframe)
                         this.selectedRecipe = {}
                     end
                     this.selectedRecipe.input = inputName
+                else
+                    this.inputLabel:setText("In: ")
+                    if this.selectedRecipe then
+                        this.selectedRecipe.input = nil
+                    end
                 end
                 this.itemListBox:close()
             end})
@@ -190,6 +214,11 @@ function DepotRecipeTab:new(pframe)
                         this.selectedRecipe = {}
                     end
                     this.selectedRecipe.output = outputNames
+                else
+                    this.outputLabel:setText("Out: ")
+                    if this.selectedRecipe then
+                        this.selectedRecipe.output = nil
+                    end
                 end
                 this.itemListBox:close()
             end})

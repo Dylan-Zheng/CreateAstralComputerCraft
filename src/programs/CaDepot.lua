@@ -29,6 +29,45 @@ local function saveRecipes()
     OSUtils.saveTable("cadepot_recipes", recipes)
 end
 
+-- Load communicator config from file
+local function loadCommunicatorConfig()
+    return OSUtils.loadTable("cadepot_communicator_config")
+end
+
+-- Save communicator config to file
+local function saveCommunicatorConfig(side, channel, secret)
+    local config = {
+        side = side,
+        channel = channel,
+        secret = secret
+    }
+    OSUtils.saveTable("cadepot_communicator_config", config)
+end
+
+-- Update recipes by ID
+local function updateRecipesByID(newRecipes)
+    local recipeMap = {}
+    -- Create a map of existing recipes by ID
+    for i, recipe in ipairs(recipes) do
+        if recipe.id then
+            recipeMap[recipe.id] = i
+        end
+    end
+    
+    -- Update existing recipes or add new ones
+    for _, newRecipe in ipairs(newRecipes) do
+        if newRecipe.id then
+            local existingIndex = recipeMap[newRecipe.id]
+            if existingIndex then
+                recipes[existingIndex] = newRecipe
+            end
+        end
+    end
+    
+    -- Save updated recipes
+    saveRecipes()
+end
+
 -- Get recipe by input name
 local function getRecipeByInput(inputName)
     for _, recipe in ipairs(recipes) do
@@ -53,7 +92,7 @@ end
 -- Display recipes with pagination
 local function displayRecipes(recipeList, page, pageSize)
     page = page or 1
-    pageSize = pageSize or 5
+    pageSize = pageSize or 5    
 
     if #recipeList == 0 then
         print("No recipes found.")
@@ -391,11 +430,21 @@ if args ~= nil and #args > 0 then
     local secret = args[3]
 
     if side and channel and secret then
+        -- Save communicator config
+        saveCommunicatorConfig(side, channel, secret)
+        
         -- Network mode
         Communicator.open(side, channel, "recipe", secret)
         local openChannel = Communicator.communicationChannels[side][channel]["recipe"]
         openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
             remoteRecipes = payload or {}
+        end)
+        
+        -- Add update event handler
+        openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
+            if payload and type(payload) == "table" then
+                updateRecipesByID(payload)
+            end
         end)
 
         parallel.waitForAll(Communicator.listen,
@@ -586,7 +635,29 @@ local checkAndMoveCompletedRecipe = function()
     end
 end
 
+local runChannel = function()
+    local config = loadCommunicatorConfig()
+    if config and config.side and config.channel and config.secret then
+        print("Found saved communicator config, attempting to connect...")
+        Communicator.open(config.side, config.channel, "recipe", config.secret)
+        local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
+        openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
+            remoteRecipes = payload or {}
+        end)
+        
+        -- Add update event handler
+        openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
+            if payload and type(payload) == "table" then
+                updateRecipesByID(payload)
+            end
+        end)
+        
+        Communicator.listen()
+    end
+end 
+
 parallel.waitForAll(
+    runChannel,
     checkAndRunRecipe,
     checkAndMoveCompletedRecipe
 )

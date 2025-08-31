@@ -66,6 +66,65 @@ local function saveRecipes()
     OSUtils.saveTable("cabasin_recipes", recipes)
 end
 
+-- Load communicator config from file
+local function loadCommunicatorConfig()
+    return OSUtils.loadTable("cabasin_communicator_config")
+end
+
+-- Save communicator config to file
+local function saveCommunicatorConfig(side, channel, secret)
+    local config = {
+        side = side,
+        channel = channel,
+        secret = secret
+    }
+    OSUtils.saveTable("cabasin_communicator_config", config)
+end
+
+-- Update recipes by ID
+local function updateRecipesByID(newRecipes)
+    local recipeMap = {}
+    local nameChangeMap = {} -- Track recipe name changes
+    
+    -- Create a map of existing recipes by ID
+    for i, recipe in ipairs(recipes) do
+        if recipe.id then
+            recipeMap[recipe.id] = i
+        end
+    end
+
+    -- Update existing recipes or add new ones
+    for _, newRecipe in ipairs(newRecipes) do
+        if newRecipe.id then
+            local existingIndex = recipeMap[newRecipe.id]
+            if existingIndex then
+                -- Track name changes for link updates
+                local oldName = recipes[existingIndex].name
+                local newName = newRecipe.name
+                if oldName ~= newName then
+                    nameChangeMap[oldName] = newName
+                end
+                
+                -- Update existing recipe
+                recipes[existingIndex] = newRecipe
+            end
+        end
+    end
+
+    -- Update recipe links based on name changes
+    for oldName, newName in pairs(nameChangeMap) do
+        if recipeLinks[oldName] then
+            local groupName = recipeLinks[oldName]
+            recipeLinks[oldName] = nil -- Remove old link
+            recipeLinks[newName] = groupName -- Add new link with updated name
+        end
+    end
+
+    -- Save updated recipes and links
+    saveRecipes()
+    saveRecipeLinks()
+end
+
 local getflattedGroupMachineNames = function(groups)
     local flatted = {}
 
@@ -654,6 +713,9 @@ if args ~= nil and #args > 0 then
     local secret = args[3]
 
     if side and channel and secret then
+        -- Save communicator config
+        saveCommunicatorConfig(side, channel, secret)
+
         -- Network mode
         Communicator.open(side, channel, "recipe", secret)
         local openChannel = Communicator.communicationChannels[side][channel]["recipe"]
@@ -695,6 +757,7 @@ local storage = storages[key]
 local linkedRecipes = {}
 local init = function()
     local recipeMap = {}
+
     for name, recipe in pairs(recipes) do
         recipeMap[recipe.name] = recipe
     end
@@ -824,6 +887,29 @@ end
 
 init()
 
-while true do
-    checkAndRunRecipes()
+local runChannel = function()
+    local config = loadCommunicatorConfig()
+    if config and config.side and config.channel and config.secret then
+        print("Found saved communicator config, attempting to connect...")
+        Communicator.open(config.side, config.channel, "recipe", config.secret)
+        local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
+        openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
+            remoteRecipes = payload or {}
+        end)
+
+        -- Add update event handler
+        openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
+            if payload and type(payload) == "table" then
+                updateRecipesByID(payload)
+                -- Reinitialize linked recipes after update
+                init()
+            end
+        end)
+        Communicator.listen()
+    end
 end
+
+parallel.waitForAny(
+    runChannel,
+    checkAndRunRecipes
+)

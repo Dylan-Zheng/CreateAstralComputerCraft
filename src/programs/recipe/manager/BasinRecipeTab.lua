@@ -1,5 +1,6 @@
 local basalt = require("libraries.basalt")
 local Logger = require("utils.Logger")
+local Communicator = require("programs.common.Communicator")
 local StoreManager = require("programs.recipe.manager.StoreManager")
 local ItemSelectedListBox = require("elements.ItemSelectedListBox")
 local SnapShot = require("programs.common.SnapShot")
@@ -115,6 +116,24 @@ function BasinRecipeTab:new(pframe)
             end)
         end)
         :setGetDisplayRecipeListFn(getDisplayRecipeList)
+        :setOnUpdate(function()
+            -- Send all basin recipes via Communicator
+            local allRecipes = StoreManager.getAllRecipesByType(StoreManager.MACHINE_TYPES.basin)
+            if Communicator and Communicator.communicationChannels then
+                for side, channels in pairs(Communicator.communicationChannels) do
+                    for channel, topics in pairs(channels) do
+                        for topic, openChannel in pairs(topics) do
+                            if topic == "recipe" then
+                                openChannel.send("update", allRecipes)
+                                Logger.info("Sent {} basin recipes via update event", #allRecipes)
+                            end
+                        end
+                    end
+                end
+            else
+                Logger.warn("Communicator not available for sending updates")
+            end
+        end)
 
     
 
@@ -170,6 +189,15 @@ function BasinRecipeTab:new(pframe)
                         this.selectedRecipe.input = {}
                     end
                     this.selectedRecipe.input.items = inputsItems
+                else
+                    if not this.selectedRecipe then
+                        this.selectedRecipe = {}
+                    end
+                    if not this.selectedRecipe.input then
+                        this.selectedRecipe.input = {}
+                    end
+                    this.selectedRecipe.input.items = nil   
+                    this.inputItemLabel:setText("Input Item: 0")
                 end
                 this.itemListBox:close()
             end})
@@ -209,6 +237,15 @@ function BasinRecipeTab:new(pframe)
                         this.selectedRecipe.input = {}
                     end
                     this.selectedRecipe.input.fluids = inputsFluids
+                else
+                    if not this.selectedRecipe then
+                        this.selectedRecipe = {}
+                    end
+                    if not this.selectedRecipe.input then
+                        this.selectedRecipe.input = {}
+                    end
+                    this.selectedRecipe.input.fluids = nil   
+                    this.inputFluidLabel:setText("Input Fluid: .. 0")
                 end
                 this.itemListBox:close()
             end})
@@ -248,6 +285,15 @@ function BasinRecipeTab:new(pframe)
                         this.selectedRecipe.output = {}
                     end
                     this.selectedRecipe.output.items = outputsItems
+                else
+                    if not this.selectedRecipe then
+                        this.selectedRecipe = {}
+                    end
+                    if not this.selectedRecipe.output then
+                        this.selectedRecipe.output = {}
+                    end
+                    this.selectedRecipe.output.items = nil   
+                    this.outputItemLabel:setText("Output Item: 0")
                 end
                 this.itemListBox:close()
             end})
@@ -302,6 +348,15 @@ function BasinRecipeTab:new(pframe)
                         this.selectedRecipe.output = {}
                     end
                     this.selectedRecipe.output.fluids = outputsFluids
+                else
+                    if not this.selectedRecipe then
+                        this.selectedRecipe = {}
+                    end 
+                    if not this.selectedRecipe.output then
+                        this.selectedRecipe.output = {}
+                    end
+                    this.selectedRecipe.output.fluids = nil   
+                    this.outputFluidLabel:setText("Output Fluid: .. 0")
                 end
                 this.itemListBox:close()
             end})

@@ -1,5 +1,6 @@
 local basalt = require("libraries.basalt")
 local Logger = require("utils.Logger")
+local Communicator = require("programs.common.Communicator")
 local StoreManager = require("programs.recipe.manager.StoreManager")
 local ItemSelectedListBox = require("elements.ItemSelectedListBox")
 local SnapShot = require("programs.common.SnapShot")
@@ -98,6 +99,24 @@ function BeltRecipeTab:new(pframe)
             end)
         end)
         :setGetDisplayRecipeListFn(getDisplayRecipeList)
+        :setOnUpdate(function()
+            -- Send all belt recipes via Communicator
+            local allRecipes = StoreManager.getAllRecipesByType(StoreManager.MACHINE_TYPES.belt)
+            if Communicator and Communicator.communicationChannels then
+                for side, channels in pairs(Communicator.communicationChannels) do
+                    for channel, topics in pairs(channels) do
+                        for topic, openChannel in pairs(topics) do
+                            if topic == "recipe" then
+                                openChannel.send("update", allRecipes)
+                                Logger.info("Sent {} belt recipes via update event", #allRecipes)
+                            end
+                        end
+                    end
+                end
+            else
+                Logger.warn("Communicator not available for sending updates")
+            end
+        end)
 
     this.detailsFrame = this.innerFrame:addFrame()
         :setPosition(this.recipeListBox.innerFrame:getX() + this.recipeListBox.innerFrame:getWidth(), 2)
@@ -133,6 +152,12 @@ function BeltRecipeTab:new(pframe)
                         this.selectedRecipe = {}
                     end
                     this.selectedRecipe.input = inputName
+                else
+                    if this.selectedRecipe == nil then
+                        this.selectedRecipe = {}
+                    end
+                    this.selectedRecipe.input = nil   
+                    this.inputLabel:setText("In: ")
                 end
                 this.itemListBox:close()
             end})
@@ -166,6 +191,12 @@ function BeltRecipeTab:new(pframe)
                         this.selectedRecipe = {}
                     end
                     this.selectedRecipe.incomplete = incompleteItem
+                else
+                    if this.selectedRecipe == nil then
+                        this.selectedRecipe = {}
+                    end
+                    this.selectedRecipe.incomplete = nil   
+                    this.incompleteLabel:setText("Incomplete: ")
                 end
                 this.itemListBox:close()
             end})
@@ -199,6 +230,12 @@ function BeltRecipeTab:new(pframe)
                         this.selectedRecipe = {}
                     end
                     this.selectedRecipe.output = outputItem
+                else
+                    if this.selectedRecipe == nil then
+                        this.selectedRecipe = {}
+                    end
+                    this.selectedRecipe.output = nil   
+                    this.outputLabel:setText("Out: ")
                 end
                 this.itemListBox:close()
             end})
