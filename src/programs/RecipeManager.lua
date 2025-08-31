@@ -12,7 +12,8 @@ local CommonRecipeTab = require("programs.recipe.manager.CommonRecipeTab")
 
 
 -- LOGGER SETUP
-local basaltLogEnabled = true
+Logger.level = Logger.levels.ERROR
+local basaltLogEnabled = false
 basalt.LOGGER.setEnabled(basaltLogEnabled)
 basalt.LOGGER.setLogToFile(true)
 

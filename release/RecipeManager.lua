@@ -9,8 +9,8 @@ local dd=require("programs.common.SnapShot")local __a=require("utils.Logger")
 local a_a=require("programs.recipe.manager.SettingTab")local b_a=require("programs.common.Communicator")
 local c_a=require("programs.recipe.manager.BasinRecipeTab")
 local d_a=require("programs.recipe.manager.BeltRecipeTab")
-local _aa=require("programs.recipe.manager.CommonRecipeTab")local aaa=true;_d.LOGGER.setEnabled(aaa)
-_d.LOGGER.setLogToFile(true)
+local _aa=require("programs.recipe.manager.CommonRecipeTab")__a.level=__a.levels.ERROR;local aaa=false
+_d.LOGGER.setEnabled(aaa)_d.LOGGER.setLogToFile(true)
 if aaa then
 __a.addPrintFunction(function(dba,_ca,aca,bca)
 bca=string.format("[%s:%d] %s",_ca,aca,bca)
@@ -2879,115 +2879,126 @@ self:selectTab(self.tabs[1])end end;function ca:getTabByName(da)
 for _b,ab in ipairs(self.tabs)do if ab.name==da then return ab end end;return nil end;function ca:getTabByIndex(da)if
 da<1 or da>#self.tabs then return nil end
 return self.tabs[da]end;return ca end
-modules["programs.recipe.manager.DepotRecipeTab"] = function(...) local bc=require("libraries.basalt")
-local cc=require("utils.Logger")local dc=require("programs.recipe.manager.StoreManager")
-local _d=require("elements.ItemSelectedListBox")local ad=require("programs.common.SnapShot")
-local bd=require("utils.StringUtils")local cd=require("programs.recipe.manager.TriggerView")
-local dd=require("elements.MessageBox")local __a=require("elements.ConfirmMessageBox")
-local a_a=require("programs.recipe.manager.RecipeList")local b_a=require("programs.recipe.manager.Utils")local c_a=colors
-local d_a={[dc.DEPOT_TYPES.NONE]="None",[dc.DEPOT_TYPES.FIRE]="Fire",[dc.DEPOT_TYPES.SOUL_FIRE]="Soul Fire",[dc.DEPOT_TYPES.LAVA]="Lava",[dc.DEPOT_TYPES.WATER]="Water"}
-local _aa=function(caa)local daa={}for _ba,aba in pairs(dc.DEPOT_TYPES)do
-table.insert(daa,{text=d_a[aba],value=aba,selected=aba==caa})end;return daa end;DepotRecipeTab={}DepotRecipeTab.__index=DepotRecipeTab;local function aaa(caa)
-if not caa then return""end;local daa=caa:find(":")if daa then return caa:sub(daa+1)end
-return caa end
-local baa=function(caa)
-local daa=dc.getAllRecipesByType(dc.MACHINE_TYPES.depot)local _ba={}
-for aba,bba in ipairs(daa)do if not caa or
-bba.input:lower():find(caa:lower())then
-table.insert(_ba,{text=aaa(bba.input),id=bba.id})end end;return _ba end
-function DepotRecipeTab:new(caa)local daa=setmetatable({},DepotRecipeTab)
-daa.pframe=caa;daa.selectedRecipe=nil
-daa.innerFrame=daa.pframe:addFrame():setPosition(1,1):setSize(daa.pframe:getWidth(),daa.pframe:getHeight()):setBackground(c_a.lightGray):setForeground(c_a.white)
-daa.recipeListBox=a_a:new(daa.innerFrame,1,1,22,daa.innerFrame:getHeight()):setOnSelected(function(bba)
+modules["programs.recipe.manager.DepotRecipeTab"] = function(...) local cc=require("libraries.basalt")
+local dc=require("utils.Logger")local _d=require("programs.common.Communicator")
+local ad=require("programs.recipe.manager.StoreManager")local bd=require("elements.ItemSelectedListBox")
+local cd=require("programs.common.SnapShot")local dd=require("utils.StringUtils")
+local __a=require("programs.recipe.manager.TriggerView")local a_a=require("elements.MessageBox")
+local b_a=require("elements.ConfirmMessageBox")local c_a=require("programs.recipe.manager.RecipeList")
+local d_a=require("programs.recipe.manager.Utils")local _aa=colors
+local aaa={[ad.DEPOT_TYPES.NONE]="None",[ad.DEPOT_TYPES.FIRE]="Fire",[ad.DEPOT_TYPES.SOUL_FIRE]="Soul Fire",[ad.DEPOT_TYPES.LAVA]="Lava",[ad.DEPOT_TYPES.WATER]="Water"}
+local baa=function(_ba)local aba={}for bba,cba in pairs(ad.DEPOT_TYPES)do
+table.insert(aba,{text=aaa[cba],value=cba,selected=cba==_ba})end;return aba end;DepotRecipeTab={}DepotRecipeTab.__index=DepotRecipeTab;local function caa(_ba)
+if not _ba then return""end;local aba=_ba:find(":")if aba then return _ba:sub(aba+1)end
+return _ba end
+local daa=function(_ba)
+local aba=ad.getAllRecipesByType(ad.MACHINE_TYPES.depot)local bba={}
+for cba,dba in ipairs(aba)do if not _ba or
+dba.input:lower():find(_ba:lower())then
+table.insert(bba,{text=caa(dba.input),id=dba.id})end end;return bba end
+function DepotRecipeTab:new(_ba)local aba=setmetatable({},DepotRecipeTab)
+aba.pframe=_ba;aba.selectedRecipe=nil
+aba.innerFrame=aba.pframe:addFrame():setPosition(1,1):setSize(aba.pframe:getWidth(),aba.pframe:getHeight()):setBackground(_aa.lightGray):setForeground(_aa.white)
+aba.recipeListBox=c_a:new(aba.innerFrame,1,1,22,aba.innerFrame:getHeight()):setOnSelected(function(dba)
 if
-bba then
-daa.selectedRecipe=dc.getRecipeByTypeAndId(dc.MACHINE_TYPES.depot,bba.id)
-if daa.selectedRecipe then
-daa.inputLabel:setText("In: "..bd.ellipsisMiddle(daa.selectedRecipe.input,
-daa.inputLabel:getWidth()-4))
-daa.outputLabel:setText("Out: "..#daa.selectedRecipe.output)
-daa.depotTypeDropdown:setItems(_aa(daa.selectedRecipe.depotType))else
-daa.messageBox:open("Error","Recipe not found!")end else daa.selectedRecipe=nil
-daa.inputLabel:setText("In: ")daa.outputLabel:setText("Out: ")
-daa.depotTypeDropdown:setItems(_aa())end;daa.recipeListBox:refreshRecipeList()end):setOnNew(function()
-daa:addNewRecipe()end):setOnDel(function()if
+dba then
+aba.selectedRecipe=ad.getRecipeByTypeAndId(ad.MACHINE_TYPES.depot,dba.id)
+if aba.selectedRecipe then
+aba.inputLabel:setText("In: "..dd.ellipsisMiddle(aba.selectedRecipe.input,
+aba.inputLabel:getWidth()-4))
+aba.outputLabel:setText("Out: "..#aba.selectedRecipe.output)
+aba.depotTypeDropdown:setItems(baa(aba.selectedRecipe.depotType))else
+aba.messageBox:open("Error","Recipe not found!")end else aba.selectedRecipe=nil
+aba.inputLabel:setText("In: ")aba.outputLabel:setText("Out: ")
+aba.depotTypeDropdown:setItems(baa())end;aba.recipeListBox:refreshRecipeList()end):setOnNew(function()
+aba:addNewRecipe()end):setOnDel(function()if
 
-daa.selectedRecipe==nil or daa.selectedRecipe.id==nil then
-daa.messageBox:open("Error","No recipe selected to delete!")return end
-daa.confirmMessageBox:open("Confirm",
-"Are you sure to delete the selected recipe: "..aaa(daa.selectedRecipe.input).."?",function()
-local bba,cba=dc.removeRecipe(dc.MACHINE_TYPES.depot,daa.selectedRecipe.id)if not bba then
-daa.messageBox:open("Error","Failed to delete recipe! "..tostring(cba))return end;daa.selectedRecipe=nil
-daa.inputLabel:setText("In: ")daa.outputLabel:setText("Out: ")
-daa.recipeListBox:refreshRecipeList()
-daa.messageBox:open("Success","Recipe deleted successfully!")end)end):setGetDisplayRecipeListFn(baa)
-daa.detailFrame=daa.innerFrame:addFrame():setPosition(
+aba.selectedRecipe==nil or aba.selectedRecipe.id==nil then
+aba.messageBox:open("Error","No recipe selected to delete!")return end
+aba.confirmMessageBox:open("Confirm",
+"Are you sure to delete the selected recipe: "..caa(aba.selectedRecipe.input).."?",function()
+local dba,_ca=ad.removeRecipe(ad.MACHINE_TYPES.depot,aba.selectedRecipe.id)if not dba then
+aba.messageBox:open("Error","Failed to delete recipe! "..tostring(_ca))return end;aba.selectedRecipe=nil
+aba.inputLabel:setText("In: ")aba.outputLabel:setText("Out: ")
+aba.recipeListBox:refreshRecipeList()
+aba.messageBox:open("Success","Recipe deleted successfully!")end)end):setGetDisplayRecipeListFn(daa):setOnUpdate(function()
+local dba=ad.getAllRecipesByType(ad.MACHINE_TYPES.depot)
+if _d and _d.communicationChannels then
+for _ca,aca in pairs(_d.communicationChannels)do
+for bca,cca in pairs(aca)do
+for dca,_da in
+pairs(cca)do if dca=="recipe"then _da.send("update",dba)
+dc.info("Sent {} depot recipes via update event",#dba)end end end end else
+dc.warn("Communicator not available for sending updates")end end)
+aba.detailFrame=aba.innerFrame:addFrame():setPosition(
 
-daa.recipeListBox.innerFrame:getX()+daa.recipeListBox.innerFrame:getWidth()+1,2):setSize(
-daa.innerFrame:getWidth()-
-(daa.recipeListBox.innerFrame:getX()+
-daa.recipeListBox.innerFrame:getWidth()+1),
-daa.innerFrame:getHeight()-2):setBackground(c_a.gray):setForeground(c_a.white)
-daa.inputLabel=daa.detailFrame:addLabel():setPosition(2,2):setAutoSize(false):setWidth(
-daa.detailFrame:getWidth()-6):setText("In: "):setBackground(c_a.black):setForeground(c_a.white)
-daa.inputEditBtn=daa.detailFrame:addButton():setPosition(
-daa.detailFrame:getWidth()-3,daa.inputLabel:getY()):setSize(3,1):setText("..."):setBackground(c_a.lightGray):setForeground(c_a.white):onClick(function()local bba=
+aba.recipeListBox.innerFrame:getX()+aba.recipeListBox.innerFrame:getWidth()+1,2):setSize(
+aba.innerFrame:getWidth()-
+(aba.recipeListBox.innerFrame:getX()+
+aba.recipeListBox.innerFrame:getWidth()+1),
+aba.innerFrame:getHeight()-2):setBackground(_aa.gray):setForeground(_aa.white)
+aba.inputLabel=aba.detailFrame:addLabel():setPosition(2,2):setAutoSize(false):setWidth(
+aba.detailFrame:getWidth()-6):setText("In: "):setBackground(_aa.black):setForeground(_aa.white)
+aba.inputEditBtn=aba.detailFrame:addButton():setPosition(
+aba.detailFrame:getWidth()-3,aba.inputLabel:getY()):setSize(3,1):setText("..."):setBackground(_aa.lightGray):setForeground(_aa.white):onClick(function()local dba=
 nil
 if
-daa.selectedRecipe~=nil and daa.selectedRecipe.input~=nil then bba={[daa.selectedRecipe.input]=true}end
-daa.itemListBox:open(b_a.getListDisplayItems(bba,ad.items),false,{confirm=function(cba)
-if cba and
-next(cba)~=nil then local dba=cba[1].text
-daa.inputLabel:setText("In: "..bd.ellipsisMiddle(dba,
-daa.inputLabel:getWidth()-4))if daa.selectedRecipe==nil then daa.selectedRecipe={}end
-daa.selectedRecipe.input=dba end;daa.itemListBox:close()end})end)
-daa.outputLabel=daa.detailFrame:addLabel():setPosition(2,
-daa.inputLabel:getY()+daa.inputLabel:getHeight()+1):setAutoSize(false):setWidth(
-daa.detailFrame:getWidth()-6):setText("Out: "):setBackground(c_a.black):setForeground(c_a.white)
-daa.outputEditBtn=daa.detailFrame:addButton():setPosition(
-daa.detailFrame:getWidth()-3,daa.outputLabel:getY()):setSize(3,1):setText("..."):setBackground(c_a.lightGray):setForeground(c_a.white):onClick(function()local bba=
+aba.selectedRecipe~=nil and aba.selectedRecipe.input~=nil then dba={[aba.selectedRecipe.input]=true}end
+aba.itemListBox:open(d_a.getListDisplayItems(dba,cd.items),false,{confirm=function(_ca)
+if _ca and
+next(_ca)~=nil then local aca=_ca[1].text
+aba.inputLabel:setText("In: "..dd.ellipsisMiddle(aca,
+aba.inputLabel:getWidth()-4))if aba.selectedRecipe==nil then aba.selectedRecipe={}end
+aba.selectedRecipe.input=aca else aba.inputLabel:setText("In: ")if aba.selectedRecipe then aba.selectedRecipe.input=
+nil end end;aba.itemListBox:close()end})end)
+aba.outputLabel=aba.detailFrame:addLabel():setPosition(2,
+aba.inputLabel:getY()+aba.inputLabel:getHeight()+1):setAutoSize(false):setWidth(
+aba.detailFrame:getWidth()-6):setText("Out: "):setBackground(_aa.black):setForeground(_aa.white)
+aba.outputEditBtn=aba.detailFrame:addButton():setPosition(
+aba.detailFrame:getWidth()-3,aba.outputLabel:getY()):setSize(3,1):setText("..."):setBackground(_aa.lightGray):setForeground(_aa.white):onClick(function()local dba=
 nil;if
-daa.selectedRecipe~=nil and daa.selectedRecipe.output~=nil then bba={}
-for cba,dba in ipairs(daa.selectedRecipe.output)do bba[dba]=true end end
-daa.itemListBox:open(b_a.getListDisplayItems(bba,ad.items),true,{confirm=function(cba)
+aba.selectedRecipe~=nil and aba.selectedRecipe.output~=nil then dba={}
+for _ca,aca in ipairs(aba.selectedRecipe.output)do dba[aca]=true end end
+aba.itemListBox:open(d_a.getListDisplayItems(dba,cd.items),true,{confirm=function(_ca)
 if
-cba then local dba={}
-for _ca,aca in ipairs(cba)do table.insert(dba,aca.text)end;daa.outputLabel:setText("Out: "..#dba)if
-daa.selectedRecipe==nil then daa.selectedRecipe={}end
-daa.selectedRecipe.output=dba end;daa.itemListBox:close()end})end)
-daa.typeLabel=daa.detailFrame:addLabel():setPosition(2,
-daa.outputLabel:getY()+daa.outputLabel:getHeight()+1):setText("Type: "):setBackground(c_a.gray):setForeground(c_a.white)
-daa.depotTypeDropdown=daa.detailFrame:addDropdown():setPosition(
-daa.typeLabel:getX()+daa.typeLabel:getWidth()+1,daa.typeLabel:getY()):setBackground(c_a.lightGray):setForeground(c_a.white):setSize(10,1):setItems(_aa()):onSelect(function(bba,cba,dba)daa.selectedRecipe=
-daa.selectedRecipe or{}
-daa.selectedRecipe.depotType=dba.value end)local _ba="Set Trigger"
-daa.setTriggerBtn=daa.detailFrame:addButton():setPosition(2,
+_ca then local aca={}
+for bca,cca in ipairs(_ca)do table.insert(aca,cca.text)end;aba.outputLabel:setText("Out: "..#aca)if
+aba.selectedRecipe==nil then aba.selectedRecipe={}end
+aba.selectedRecipe.output=aca else aba.outputLabel:setText("Out: ")if aba.selectedRecipe then aba.selectedRecipe.output=
+nil end end;aba.itemListBox:close()end})end)
+aba.typeLabel=aba.detailFrame:addLabel():setPosition(2,
+aba.outputLabel:getY()+aba.outputLabel:getHeight()+1):setText("Type: "):setBackground(_aa.gray):setForeground(_aa.white)
+aba.depotTypeDropdown=aba.detailFrame:addDropdown():setPosition(
+aba.typeLabel:getX()+aba.typeLabel:getWidth()+1,aba.typeLabel:getY()):setBackground(_aa.lightGray):setForeground(_aa.white):setSize(10,1):setItems(baa()):onSelect(function(dba,_ca,aca)aba.selectedRecipe=
+aba.selectedRecipe or{}
+aba.selectedRecipe.depotType=aca.value end)local bba="Set Trigger"
+aba.setTriggerBtn=aba.detailFrame:addButton():setPosition(2,
 
-daa.depotTypeDropdown:getY()+daa.depotTypeDropdown:getHeight()+1):setSize(
-#_ba,1):setText(_ba):setBackground(c_a.lightGray):setForeground(c_a.white):onClick(function()
-daa.trigger:open(
-daa.selectedRecipe and daa.selectedRecipe.trigger or nil,function(bba)daa.selectedRecipe=
-daa.selectedRecipe or{}daa.selectedRecipe.trigger=bba end)end)local aba="Clr Trigger"
-daa.clearTriggerBtn=daa.detailFrame:addButton():setPosition(
-daa.setTriggerBtn:getX()+daa.setTriggerBtn:getWidth()+3,daa.setTriggerBtn:getY()):setSize(
-#aba,1):setText(aba):setBackground(c_a.lightGray):setForeground(c_a.white):onClick(function()if
-daa.selectedRecipe then daa.selectedRecipe.trigger=nil end end)
-daa.saveBtn=daa.detailFrame:addButton():setPosition(
-daa.detailFrame:getWidth()-6,daa.detailFrame:getHeight()-1):setSize(6,1):setText("Save"):setBackground(c_a.green):setForeground(c_a.black):onClick(function()if
-daa.selectedRecipe==nil then
-daa.messageBox:open("Error","No recipe selected to save!")return end
-if daa.selectedRecipe.id~=
+aba.depotTypeDropdown:getY()+aba.depotTypeDropdown:getHeight()+1):setSize(
+#bba,1):setText(bba):setBackground(_aa.lightGray):setForeground(_aa.white):onClick(function()
+aba.trigger:open(
+aba.selectedRecipe and aba.selectedRecipe.trigger or nil,function(dba)aba.selectedRecipe=
+aba.selectedRecipe or{}aba.selectedRecipe.trigger=dba end)end)local cba="Clr Trigger"
+aba.clearTriggerBtn=aba.detailFrame:addButton():setPosition(
+aba.setTriggerBtn:getX()+aba.setTriggerBtn:getWidth()+3,aba.setTriggerBtn:getY()):setSize(
+#cba,1):setText(cba):setBackground(_aa.lightGray):setForeground(_aa.white):onClick(function()if
+aba.selectedRecipe then aba.selectedRecipe.trigger=nil end end)
+aba.saveBtn=aba.detailFrame:addButton():setPosition(
+aba.detailFrame:getWidth()-6,aba.detailFrame:getHeight()-1):setSize(6,1):setText("Save"):setBackground(_aa.green):setForeground(_aa.black):onClick(function()if
+aba.selectedRecipe==nil then
+aba.messageBox:open("Error","No recipe selected to save!")return end
+if aba.selectedRecipe.id~=
 nil then
-local bba=dc.updateRecipe(dc.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(daa.selectedRecipe)))if not bba then
-daa.messageBox:open("Error","Failed to update recipe!")return end
-daa.recipeListBox:refreshRecipeList()
-daa.messageBox:open("Success","Recipe updated successfully!")return else
-local bba,cba=dc.addRecipe(dc.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(daa.selectedRecipe)))if not bba then
-daa.messageBox:open("Error","Failed to add recipe!")return end
-daa.selectedRecipe.id=cba;daa.recipeListBox:refreshRecipeList()
-daa.messageBox:open("Success","Recipe added successfully!")end end)daa.itemListBox=_d:new(daa.pframe)
-daa.trigger=cd:new(daa.pframe)daa.messageBox=dd:new(daa.pframe)
-daa.confirmMessageBox=__a:new(daa.pframe)return daa end
+local dba=ad.updateRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not dba then
+aba.messageBox:open("Error","Failed to update recipe!")return end
+aba.recipeListBox:refreshRecipeList()
+aba.messageBox:open("Success","Recipe updated successfully!")return else
+local dba,_ca=ad.addRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not dba then
+aba.messageBox:open("Error","Failed to add recipe!")return end
+aba.selectedRecipe.id=_ca;aba.recipeListBox:refreshRecipeList()
+aba.messageBox:open("Success","Recipe added successfully!")end end)aba.itemListBox=bd:new(aba.pframe)
+aba.trigger=__a:new(aba.pframe)aba.messageBox=a_a:new(aba.pframe)
+aba.confirmMessageBox=b_a:new(aba.pframe)return aba end
 function DepotRecipeTab:addNewRecipe()self.selectedRecipe=nil
 self.inputLabel:setText("In: ")self.outputLabel:setText("Out: ")end;function DepotRecipeTab:init()
 self.recipeListBox:refreshRecipeList()return self end;return DepotRecipeTab end
@@ -3300,452 +3311,553 @@ function ac.getOpenChannels()local dc={}
 for _d,ad in pairs(ac.communicationChannels)do
 for bd,cd in pairs(ad)do for dd,__a in pairs(cd)do
 table.insert(dc,ac.communicationChannels[_d][bd][dd])end end end;return dc end;return ac end
-modules["programs.recipe.manager.BasinRecipeTab"] = function(...) local ac=require("libraries.basalt")
-local bc=require("utils.Logger")local cc=require("programs.recipe.manager.StoreManager")
-local dc=require("elements.ItemSelectedListBox")local _d=require("programs.common.SnapShot")
-local ad=require("programs.recipe.manager.TriggerView")local bd=require("elements.MessageBox")
-local cd=require("elements.ConfirmMessageBox")local dd=require("programs.recipe.manager.RecipeList")
-local __a=require("programs.recipe.manager.Utils")local a_a=require("elements.ScrollableFrame")local b_a={}
-b_a.__index=b_a
-local c_a={[cc.BLAZE_BURN_TYPE.NONE]="None",[cc.BLAZE_BURN_TYPE.LAVA]="Lava",[cc.BLAZE_BURN_TYPE.HELLFIRE]="Hellfire"}
-local d_a=function(aaa)local baa={}for caa,daa in pairs(cc.BLAZE_BURN_TYPE)do
-table.insert(baa,{text=c_a[daa],value=daa,selected=daa==aaa})end;return baa end
-local _aa=function(aaa)
-local baa=cc.getAllRecipesByType(cc.MACHINE_TYPES.basin)local caa={}
-for daa,_ba in ipairs(baa)do if not aaa or
-_ba.name:lower():find(aaa:lower())then
-table.insert(caa,{text=_ba.name,id=_ba.id})end end;return caa end
-function b_a:new(aaa)local baa=setmetatable({},b_a)baa.selectedRecipe=nil
-baa.pframe=aaa
-baa.innerFrame=baa.pframe:addFrame():setPosition(1,1):setSize(baa.pframe:getWidth(),baa.pframe:getHeight()):setBackground(colors.lightGray):setForeground(colors.white)
-baa.recipeListBox=dd:new(baa.innerFrame,1,1,22,baa.innerFrame:getHeight()):setOnSelected(function(aba)
-baa.selectedRecipe=cc.getRecipeByTypeAndId(cc.MACHINE_TYPES.basin,aba.id)
-if baa.selectedRecipe then
-baa.nameInput:setText(baa.selectedRecipe.name or"")
-baa.inputItemLabel:setText("Input Item: "..
-(baa.selectedRecipe.input.items and#
-baa.selectedRecipe.input.items or 0))
-baa.inputFluidLabel:setText("Input Fluid: "..
-(baa.selectedRecipe.input.fluids and#
-baa.selectedRecipe.input.fluids or 0))
-baa.outputItemLabel:setText("Output Item: "..
-(baa.selectedRecipe.output.items and#
-baa.selectedRecipe.output.items or 0))
-baa.outputFluidLabel:setText("Output Fluid: "..
-(baa.selectedRecipe.output.fluids and#
-baa.selectedRecipe.output.fluids or 0))
-baa.outputItemKeepAmountLabel:setText("Keep Amount: ".. (
-baa.selectedRecipe.output.keepItemsAmount or 0))
-baa.outputFluidKeepAmountLabel:setText("Keep Amount: ".. (
-baa.selectedRecipe.output.keepFluidsAmount or 0))
-baa.blazeBurnerDropdown:setItems(d_a(baa.selectedRecipe.blazeBurner))else baa.nameInput:setText("")
-baa.inputItemLabel:setText("Input Item:")baa.inputFluidLabel:setText("Input Fluid:")
-baa.outputItemLabel:setText("Output Item:")
-baa.outputFluidLabel:setText("Output Fluid:")
-baa.outputItemKeepAmountLabel:setText("Keep Amount:")
-baa.outputFluidKeepAmountLabel:setText("Keep Amount:")end end):setOnNew(function()baa.selectedRecipe=
-nil;baa.nameInput:setText("")
-baa.inputItemLabel:setText("Input Item:")baa.inputFluidLabel:setText("Input Fluid:")
-baa.outputItemLabel:setText("Output Item:")
-baa.outputFluidLabel:setText("Output Fluid:")
-baa.outputItemKeepAmountLabel:setText("Keep Amount:")
-baa.outputFluidKeepAmountLabel:setText("Keep Amount:")end):setOnDel(function(aba)if
+modules["programs.recipe.manager.BasinRecipeTab"] = function(...) local bc=require("libraries.basalt")
+local cc=require("utils.Logger")local dc=require("programs.common.Communicator")
+local _d=require("programs.recipe.manager.StoreManager")local ad=require("elements.ItemSelectedListBox")
+local bd=require("programs.common.SnapShot")local cd=require("programs.recipe.manager.TriggerView")
+local dd=require("elements.MessageBox")local __a=require("elements.ConfirmMessageBox")
+local a_a=require("programs.recipe.manager.RecipeList")local b_a=require("programs.recipe.manager.Utils")
+local c_a=require("elements.ScrollableFrame")local d_a={}d_a.__index=d_a
+local _aa={[_d.BLAZE_BURN_TYPE.NONE]="None",[_d.BLAZE_BURN_TYPE.LAVA]="Lava",[_d.BLAZE_BURN_TYPE.HELLFIRE]="Hellfire"}
+local aaa=function(caa)local daa={}for _ba,aba in pairs(_d.BLAZE_BURN_TYPE)do
+table.insert(daa,{text=_aa[aba],value=aba,selected=aba==caa})end;return daa end
+local baa=function(caa)
+local daa=_d.getAllRecipesByType(_d.MACHINE_TYPES.basin)local _ba={}
+for aba,bba in ipairs(daa)do if not caa or
+bba.name:lower():find(caa:lower())then
+table.insert(_ba,{text=bba.name,id=bba.id})end end;return _ba end
+function d_a:new(caa)local daa=setmetatable({},d_a)daa.selectedRecipe=nil
+daa.pframe=caa
+daa.innerFrame=daa.pframe:addFrame():setPosition(1,1):setSize(daa.pframe:getWidth(),daa.pframe:getHeight()):setBackground(colors.lightGray):setForeground(colors.white)
+daa.recipeListBox=a_a:new(daa.innerFrame,1,1,22,daa.innerFrame:getHeight()):setOnSelected(function(cba)
+daa.selectedRecipe=_d.getRecipeByTypeAndId(_d.MACHINE_TYPES.basin,cba.id)
+if daa.selectedRecipe then
+daa.nameInput:setText(daa.selectedRecipe.name or"")
+daa.inputItemLabel:setText("Input Item: "..
+(daa.selectedRecipe.input.items and#
+daa.selectedRecipe.input.items or 0))
+daa.inputFluidLabel:setText("Input Fluid: "..
+(daa.selectedRecipe.input.fluids and#
+daa.selectedRecipe.input.fluids or 0))
+daa.outputItemLabel:setText("Output Item: "..
+(daa.selectedRecipe.output.items and#
+daa.selectedRecipe.output.items or 0))
+daa.outputFluidLabel:setText("Output Fluid: "..
+(daa.selectedRecipe.output.fluids and#
+daa.selectedRecipe.output.fluids or 0))
+daa.outputItemKeepAmountLabel:setText("Keep Amount: ".. (
+daa.selectedRecipe.output.keepItemsAmount or 0))
+daa.outputFluidKeepAmountLabel:setText("Keep Amount: ".. (
+daa.selectedRecipe.output.keepFluidsAmount or 0))
+daa.blazeBurnerDropdown:setItems(aaa(daa.selectedRecipe.blazeBurner))else daa.nameInput:setText("")
+daa.inputItemLabel:setText("Input Item:")daa.inputFluidLabel:setText("Input Fluid:")
+daa.outputItemLabel:setText("Output Item:")
+daa.outputFluidLabel:setText("Output Fluid:")
+daa.outputItemKeepAmountLabel:setText("Keep Amount:")
+daa.outputFluidKeepAmountLabel:setText("Keep Amount:")end end):setOnNew(function()daa.selectedRecipe=
+nil;daa.nameInput:setText("")
+daa.inputItemLabel:setText("Input Item:")daa.inputFluidLabel:setText("Input Fluid:")
+daa.outputItemLabel:setText("Output Item:")
+daa.outputFluidLabel:setText("Output Fluid:")
+daa.outputItemKeepAmountLabel:setText("Keep Amount:")
+daa.outputFluidKeepAmountLabel:setText("Keep Amount:")end):setOnDel(function(cba)if
 
-baa.selectedRecipe==nil or baa.selectedRecipe.id==nil then
-baa.messageBox:open("Error","No recipe selected to delete!")return end
-baa.confirmMessageBox:open("Confirm",
-"Are you sure to delete the selected recipe: "..baa.selectedRecipe.name.."?",function()
-local bba,cba=cc.removeRecipe(cc.MACHINE_TYPES.basin,baa.selectedRecipe.id)if not bba then
-baa.messageBox:open("Error","Failed to delete recipe! "..tostring(cba))return end;baa.selectedRecipe=nil
-baa.nameInput:setText("")baa.inputItemLabel:setText("Input Item:")
-baa.inputFluidLabel:setText("Input Fluid:")baa.outputItemLabel:setText("Output Item:")
-baa.outputFluidLabel:setText("Output Fluid:")
-baa.outputItemKeepAmountLabel:setText("Keep Amount:")
-baa.outputFluidKeepAmountLabel:setText("Keep Amount:")baa.recipeListBox:refreshRecipeList()end)end):setGetDisplayRecipeListFn(_aa)
-baa.detailsFrame=baa.innerFrame:addFrame():setPosition(
-baa.recipeListBox.innerFrame:getX()+baa.recipeListBox.innerFrame:getWidth(),2):setSize(
+daa.selectedRecipe==nil or daa.selectedRecipe.id==nil then
+daa.messageBox:open("Error","No recipe selected to delete!")return end
+daa.confirmMessageBox:open("Confirm",
+"Are you sure to delete the selected recipe: "..daa.selectedRecipe.name.."?",function()
+local dba,_ca=_d.removeRecipe(_d.MACHINE_TYPES.basin,daa.selectedRecipe.id)if not dba then
+daa.messageBox:open("Error","Failed to delete recipe! "..tostring(_ca))return end;daa.selectedRecipe=nil
+daa.nameInput:setText("")daa.inputItemLabel:setText("Input Item:")
+daa.inputFluidLabel:setText("Input Fluid:")daa.outputItemLabel:setText("Output Item:")
+daa.outputFluidLabel:setText("Output Fluid:")
+daa.outputItemKeepAmountLabel:setText("Keep Amount:")
+daa.outputFluidKeepAmountLabel:setText("Keep Amount:")daa.recipeListBox:refreshRecipeList()end)end):setGetDisplayRecipeListFn(baa):setOnUpdate(function()
+local cba=_d.getAllRecipesByType(_d.MACHINE_TYPES.basin)
+if dc and dc.communicationChannels then
+for dba,_ca in pairs(dc.communicationChannels)do
+for aca,bca in pairs(_ca)do
+for cca,dca in
+pairs(bca)do if cca=="recipe"then dca.send("update",cba)
+cc.info("Sent {} basin recipes via update event",#cba)end end end end else
+cc.warn("Communicator not available for sending updates")end end)
+daa.detailsFrame=daa.innerFrame:addFrame():setPosition(
+daa.recipeListBox.innerFrame:getX()+daa.recipeListBox.innerFrame:getWidth(),2):setSize(
 
-baa.innerFrame:getWidth()-baa.recipeListBox.innerFrame:getWidth()-1,baa.innerFrame:getHeight()-2):setBackground(colors.gray):setForeground(colors.white)
-baa.nameLabel=baa.detailsFrame:addLabel():setText("Name:"):setPosition(2,2):setBackground(colors.lightGray):setForeground(colors.white)
-baa.nameInput=baa.detailsFrame:addInput():setPosition(
-baa.nameLabel:getX()+baa.nameLabel:getWidth()+1,baa.nameLabel:getY()):setSize(
-baa.detailsFrame:getWidth()-baa.nameLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white)
-baa.inputItemLabel=baa.detailsFrame:addLabel():setText("Input Item:"):setPosition(2,4):setBackground(colors.lightGray):setForeground(colors.white)
-baa.InputItemEditBtn=baa.detailsFrame:addButton():setText("..."):setPosition(
-baa.detailsFrame:getWidth()-4,baa.inputItemLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local aba=
+daa.innerFrame:getWidth()-daa.recipeListBox.innerFrame:getWidth()-1,daa.innerFrame:getHeight()-2):setBackground(colors.gray):setForeground(colors.white)
+daa.nameLabel=daa.detailsFrame:addLabel():setText("Name:"):setPosition(2,2):setBackground(colors.lightGray):setForeground(colors.white)
+daa.nameInput=daa.detailsFrame:addInput():setPosition(
+daa.nameLabel:getX()+daa.nameLabel:getWidth()+1,daa.nameLabel:getY()):setSize(
+daa.detailsFrame:getWidth()-daa.nameLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white)
+daa.inputItemLabel=daa.detailsFrame:addLabel():setText("Input Item:"):setPosition(2,4):setBackground(colors.lightGray):setForeground(colors.white)
+daa.InputItemEditBtn=daa.detailsFrame:addButton():setText("..."):setPosition(
+daa.detailsFrame:getWidth()-4,daa.inputItemLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local cba=
 nil
-if baa.selectedRecipe and baa.selectedRecipe.input and
-baa.selectedRecipe.input.items then aba={}for bba,cba in
-ipairs(baa.selectedRecipe.input.items)do aba[cba]=true end end
-baa.itemListBox:open(__a.getListDisplayItems(aba,_d.items),true,{confirm=function(bba)
-if bba and
-next(bba)~=nil then local cba={}
-for dba,_ca in ipairs(bba)do table.insert(cba,_ca.text)end
-baa.inputItemLabel:setText("Input Item: "..#cba)if baa.selectedRecipe==nil then baa.selectedRecipe={}end
+if daa.selectedRecipe and daa.selectedRecipe.input and
+daa.selectedRecipe.input.items then cba={}for dba,_ca in
+ipairs(daa.selectedRecipe.input.items)do cba[_ca]=true end end
+daa.itemListBox:open(b_a.getListDisplayItems(cba,bd.items),true,{confirm=function(dba)
+if dba and
+next(dba)~=nil then local _ca={}
+for aca,bca in ipairs(dba)do table.insert(_ca,bca.text)end
+daa.inputItemLabel:setText("Input Item: "..#_ca)if daa.selectedRecipe==nil then daa.selectedRecipe={}end
 if not
-baa.selectedRecipe.input then baa.selectedRecipe.input={}end;baa.selectedRecipe.input.items=cba end;baa.itemListBox:close()end})end)
-baa.inputFluidLabel=baa.detailsFrame:addLabel():setText("Input Fluid:"):setPosition(2,
-baa.inputItemLabel:getY()+baa.inputItemLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
-baa.inputFluidEditBtn=baa.detailsFrame:addButton():setText("..."):setPosition(
-baa.detailsFrame:getWidth()-4,baa.inputFluidLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local aba=
+daa.selectedRecipe.input then daa.selectedRecipe.input={}end;daa.selectedRecipe.input.items=_ca else if
+not daa.selectedRecipe then daa.selectedRecipe={}end;if
+not daa.selectedRecipe.input then daa.selectedRecipe.input={}end;daa.selectedRecipe.input.items=
 nil
-if baa.selectedRecipe and baa.selectedRecipe.input and
-baa.selectedRecipe.input.fluids then aba={}for bba,cba in
-ipairs(baa.selectedRecipe.input.fluids)do aba[cba]=true end end
-baa.itemListBox:open(__a.getListDisplayItems(aba,_d.fluids),true,{confirm=function(bba)
-if bba and
-next(bba)~=nil then local cba={}
-for dba,_ca in ipairs(bba)do table.insert(cba,_ca.text)end
-baa.inputFluidLabel:setText("Input Fluid: "..#cba)if baa.selectedRecipe==nil then baa.selectedRecipe={}end
+daa.inputItemLabel:setText("Input Item: 0")end;daa.itemListBox:close()end})end)
+daa.inputFluidLabel=daa.detailsFrame:addLabel():setText("Input Fluid:"):setPosition(2,
+daa.inputItemLabel:getY()+daa.inputItemLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+daa.inputFluidEditBtn=daa.detailsFrame:addButton():setText("..."):setPosition(
+daa.detailsFrame:getWidth()-4,daa.inputFluidLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local cba=
+nil
+if daa.selectedRecipe and daa.selectedRecipe.input and
+daa.selectedRecipe.input.fluids then cba={}for dba,_ca in
+ipairs(daa.selectedRecipe.input.fluids)do cba[_ca]=true end end
+daa.itemListBox:open(b_a.getListDisplayItems(cba,bd.fluids),true,{confirm=function(dba)
+if dba and
+next(dba)~=nil then local _ca={}
+for aca,bca in ipairs(dba)do table.insert(_ca,bca.text)end
+daa.inputFluidLabel:setText("Input Fluid: "..#_ca)if daa.selectedRecipe==nil then daa.selectedRecipe={}end
 if not
-baa.selectedRecipe.input then baa.selectedRecipe.input={}end;baa.selectedRecipe.input.fluids=cba end;baa.itemListBox:close()end})end)
-baa.outputItemLabel=baa.detailsFrame:addLabel():setText("Output Item:"):setPosition(2,
-baa.inputFluidLabel:getY()+baa.inputFluidLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
-baa.outputItemEditBtn=baa.detailsFrame:addButton():setText("..."):setPosition(
-baa.detailsFrame:getWidth()-4,baa.outputItemLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local aba=
+daa.selectedRecipe.input then daa.selectedRecipe.input={}end;daa.selectedRecipe.input.fluids=_ca else if
+not daa.selectedRecipe then daa.selectedRecipe={}end;if
+not daa.selectedRecipe.input then daa.selectedRecipe.input={}end;daa.selectedRecipe.input.fluids=
 nil
-if baa.selectedRecipe and baa.selectedRecipe.output and
-baa.selectedRecipe.output.items then aba={}for bba,cba in
-ipairs(baa.selectedRecipe.output.items)do aba[cba]=true end end
-baa.itemListBox:open(__a.getListDisplayItems(aba,_d.items),true,{confirm=function(bba)
-if bba and
-next(bba)~=nil then local cba={}
-for dba,_ca in ipairs(bba)do table.insert(cba,_ca.text)end
-baa.outputItemLabel:setText("Output Item: "..#cba)if baa.selectedRecipe==nil then baa.selectedRecipe={}end
+daa.inputFluidLabel:setText("Input Fluid: .. 0")end;daa.itemListBox:close()end})end)
+daa.outputItemLabel=daa.detailsFrame:addLabel():setText("Output Item:"):setPosition(2,
+daa.inputFluidLabel:getY()+daa.inputFluidLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+daa.outputItemEditBtn=daa.detailsFrame:addButton():setText("..."):setPosition(
+daa.detailsFrame:getWidth()-4,daa.outputItemLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local cba=
+nil
+if daa.selectedRecipe and daa.selectedRecipe.output and
+daa.selectedRecipe.output.items then cba={}for dba,_ca in
+ipairs(daa.selectedRecipe.output.items)do cba[_ca]=true end end
+daa.itemListBox:open(b_a.getListDisplayItems(cba,bd.items),true,{confirm=function(dba)
+if dba and
+next(dba)~=nil then local _ca={}
+for aca,bca in ipairs(dba)do table.insert(_ca,bca.text)end
+daa.outputItemLabel:setText("Output Item: "..#_ca)if daa.selectedRecipe==nil then daa.selectedRecipe={}end
 if not
-baa.selectedRecipe.output then baa.selectedRecipe.output={}end;baa.selectedRecipe.output.items=cba end;baa.itemListBox:close()end})end)
-baa.outputItemKeepAmountLabel=baa.detailsFrame:addLabel():setText("Keep Amount:"):setPosition(2,
-baa.outputItemLabel:getY()+baa.outputItemLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
-baa.outputItemKeepAmountInput=baa.detailsFrame:addInput():setPosition(
-
-baa.outputItemKeepAmountLabel:getX()+baa.outputItemKeepAmountLabel:getWidth()+1,baa.outputItemKeepAmountLabel:getY()):setSize(
-
-baa.detailsFrame:getWidth()-baa.outputItemKeepAmountLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white):setPattern("[0-9]"):setText("0")
-baa.outputFluidLabel=baa.detailsFrame:addLabel():setText("Output Fluid:"):setPosition(2,
-
-baa.outputItemKeepAmountLabel:getY()+baa.outputItemKeepAmountLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
-baa.outputFluidEditBtn=baa.detailsFrame:addButton():setText("..."):setPosition(
-baa.detailsFrame:getWidth()-4,baa.outputFluidLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local aba=
+daa.selectedRecipe.output then daa.selectedRecipe.output={}end;daa.selectedRecipe.output.items=_ca else if
+not daa.selectedRecipe then daa.selectedRecipe={}end;if
+not daa.selectedRecipe.output then daa.selectedRecipe.output={}end;daa.selectedRecipe.output.items=
 nil
-if baa.selectedRecipe and baa.selectedRecipe.output and
-baa.selectedRecipe.output.fluids then aba={}for bba,cba in
-ipairs(baa.selectedRecipe.output.fluids)do aba[cba]=true end end
-baa.itemListBox:open(__a.getListDisplayItems(aba,_d.fluids),true,{confirm=function(bba)
-if bba and
-next(bba)~=nil then local cba={}
-for dba,_ca in ipairs(bba)do table.insert(cba,_ca.text)end
-baa.outputFluidLabel:setText("Output Fluid: "..#cba)if baa.selectedRecipe==nil then baa.selectedRecipe={}end
+daa.outputItemLabel:setText("Output Item: 0")end;daa.itemListBox:close()end})end)
+daa.outputItemKeepAmountLabel=daa.detailsFrame:addLabel():setText("Keep Amount:"):setPosition(2,
+daa.outputItemLabel:getY()+daa.outputItemLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+daa.outputItemKeepAmountInput=daa.detailsFrame:addInput():setPosition(
+
+daa.outputItemKeepAmountLabel:getX()+daa.outputItemKeepAmountLabel:getWidth()+1,daa.outputItemKeepAmountLabel:getY()):setSize(
+
+daa.detailsFrame:getWidth()-daa.outputItemKeepAmountLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white):setPattern("[0-9]"):setText("0")
+daa.outputFluidLabel=daa.detailsFrame:addLabel():setText("Output Fluid:"):setPosition(2,
+
+daa.outputItemKeepAmountLabel:getY()+daa.outputItemKeepAmountLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+daa.outputFluidEditBtn=daa.detailsFrame:addButton():setText("..."):setPosition(
+daa.detailsFrame:getWidth()-4,daa.outputFluidLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local cba=
+nil
+if daa.selectedRecipe and daa.selectedRecipe.output and
+daa.selectedRecipe.output.fluids then cba={}for dba,_ca in
+ipairs(daa.selectedRecipe.output.fluids)do cba[_ca]=true end end
+daa.itemListBox:open(b_a.getListDisplayItems(cba,bd.fluids),true,{confirm=function(dba)
+if dba and
+next(dba)~=nil then local _ca={}
+for aca,bca in ipairs(dba)do table.insert(_ca,bca.text)end
+daa.outputFluidLabel:setText("Output Fluid: "..#_ca)if daa.selectedRecipe==nil then daa.selectedRecipe={}end
 if not
-baa.selectedRecipe.output then baa.selectedRecipe.output={}end;baa.selectedRecipe.output.fluids=cba end;baa.itemListBox:close()end})end)
-baa.outputFluidKeepAmountLabel=baa.detailsFrame:addLabel():setText("Keep Amount:"):setPosition(2,
-baa.outputFluidLabel:getY()+baa.outputFluidLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
-baa.outputFluidKeepAmountInput=baa.detailsFrame:addInput():setPosition(
+daa.selectedRecipe.output then daa.selectedRecipe.output={}end;daa.selectedRecipe.output.fluids=_ca else if
+not daa.selectedRecipe then daa.selectedRecipe={}end;if
+not daa.selectedRecipe.output then daa.selectedRecipe.output={}end;daa.selectedRecipe.output.fluids=
+nil
+daa.outputFluidLabel:setText("Output Fluid: .. 0")end;daa.itemListBox:close()end})end)
+daa.outputFluidKeepAmountLabel=daa.detailsFrame:addLabel():setText("Keep Amount:"):setPosition(2,
+daa.outputFluidLabel:getY()+daa.outputFluidLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+daa.outputFluidKeepAmountInput=daa.detailsFrame:addInput():setPosition(
 
-baa.outputFluidKeepAmountLabel:getX()+baa.outputFluidKeepAmountLabel:getWidth()+1,baa.outputFluidKeepAmountLabel:getY()):setSize(
+daa.outputFluidKeepAmountLabel:getX()+daa.outputFluidKeepAmountLabel:getWidth()+1,daa.outputFluidKeepAmountLabel:getY()):setSize(
 
-baa.detailsFrame:getWidth()-baa.outputFluidKeepAmountLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white):setText("0"):setPattern("[0-9]")
-baa.blazeBurnerLabel=baa.detailsFrame:addLabel():setText("Blaze Burner:"):setPosition(2,
+daa.detailsFrame:getWidth()-daa.outputFluidKeepAmountLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white):setText("0"):setPattern("[0-9]")
+daa.blazeBurnerLabel=daa.detailsFrame:addLabel():setText("Blaze Burner:"):setPosition(2,
 
-baa.outputFluidKeepAmountLabel:getY()+baa.outputFluidKeepAmountLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
-baa.blazeBurnerDropdown=baa.detailsFrame:addDropdown():setPosition(
-baa.blazeBurnerLabel:getX()+baa.blazeBurnerLabel:getWidth()+1,baa.blazeBurnerLabel:getY()):setSize(
-baa.detailsFrame:getWidth()-baa.blazeBurnerLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white):setItems(d_a(cc.BLAZE_BURN_TYPE.NONE))local caa="Set Trigger"
-baa.setTriggerBtn=baa.detailsFrame:addButton():setPosition(2,
-baa.blazeBurnerLabel:getY()+baa.blazeBurnerLabel:getHeight()+1):setSize(
-#caa,1):setText(caa):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
-baa.trigger:open(
-baa.selectedRecipe and baa.selectedRecipe.trigger or nil,function(aba)baa.selectedRecipe=
-baa.selectedRecipe or{}baa.selectedRecipe.trigger=aba end)end)local daa="Clr Trigger"
-baa.clearTriggerBtn=baa.detailsFrame:addButton():setPosition(
-baa.setTriggerBtn:getX()+baa.setTriggerBtn:getWidth()+3,baa.setTriggerBtn:getY()):setSize(
-#daa,1):setText(daa):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
-baa.selectedRecipe then baa.selectedRecipe.trigger=nil end end)
-local _ba=baa.detailsFrame:addButton():setPosition(
-baa.detailsFrame:getWidth()-9,baa.setTriggerBtn:getY()+2):setSize(8,1):setText("Save"):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
-baa.selectedRecipe==nil then
-baa.messageBox:open("Error","No recipe to save!")return end
-baa.selectedRecipe.name=baa.nameInput:getText()
-baa.selectedRecipe.output=baa.selectedRecipe.output or{}
-baa.selectedRecipe.output.keepItemsAmount=
-tonumber(baa.outputItemKeepAmountInput:getText())or 0
-baa.selectedRecipe.output.keepFluidsAmount=
-tonumber(baa.outputFluidKeepAmountInput:getText())or 0
-baa.selectedRecipe.blazeBurner=
-baa.blazeBurnerDropdown:getSelectedItem()and
-baa.blazeBurnerDropdown:getSelectedItem().value or cc.BLAZE_BURN_TYPE.NONE
-if baa.selectedRecipe.id==nil then
-local aba,bba=cc.addRecipe(cc.MACHINE_TYPES.basin,baa.selectedRecipe)if not aba then
-baa.messageBox:open("Error","Failed to add recipe! "..tostring(bba))return end else
-local aba,bba=cc.updateRecipe(cc.MACHINE_TYPES.basin,baa.selectedRecipe)if not aba then
-baa.messageBox:open("Error","Failed to update recipe! "..tostring(bba))return end end;baa.recipeListBox:refreshRecipeList()
-baa.messageBox:open("Success","Recipe saved successfully.")end)
-baa.detailsFrame:addLabel():setPosition(1,_ba:getY()+1):setText("")
-a_a.setScrollable(baa.detailsFrame,true,colors.gray,colors.lightGray,colors.gray,colors.white)baa.itemListBox=dc:new(baa.pframe)
-baa.trigger=ad:new(baa.pframe)baa.messageBox=bd:new(baa.pframe)
-baa.confirmMessageBox=cd:new(baa.pframe)return baa end
-function b_a:init()self.recipeListBox:refreshRecipeList()end;return b_a end
-modules["programs.recipe.manager.BeltRecipeTab"] = function(...) local ac=require("libraries.basalt")
-local bc=require("utils.Logger")local cc=require("programs.recipe.manager.StoreManager")
-local dc=require("elements.ItemSelectedListBox")local _d=require("programs.common.SnapShot")
-local ad=require("utils.StringUtils")local bd=require("programs.recipe.manager.TriggerView")
-local cd=require("elements.MessageBox")local dd=require("elements.ConfirmMessageBox")
-local __a=require("programs.recipe.manager.RecipeList")local a_a=require("programs.recipe.manager.Utils")
-local b_a=require("elements.ScrollableFrame")local c_a={}c_a.__index=c_a
-local function d_a(aaa)if not aaa then return""end;local baa=aaa:find(":")if baa then return aaa:sub(
-baa+1)end;return aaa end
-local _aa=function(aaa)
-local baa=cc.getAllRecipesByType(cc.MACHINE_TYPES.belt)local caa={}
-for daa,_ba in ipairs(baa)do local aba=_ba.output or""if not aaa or
-aba:lower():find(aaa:lower())then
-table.insert(caa,{text=d_a(_ba.output),id=_ba.id})end end;return caa end
-function c_a:new(aaa)local baa=setmetatable({},c_a)baa.selectedRecipe=nil
-baa.pframe=aaa
-baa.innerFrame=baa.pframe:addFrame():setPosition(1,1):setSize(baa.pframe:getWidth(),baa.pframe:getHeight()):setBackground(colors.lightGray):setForeground(colors.white)
-baa.recipeListBox=__a:new(baa.innerFrame,1,1,22,baa.innerFrame:getHeight()):setOnSelected(function(_ba)
+daa.outputFluidKeepAmountLabel:getY()+daa.outputFluidKeepAmountLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+daa.blazeBurnerDropdown=daa.detailsFrame:addDropdown():setPosition(
+daa.blazeBurnerLabel:getX()+daa.blazeBurnerLabel:getWidth()+1,daa.blazeBurnerLabel:getY()):setSize(
+daa.detailsFrame:getWidth()-daa.blazeBurnerLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white):setItems(aaa(_d.BLAZE_BURN_TYPE.NONE))local _ba="Set Trigger"
+daa.setTriggerBtn=daa.detailsFrame:addButton():setPosition(2,
+daa.blazeBurnerLabel:getY()+daa.blazeBurnerLabel:getHeight()+1):setSize(
+#_ba,1):setText(_ba):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
+daa.trigger:open(
+daa.selectedRecipe and daa.selectedRecipe.trigger or nil,function(cba)daa.selectedRecipe=
+daa.selectedRecipe or{}daa.selectedRecipe.trigger=cba end)end)local aba="Clr Trigger"
+daa.clearTriggerBtn=daa.detailsFrame:addButton():setPosition(
+daa.setTriggerBtn:getX()+daa.setTriggerBtn:getWidth()+3,daa.setTriggerBtn:getY()):setSize(
+#aba,1):setText(aba):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
+daa.selectedRecipe then daa.selectedRecipe.trigger=nil end end)
+local bba=daa.detailsFrame:addButton():setPosition(
+daa.detailsFrame:getWidth()-9,daa.setTriggerBtn:getY()+2):setSize(8,1):setText("Save"):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
+daa.selectedRecipe==nil then
+daa.messageBox:open("Error","No recipe to save!")return end
+daa.selectedRecipe.name=daa.nameInput:getText()
+daa.selectedRecipe.output=daa.selectedRecipe.output or{}
+daa.selectedRecipe.output.keepItemsAmount=
+tonumber(daa.outputItemKeepAmountInput:getText())or 0
+daa.selectedRecipe.output.keepFluidsAmount=
+tonumber(daa.outputFluidKeepAmountInput:getText())or 0
+daa.selectedRecipe.blazeBurner=
+daa.blazeBurnerDropdown:getSelectedItem()and
+daa.blazeBurnerDropdown:getSelectedItem().value or _d.BLAZE_BURN_TYPE.NONE
+if daa.selectedRecipe.id==nil then
+local cba,dba=_d.addRecipe(_d.MACHINE_TYPES.basin,daa.selectedRecipe)if not cba then
+daa.messageBox:open("Error","Failed to add recipe! "..tostring(dba))return end else
+local cba,dba=_d.updateRecipe(_d.MACHINE_TYPES.basin,daa.selectedRecipe)if not cba then
+daa.messageBox:open("Error","Failed to update recipe! "..tostring(dba))return end end;daa.recipeListBox:refreshRecipeList()
+daa.messageBox:open("Success","Recipe saved successfully.")end)
+daa.detailsFrame:addLabel():setPosition(1,bba:getY()+1):setText("")
+c_a.setScrollable(daa.detailsFrame,true,colors.gray,colors.lightGray,colors.gray,colors.white)daa.itemListBox=ad:new(daa.pframe)
+daa.trigger=cd:new(daa.pframe)daa.messageBox=dd:new(daa.pframe)
+daa.confirmMessageBox=__a:new(daa.pframe)return daa end
+function d_a:init()self.recipeListBox:refreshRecipeList()end;return d_a end
+modules["programs.recipe.manager.BeltRecipeTab"] = function(...) local bc=require("libraries.basalt")
+local cc=require("utils.Logger")local dc=require("programs.common.Communicator")
+local _d=require("programs.recipe.manager.StoreManager")local ad=require("elements.ItemSelectedListBox")
+local bd=require("programs.common.SnapShot")local cd=require("utils.StringUtils")
+local dd=require("programs.recipe.manager.TriggerView")local __a=require("elements.MessageBox")
+local a_a=require("elements.ConfirmMessageBox")local b_a=require("programs.recipe.manager.RecipeList")
+local c_a=require("programs.recipe.manager.Utils")local d_a=require("elements.ScrollableFrame")local _aa={}
+_aa.__index=_aa
+local function aaa(caa)if not caa then return""end;local daa=caa:find(":")if daa then
+return caa:sub(daa+1)end;return caa end
+local baa=function(caa)
+local daa=_d.getAllRecipesByType(_d.MACHINE_TYPES.belt)local _ba={}
+for aba,bba in ipairs(daa)do local cba=bba.output or""if not caa or
+cba:lower():find(caa:lower())then
+table.insert(_ba,{text=aaa(bba.output),id=bba.id})end end;return _ba end
+function _aa:new(caa)local daa=setmetatable({},_aa)daa.selectedRecipe=nil
+daa.pframe=caa
+daa.innerFrame=daa.pframe:addFrame():setPosition(1,1):setSize(daa.pframe:getWidth(),daa.pframe:getHeight()):setBackground(colors.lightGray):setForeground(colors.white)
+daa.recipeListBox=b_a:new(daa.innerFrame,1,1,22,daa.innerFrame:getHeight()):setOnSelected(function(bba)
 if
-_ba then
-baa.selectedRecipe=cc.getRecipeByTypeAndId(cc.MACHINE_TYPES.belt,_ba.id)
-if baa.selectedRecipe then
-local aba=baa.inputLabel:getWidth()-4
-baa.inputLabel:setText("In: "..
-ad.ellipsisMiddle(d_a(baa.selectedRecipe.input or""),aba))
-baa.incompleteLabel:setText("Incomplete: "..ad.ellipsisMiddle(d_a(baa.selectedRecipe.incomplete or""),
-aba-7))
-baa.outputLabel:setText("Out: "..ad.ellipsisMiddle(d_a(baa.selectedRecipe.output or""),
-aba-1))else
-baa.messageBox:open("Error","Recipe not found!")end else baa.selectedRecipe=nil
-baa.inputLabel:setText("In: ")baa.incompleteLabel:setText("Incomplete: ")
-baa.outputLabel:setText("Out: ")end end):setOnNew(function()baa.selectedRecipe=
-nil;baa.inputLabel:setText("In: ")
-baa.incompleteLabel:setText("Incomplete: ")baa.outputLabel:setText("Out: ")end):setOnDel(function(_ba)if
+bba then
+daa.selectedRecipe=_d.getRecipeByTypeAndId(_d.MACHINE_TYPES.belt,bba.id)
+if daa.selectedRecipe then
+local cba=daa.inputLabel:getWidth()-4
+daa.inputLabel:setText("In: "..
+cd.ellipsisMiddle(aaa(daa.selectedRecipe.input or""),cba))
+daa.incompleteLabel:setText("Incomplete: "..cd.ellipsisMiddle(aaa(daa.selectedRecipe.incomplete or""),
+cba-7))
+daa.outputLabel:setText("Out: "..cd.ellipsisMiddle(aaa(daa.selectedRecipe.output or""),
+cba-1))else
+daa.messageBox:open("Error","Recipe not found!")end else daa.selectedRecipe=nil
+daa.inputLabel:setText("In: ")daa.incompleteLabel:setText("Incomplete: ")
+daa.outputLabel:setText("Out: ")end end):setOnNew(function()daa.selectedRecipe=
+nil;daa.inputLabel:setText("In: ")
+daa.incompleteLabel:setText("Incomplete: ")daa.outputLabel:setText("Out: ")end):setOnDel(function(bba)if
 
-baa.selectedRecipe==nil or baa.selectedRecipe.id==nil then
-baa.messageBox:open("Error","No recipe selected to delete!")return end
-baa.confirmMessageBox:open("Confirm",
-"Are you sure to delete the selected recipe: ".. (baa.selectedRecipe.input or"Unknown").."?",function()
-local aba,bba=cc.removeRecipe(cc.MACHINE_TYPES.belt,baa.selectedRecipe.id)if not aba then
-baa.messageBox:open("Error","Failed to delete recipe! "..tostring(bba))return end;baa.selectedRecipe=nil
-baa.inputLabel:setText("In: ")baa.incompleteLabel:setText("Incomplete: ")
-baa.outputLabel:setText("Out: ")baa.recipeListBox:refreshRecipeList()
-baa.messageBox:open("Success","Recipe deleted successfully!")end)end):setGetDisplayRecipeListFn(_aa)
-baa.detailsFrame=baa.innerFrame:addFrame():setPosition(
-baa.recipeListBox.innerFrame:getX()+baa.recipeListBox.innerFrame:getWidth(),2):setSize(
+daa.selectedRecipe==nil or daa.selectedRecipe.id==nil then
+daa.messageBox:open("Error","No recipe selected to delete!")return end
+daa.confirmMessageBox:open("Confirm",
+"Are you sure to delete the selected recipe: ".. (daa.selectedRecipe.input or"Unknown").."?",function()
+local cba,dba=_d.removeRecipe(_d.MACHINE_TYPES.belt,daa.selectedRecipe.id)if not cba then
+daa.messageBox:open("Error","Failed to delete recipe! "..tostring(dba))return end;daa.selectedRecipe=nil
+daa.inputLabel:setText("In: ")daa.incompleteLabel:setText("Incomplete: ")
+daa.outputLabel:setText("Out: ")daa.recipeListBox:refreshRecipeList()
+daa.messageBox:open("Success","Recipe deleted successfully!")end)end):setGetDisplayRecipeListFn(baa):setOnUpdate(function()
+local bba=_d.getAllRecipesByType(_d.MACHINE_TYPES.belt)
+if dc and dc.communicationChannels then
+for cba,dba in pairs(dc.communicationChannels)do
+for _ca,aca in pairs(dba)do
+for bca,cca in
+pairs(aca)do if bca=="recipe"then cca.send("update",bba)
+cc.info("Sent {} belt recipes via update event",#bba)end end end end else
+cc.warn("Communicator not available for sending updates")end end)
+daa.detailsFrame=daa.innerFrame:addFrame():setPosition(
+daa.recipeListBox.innerFrame:getX()+daa.recipeListBox.innerFrame:getWidth(),2):setSize(
 
-baa.innerFrame:getWidth()-baa.recipeListBox.innerFrame:getWidth()-1,baa.innerFrame:getHeight()-2):setBackground(colors.gray):setForeground(colors.white)
-baa.inputLabel=baa.detailsFrame:addLabel():setPosition(2,2):setAutoSize(false):setWidth(
-baa.detailsFrame:getWidth()-6):setText("In: "):setBackground(colors.black):setForeground(colors.white)
-baa.inputEditBtn=baa.detailsFrame:addButton():setPosition(
-baa.detailsFrame:getWidth()-3,baa.inputLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local _ba=
+daa.innerFrame:getWidth()-daa.recipeListBox.innerFrame:getWidth()-1,daa.innerFrame:getHeight()-2):setBackground(colors.gray):setForeground(colors.white)
+daa.inputLabel=daa.detailsFrame:addLabel():setPosition(2,2):setAutoSize(false):setWidth(
+daa.detailsFrame:getWidth()-6):setText("In: "):setBackground(colors.black):setForeground(colors.white)
+daa.inputEditBtn=daa.detailsFrame:addButton():setPosition(
+daa.detailsFrame:getWidth()-3,daa.inputLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local bba=
 nil
 if
-baa.selectedRecipe~=nil and baa.selectedRecipe.input~=nil then _ba={[baa.selectedRecipe.input]=true}end
-baa.itemListBox:open(a_a.getListDisplayItems(_ba,_d.items),false,{confirm=function(aba)
-if aba and
-next(aba)~=nil then local bba=aba[1].text
-local cba=baa.inputLabel:getWidth()-4
-baa.inputLabel:setText("In: "..ad.ellipsisMiddle(d_a(bba),cba))if baa.selectedRecipe==nil then baa.selectedRecipe={}end
-baa.selectedRecipe.input=bba end;baa.itemListBox:close()end})end)
-baa.incompleteLabel=baa.detailsFrame:addLabel():setPosition(2,
-baa.inputLabel:getY()+baa.inputLabel:getHeight()+1):setAutoSize(false):setWidth(
-baa.detailsFrame:getWidth()-6):setText("Incomplete: "):setBackground(colors.lightGray):setForeground(colors.white)
-baa.incompleteEditBtn=baa.detailsFrame:addButton():setPosition(
-baa.detailsFrame:getWidth()-3,baa.incompleteLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local _ba=
-nil;if baa.selectedRecipe~=nil and
-baa.selectedRecipe.incomplete~=nil then
-_ba={[baa.selectedRecipe.incomplete]=true}end
-baa.itemListBox:open(a_a.getListDisplayItems(_ba,_d.items),false,{confirm=function(aba)
+daa.selectedRecipe~=nil and daa.selectedRecipe.input~=nil then bba={[daa.selectedRecipe.input]=true}end
+daa.itemListBox:open(c_a.getListDisplayItems(bba,bd.items),false,{confirm=function(cba)
+if cba and
+next(cba)~=nil then local dba=cba[1].text
+local _ca=daa.inputLabel:getWidth()-4
+daa.inputLabel:setText("In: "..cd.ellipsisMiddle(aaa(dba),_ca))if daa.selectedRecipe==nil then daa.selectedRecipe={}end
+daa.selectedRecipe.input=dba else if daa.selectedRecipe==nil then daa.selectedRecipe={}end;daa.selectedRecipe.input=
+nil;daa.inputLabel:setText("In: ")end;daa.itemListBox:close()end})end)
+daa.incompleteLabel=daa.detailsFrame:addLabel():setPosition(2,
+daa.inputLabel:getY()+daa.inputLabel:getHeight()+1):setAutoSize(false):setWidth(
+daa.detailsFrame:getWidth()-6):setText("Incomplete: "):setBackground(colors.lightGray):setForeground(colors.white)
+daa.incompleteEditBtn=daa.detailsFrame:addButton():setPosition(
+daa.detailsFrame:getWidth()-3,daa.incompleteLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local bba=
+nil;if daa.selectedRecipe~=nil and
+daa.selectedRecipe.incomplete~=nil then
+bba={[daa.selectedRecipe.incomplete]=true}end
+daa.itemListBox:open(c_a.getListDisplayItems(bba,bd.items),false,{confirm=function(cba)
 if
-aba and next(aba)~=nil then local bba=aba[1].text;local cba=
-baa.incompleteLabel:getWidth()-12
-baa.incompleteLabel:setText("Incomplete: "..
-ad.ellipsisMiddle(d_a(bba),cba))if baa.selectedRecipe==nil then baa.selectedRecipe={}end
-baa.selectedRecipe.incomplete=bba end;baa.itemListBox:close()end})end)
-baa.outputLabel=baa.detailsFrame:addLabel():setPosition(2,
-baa.incompleteLabel:getY()+baa.incompleteLabel:getHeight()+1):setAutoSize(false):setWidth(
-baa.detailsFrame:getWidth()-6):setText("Out: "):setBackground(colors.lightGray):setForeground(colors.white)
-baa.outputEditBtn=baa.detailsFrame:addButton():setPosition(
-baa.detailsFrame:getWidth()-3,baa.outputLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local _ba=
+cba and next(cba)~=nil then local dba=cba[1].text;local _ca=
+daa.incompleteLabel:getWidth()-12
+daa.incompleteLabel:setText("Incomplete: "..
+cd.ellipsisMiddle(aaa(dba),_ca))if daa.selectedRecipe==nil then daa.selectedRecipe={}end
+daa.selectedRecipe.incomplete=dba else if daa.selectedRecipe==nil then daa.selectedRecipe={}end;daa.selectedRecipe.incomplete=
+nil
+daa.incompleteLabel:setText("Incomplete: ")end;daa.itemListBox:close()end})end)
+daa.outputLabel=daa.detailsFrame:addLabel():setPosition(2,
+daa.incompleteLabel:getY()+daa.incompleteLabel:getHeight()+1):setAutoSize(false):setWidth(
+daa.detailsFrame:getWidth()-6):setText("Out: "):setBackground(colors.lightGray):setForeground(colors.white)
+daa.outputEditBtn=daa.detailsFrame:addButton():setPosition(
+daa.detailsFrame:getWidth()-3,daa.outputLabel:getY()):setSize(3,1):setText("..."):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local bba=
 nil
 if
-baa.selectedRecipe~=nil and baa.selectedRecipe.output~=nil then _ba={[baa.selectedRecipe.output]=true}end
-baa.itemListBox:open(a_a.getListDisplayItems(_ba,_d.items),false,{confirm=function(aba)
-if aba and
-next(aba)~=nil then local bba=aba[1].text
-local cba=baa.outputLabel:getWidth()-5
-baa.outputLabel:setText("Out: "..ad.ellipsisMiddle(d_a(bba),cba))if baa.selectedRecipe==nil then baa.selectedRecipe={}end
-baa.selectedRecipe.output=bba end;baa.itemListBox:close()end})end)local caa="Set Trigger"
-baa.addTriggerBtn=baa.detailsFrame:addButton():setPosition(2,
-baa.outputLabel:getY()+baa.outputLabel:getHeight()+1):setSize(
-#caa,1):setText(caa):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
-baa.trigger:open(
-baa.selectedRecipe and baa.selectedRecipe.trigger or nil,function(_ba)baa.selectedRecipe=
-baa.selectedRecipe or{}baa.selectedRecipe.trigger=_ba end)end)local daa="Clr Trigger"
-baa.clearTriggerBtn=baa.detailsFrame:addButton():setPosition(
-baa.addTriggerBtn:getX()+baa.addTriggerBtn:getWidth()+4,baa.addTriggerBtn:getY()):setSize(
-#daa,1):setText(daa):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
-baa.selectedRecipe then baa.selectedRecipe.trigger=nil end end)
-baa.saveBtn=baa.detailsFrame:addButton():setPosition(
-baa.detailsFrame:getWidth()-6,baa.detailsFrame:getHeight()-1):setSize(6,1):setText("Save"):setBackground(colors.green):setForeground(colors.black):onClick(function()if
-baa.selectedRecipe==nil then
-baa.messageBox:open("Error","No recipe selected to save!")return end
-if baa.selectedRecipe.id~=
+daa.selectedRecipe~=nil and daa.selectedRecipe.output~=nil then bba={[daa.selectedRecipe.output]=true}end
+daa.itemListBox:open(c_a.getListDisplayItems(bba,bd.items),false,{confirm=function(cba)
+if cba and
+next(cba)~=nil then local dba=cba[1].text
+local _ca=daa.outputLabel:getWidth()-5
+daa.outputLabel:setText("Out: "..cd.ellipsisMiddle(aaa(dba),_ca))if daa.selectedRecipe==nil then daa.selectedRecipe={}end
+daa.selectedRecipe.output=dba else if daa.selectedRecipe==nil then daa.selectedRecipe={}end;daa.selectedRecipe.output=
+nil;daa.outputLabel:setText("Out: ")end;daa.itemListBox:close()end})end)local _ba="Set Trigger"
+daa.addTriggerBtn=daa.detailsFrame:addButton():setPosition(2,
+daa.outputLabel:getY()+daa.outputLabel:getHeight()+1):setSize(
+#_ba,1):setText(_ba):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
+daa.trigger:open(
+daa.selectedRecipe and daa.selectedRecipe.trigger or nil,function(bba)daa.selectedRecipe=
+daa.selectedRecipe or{}daa.selectedRecipe.trigger=bba end)end)local aba="Clr Trigger"
+daa.clearTriggerBtn=daa.detailsFrame:addButton():setPosition(
+daa.addTriggerBtn:getX()+daa.addTriggerBtn:getWidth()+4,daa.addTriggerBtn:getY()):setSize(
+#aba,1):setText(aba):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
+daa.selectedRecipe then daa.selectedRecipe.trigger=nil end end)
+daa.saveBtn=daa.detailsFrame:addButton():setPosition(
+daa.detailsFrame:getWidth()-6,daa.detailsFrame:getHeight()-1):setSize(6,1):setText("Save"):setBackground(colors.green):setForeground(colors.black):onClick(function()if
+daa.selectedRecipe==nil then
+daa.messageBox:open("Error","No recipe selected to save!")return end
+if daa.selectedRecipe.id~=
 nil then
-local _ba,aba=cc.updateRecipe(cc.MACHINE_TYPES.belt,baa.selectedRecipe)if not _ba then
-baa.messageBox:open("Error","Failed to update recipe! "..tostring(aba))return end
-baa.recipeListBox:refreshRecipeList()
-baa.messageBox:open("Success","Recipe updated successfully!")else
-local _ba,aba=cc.addRecipe(cc.MACHINE_TYPES.belt,baa.selectedRecipe)if not _ba then
-baa.messageBox:open("Error","Failed to add recipe! "..tostring(aba))return end
-baa.selectedRecipe.id=aba;baa.recipeListBox:refreshRecipeList()
-baa.messageBox:open("Success","Recipe added successfully!")end end)baa.itemListBox=dc:new(baa.pframe)
-baa.trigger=bd:new(baa.pframe)baa.messageBox=cd:new(baa.pframe)
-baa.confirmMessageBox=dd:new(baa.pframe)return baa end;function c_a:init()self.recipeListBox:refreshRecipeList()
-return self end;return c_a end
-modules["programs.recipe.manager.CommonRecipeTab"] = function(...) local db=require("libraries.basalt")
-local _c=require("utils.Logger")local ac=require("programs.recipe.manager.StoreManager")
-local bc=require("elements.ItemSelectedListBox")local cc=require("programs.common.SnapShot")
-local dc=require("programs.recipe.manager.TriggerView")local _d=require("elements.MessageBox")
-local ad=require("elements.ConfirmMessageBox")local bd=require("programs.recipe.manager.RecipeList")
-local cd=require("programs.recipe.manager.Utils")local dd=require("elements.ScrollableFrame")local __a={}
-__a.__index=__a
-local a_a=function(b_a)
-local c_a=ac.getAllRecipesByType(ac.MACHINE_TYPES.common)local d_a={}if c_a==nil then return d_a end
-for _aa,aaa in ipairs(c_a)do local baa=aaa.name or""if
-not b_a or baa:lower():find(b_a:lower())then
-table.insert(d_a,{text=aaa.name,id=aaa.id})end end;return d_a end
-function __a:new(b_a)local c_a=setmetatable({},__a)c_a.selectedRecipe=nil
-c_a.pframe=b_a
-c_a.innerFrame=c_a.pframe:addFrame():setPosition(1,1):setSize(c_a.pframe:getWidth(),c_a.pframe:getHeight()):setBackground(colors.lightGray):setForeground(colors.white)
-c_a.recipeListBox=bd:new(c_a.innerFrame,1,1,22,c_a.innerFrame:getHeight()):setOnSelected(function(baa)
-c_a.selectedRecipe=ac.getRecipeByTypeAndId(ac.MACHINE_TYPES.common,baa.id)
-if c_a.selectedRecipe then
-c_a.nameInput:setText(c_a.selectedRecipe.name or"")
-c_a.inputItemLabel:setText("Input Item: "..
-(c_a.selectedRecipe.input and
-c_a.selectedRecipe.input.items and
-#c_a.selectedRecipe.input.items or 0))
-c_a.inputFluidLabel:setText("Input Fluid: "..
-(c_a.selectedRecipe.input and
-c_a.selectedRecipe.input.fluids and
-#c_a.selectedRecipe.input.fluids or 0))
-c_a.outputItemLabel:setText("Output Item: "..
-(c_a.selectedRecipe.output and
-c_a.selectedRecipe.output.items and
-#c_a.selectedRecipe.output.items or 0))
-c_a.outputFluidLabel:setText("Output Fluid: "..
-(c_a.selectedRecipe.output and
-c_a.selectedRecipe.output.fluids and
-#c_a.selectedRecipe.output.fluids or 0))else c_a.nameInput:setText("")
-c_a.inputItemLabel:setText("Input Item:")c_a.inputFluidLabel:setText("Input Fluid:")
-c_a.outputItemLabel:setText("Output Item:")
-c_a.outputFluidLabel:setText("Output Fluid:")end end):setOnNew(function()c_a.selectedRecipe=
-nil;c_a.nameInput:setText("")
-c_a.inputItemLabel:setText("Input Item:")c_a.inputFluidLabel:setText("Input Fluid:")
-c_a.outputItemLabel:setText("Output Item:")
-c_a.outputFluidLabel:setText("Output Fluid:")end):setOnDel(function(baa)if
+local bba,cba=_d.updateRecipe(_d.MACHINE_TYPES.belt,daa.selectedRecipe)if not bba then
+daa.messageBox:open("Error","Failed to update recipe! "..tostring(cba))return end
+daa.recipeListBox:refreshRecipeList()
+daa.messageBox:open("Success","Recipe updated successfully!")else
+local bba,cba=_d.addRecipe(_d.MACHINE_TYPES.belt,daa.selectedRecipe)if not bba then
+daa.messageBox:open("Error","Failed to add recipe! "..tostring(cba))return end
+daa.selectedRecipe.id=cba;daa.recipeListBox:refreshRecipeList()
+daa.messageBox:open("Success","Recipe added successfully!")end end)daa.itemListBox=ad:new(daa.pframe)
+daa.trigger=dd:new(daa.pframe)daa.messageBox=__a:new(daa.pframe)
+daa.confirmMessageBox=a_a:new(daa.pframe)return daa end;function _aa:init()self.recipeListBox:refreshRecipeList()
+return self end;return _aa end
+modules["programs.recipe.manager.CommonRecipeTab"] = function(...) local _c=require("libraries.basalt")
+local ac=require("utils.Logger")local bc=require("programs.common.Communicator")
+local cc=require("programs.recipe.manager.StoreManager")local dc=require("elements.ItemSelectedListBox")
+local _d=require("programs.common.SnapShot")local ad=require("programs.recipe.manager.TriggerView")
+local bd=require("elements.MessageBox")local cd=require("elements.ConfirmMessageBox")
+local dd=require("programs.recipe.manager.RecipeList")local __a=require("programs.recipe.manager.Utils")
+local a_a=require("elements.ScrollableFrame")local b_a={}b_a.__index=b_a
+local c_a=function(d_a)
+local _aa=cc.getAllRecipesByType(cc.MACHINE_TYPES.common)local aaa={}if _aa==nil then return aaa end
+for baa,caa in ipairs(_aa)do local daa=caa.name or""if
+not d_a or daa:lower():find(d_a:lower())then
+table.insert(aaa,{text=caa.name,id=caa.id})end end;return aaa end
+function b_a:new(d_a)local _aa=setmetatable({},b_a)_aa.selectedRecipe=nil
+_aa.pframe=d_a
+_aa.innerFrame=_aa.pframe:addFrame():setPosition(1,1):setSize(_aa.pframe:getWidth(),_aa.pframe:getHeight()):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.recipeListBox=dd:new(_aa.innerFrame,1,1,22,_aa.innerFrame:getHeight()):setOnSelected(function(daa)
+_aa.selectedRecipe=cc.getRecipeByTypeAndId(cc.MACHINE_TYPES.common,daa.id)
+if _aa.selectedRecipe then
+_aa.nameInput:setText(_aa.selectedRecipe.name or"")
+_aa.inputItemLabel:setText("Input Item: "..
+(_aa.selectedRecipe.input and
+_aa.selectedRecipe.input.items and
+#_aa.selectedRecipe.input.items or 0))
+_aa.inputFluidLabel:setText("Input Fluid: "..
+(_aa.selectedRecipe.input and
+_aa.selectedRecipe.input.fluids and
+#_aa.selectedRecipe.input.fluids or 0))
+_aa.outputItemLabel:setText("Output Item: "..
+(_aa.selectedRecipe.output and
+_aa.selectedRecipe.output.items and
+#_aa.selectedRecipe.output.items or 0))
+_aa.outputFluidLabel:setText("Output Fluid: "..
+(_aa.selectedRecipe.output and
+_aa.selectedRecipe.output.fluids and
+#_aa.selectedRecipe.output.fluids or 0))
+_aa.maxMachineInput:setText(tostring(_aa.selectedRecipe.maxMachine or-1))
+_aa.inputItemRateInput:setText(tostring(_aa.selectedRecipe.inputItemRate or 1))
+_aa.inputFluidRateInput:setText(tostring(_aa.selectedRecipe.inputFluidRate or 1))else _aa.nameInput:setText("")
+_aa.inputItemLabel:setText("Input Item:")_aa.inputFluidLabel:setText("Input Fluid:")
+_aa.outputItemLabel:setText("Output Item:")
+_aa.outputFluidLabel:setText("Output Fluid:")_aa.maxMachineInput:setText("-1")
+_aa.inputItemRateInput:setText("1")_aa.inputFluidRateInput:setText("1")end end):setOnNew(function()_aa.selectedRecipe=
+nil;_aa.nameInput:setText("")
+_aa.inputItemLabel:setText("Input Item:")_aa.inputFluidLabel:setText("Input Fluid:")
+_aa.outputItemLabel:setText("Output Item:")
+_aa.outputFluidLabel:setText("Output Fluid:")_aa.maxMachineInput:setText("-1")
+_aa.inputItemRateInput:setText("1")_aa.inputFluidRateInput:setText("1")end):setOnDel(function(daa)if
 
-c_a.selectedRecipe==nil or c_a.selectedRecipe.id==nil then
-c_a.messageBox:open("Error","No recipe selected to delete!")return end
-c_a.confirmMessageBox:open("Confirm",
-"Are you sure to delete the selected recipe: "..c_a.selectedRecipe.name.."?",function()
-local caa,daa=ac.removeRecipe(ac.MACHINE_TYPES.common,c_a.selectedRecipe.id)if not caa then
-c_a.messageBox:open("Error","Failed to delete recipe! "..tostring(daa))return end;c_a.selectedRecipe=nil
-c_a.nameInput:setText("")c_a.inputItemLabel:setText("Input Item:")
-c_a.inputFluidLabel:setText("Input Fluid:")c_a.outputItemLabel:setText("Output Item:")
-c_a.outputFluidLabel:setText("Output Fluid:")c_a.recipeListBox:refreshRecipeList()end)end):setGetDisplayRecipeListFn(a_a)
-c_a.detailsFrame=c_a.innerFrame:addFrame():setPosition(
-c_a.recipeListBox.innerFrame:getX()+c_a.recipeListBox.innerFrame:getWidth(),2):setSize(
+_aa.selectedRecipe==nil or _aa.selectedRecipe.id==nil then
+_aa.messageBox:open("Error","No recipe selected to delete!")return end
+_aa.confirmMessageBox:open("Confirm",
+"Are you sure to delete the selected recipe: ".._aa.selectedRecipe.name.."?",function()
+local _ba,aba=cc.removeRecipe(cc.MACHINE_TYPES.common,_aa.selectedRecipe.id)if not _ba then
+_aa.messageBox:open("Error","Failed to delete recipe! "..tostring(aba))return end;_aa.selectedRecipe=nil
+_aa.nameInput:setText("")_aa.inputItemLabel:setText("Input Item:")
+_aa.inputFluidLabel:setText("Input Fluid:")_aa.outputItemLabel:setText("Output Item:")
+_aa.outputFluidLabel:setText("Output Fluid:")_aa.maxMachineInput:setText("-1")
+_aa.inputItemRateInput:setText("1")_aa.inputFluidRateInput:setText("1")
+_aa.recipeListBox:refreshRecipeList()end)end):setGetDisplayRecipeListFn(c_a):setOnUpdate(function()
+local daa=cc.getAllRecipesByType(cc.MACHINE_TYPES.common)
+if bc and bc.communicationChannels then
+for _ba,aba in pairs(bc.communicationChannels)do
+for bba,cba in pairs(aba)do
+for dba,_ca in
+pairs(cba)do if dba=="recipe"then _ca.send("update",daa)
+ac.info("Sent {} common recipes via update event",#daa)end end end end else
+ac.warn("Communicator not available for sending updates")end end)
+_aa.detailsFrame=_aa.innerFrame:addFrame():setPosition(
+_aa.recipeListBox.innerFrame:getX()+_aa.recipeListBox.innerFrame:getWidth(),2):setSize(
 
-c_a.innerFrame:getWidth()-c_a.recipeListBox.innerFrame:getWidth()-1,c_a.innerFrame:getHeight()-2):setBackground(colors.gray):setForeground(colors.white)
-c_a.nameLabel=c_a.detailsFrame:addLabel():setText("Name:"):setPosition(2,2):setBackground(colors.lightGray):setForeground(colors.white)
-c_a.nameInput=c_a.detailsFrame:addInput():setPosition(
-c_a.nameLabel:getX()+c_a.nameLabel:getWidth()+1,c_a.nameLabel:getY()):setSize(
-c_a.detailsFrame:getWidth()-c_a.nameLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white)
-c_a.inputItemLabel=c_a.detailsFrame:addLabel():setText("Input Item:"):setPosition(2,4):setBackground(colors.lightGray):setForeground(colors.white)
-c_a.InputItemEditBtn=c_a.detailsFrame:addButton():setText("..."):setPosition(
-c_a.detailsFrame:getWidth()-4,c_a.inputItemLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local baa=
+_aa.innerFrame:getWidth()-_aa.recipeListBox.innerFrame:getWidth()-1,_aa.innerFrame:getHeight()-2):setBackground(colors.gray):setForeground(colors.white)
+_aa.nameLabel=_aa.detailsFrame:addLabel():setText("Name:"):setPosition(2,2):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.nameInput=_aa.detailsFrame:addInput():setPosition(
+_aa.nameLabel:getX()+_aa.nameLabel:getWidth()+1,_aa.nameLabel:getY()):setSize(
+_aa.detailsFrame:getWidth()-_aa.nameLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.inputItemLabel=_aa.detailsFrame:addLabel():setText("Input Item:"):setPosition(2,4):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.InputItemEditBtn=_aa.detailsFrame:addButton():setText("..."):setPosition(
+_aa.detailsFrame:getWidth()-4,_aa.inputItemLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local daa=
 nil
-if c_a.selectedRecipe and c_a.selectedRecipe.input and
-c_a.selectedRecipe.input.items then baa={}for caa,daa in
-ipairs(c_a.selectedRecipe.input.items)do baa[daa]=true end end
-c_a.itemListBox:open(cd.getListDisplayItems(baa,cc.items),true,{confirm=function(caa)
-if caa and
-next(caa)~=nil then local daa={}
-for _ba,aba in ipairs(caa)do table.insert(daa,aba.text)end
-c_a.inputItemLabel:setText("Input Item: "..#daa)if c_a.selectedRecipe==nil then c_a.selectedRecipe={}end
+if _aa.selectedRecipe and _aa.selectedRecipe.input and
+_aa.selectedRecipe.input.items then daa={}for _ba,aba in
+ipairs(_aa.selectedRecipe.input.items)do daa[aba]=true end end
+_aa.itemListBox:open(__a.getListDisplayItems(daa,_d.items),true,{confirm=function(_ba)
+if _ba and
+next(_ba)~=nil then local aba={}
+for bba,cba in ipairs(_ba)do table.insert(aba,cba.text)end
+_aa.inputItemLabel:setText("Input Item: "..#aba)if _aa.selectedRecipe==nil then _aa.selectedRecipe={}end
 if not
-c_a.selectedRecipe.input then c_a.selectedRecipe.input={}end;c_a.selectedRecipe.input.items=daa end;c_a.itemListBox:close()end})end)
-c_a.inputFluidLabel=c_a.detailsFrame:addLabel():setText("Input Fluid:"):setPosition(2,
-c_a.inputItemLabel:getY()+c_a.inputItemLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
-c_a.inputFluidEditBtn=c_a.detailsFrame:addButton():setText("..."):setPosition(
-c_a.detailsFrame:getWidth()-4,c_a.inputFluidLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local baa=
+_aa.selectedRecipe.input then _aa.selectedRecipe.input={}end;_aa.selectedRecipe.input.items=aba else if
+not _aa.selectedRecipe then _aa.selectedRecipe={}end;if
+not _aa.selectedRecipe.input then _aa.selectedRecipe.input={}end;_aa.selectedRecipe.input.items=
 nil
-if c_a.selectedRecipe and c_a.selectedRecipe.input and
-c_a.selectedRecipe.input.fluids then baa={}for caa,daa in
-ipairs(c_a.selectedRecipe.input.fluids)do baa[daa]=true end end
-c_a.itemListBox:open(cd.getListDisplayItems(baa,cc.fluids),true,{confirm=function(caa)
-if caa and
-next(caa)~=nil then local daa={}
-for _ba,aba in ipairs(caa)do table.insert(daa,aba.text)end
-c_a.inputFluidLabel:setText("Input Fluid: "..#daa)if c_a.selectedRecipe==nil then c_a.selectedRecipe={}end
-if not
-c_a.selectedRecipe.input then c_a.selectedRecipe.input={}end;c_a.selectedRecipe.input.fluids=daa end;c_a.itemListBox:close()end})end)
-c_a.outputItemLabel=c_a.detailsFrame:addLabel():setText("Output Item:"):setPosition(2,
-c_a.inputFluidLabel:getY()+c_a.inputFluidLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
-c_a.outputItemEditBtn=c_a.detailsFrame:addButton():setText("..."):setPosition(
-c_a.detailsFrame:getWidth()-4,c_a.outputItemLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local baa=
+_aa.inputItemLabel:setText("Input Item: 0")end;_aa.itemListBox:close()end})end)
+_aa.inputItemRateLabel=_aa.detailsFrame:addLabel():setText("Input Item Rate:"):setPosition(2,
+_aa.inputItemLabel:getY()+_aa.inputItemLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.inputItemRateInput=_aa.detailsFrame:addInput():setPosition(
+
+_aa.inputItemRateLabel:getX()+_aa.inputItemRateLabel:getWidth()+1,_aa.inputItemRateLabel:getY()):setSize(
+
+_aa.detailsFrame:getWidth()-_aa.inputItemRateLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white):setText("1")
+_aa.inputFluidLabel=_aa.detailsFrame:addLabel():setText("Input Fluid:"):setPosition(2,
+
+_aa.inputItemRateLabel:getY()+_aa.inputItemRateLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.inputFluidEditBtn=_aa.detailsFrame:addButton():setText("..."):setPosition(
+_aa.detailsFrame:getWidth()-4,_aa.inputFluidLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local daa=
 nil
-if c_a.selectedRecipe and c_a.selectedRecipe.output and
-c_a.selectedRecipe.output.items then baa={}for caa,daa in
-ipairs(c_a.selectedRecipe.output.items)do baa[daa]=true end end
-c_a.itemListBox:open(cd.getListDisplayItems(baa,cc.items),true,{confirm=function(caa)
-if caa and
-next(caa)~=nil then local daa={}
-for _ba,aba in ipairs(caa)do table.insert(daa,aba.text)end
-c_a.outputItemLabel:setText("Output Item: "..#daa)if c_a.selectedRecipe==nil then c_a.selectedRecipe={}end
+if _aa.selectedRecipe and _aa.selectedRecipe.input and
+_aa.selectedRecipe.input.fluids then daa={}for _ba,aba in
+ipairs(_aa.selectedRecipe.input.fluids)do daa[aba]=true end end
+_aa.itemListBox:open(__a.getListDisplayItems(daa,_d.fluids),true,{confirm=function(_ba)
+if _ba and
+next(_ba)~=nil then local aba={}
+for bba,cba in ipairs(_ba)do table.insert(aba,cba.text)end
+_aa.inputFluidLabel:setText("Input Fluid: "..#aba)if _aa.selectedRecipe==nil then _aa.selectedRecipe={}end
 if not
-c_a.selectedRecipe.output then c_a.selectedRecipe.output={}end;c_a.selectedRecipe.output.items=daa end;c_a.itemListBox:close()end})end)
-c_a.outputFluidLabel=c_a.detailsFrame:addLabel():setText("Output Fluid:"):setPosition(2,
-c_a.outputItemLabel:getY()+c_a.outputItemLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
-c_a.outputFluidEditBtn=c_a.detailsFrame:addButton():setText("..."):setPosition(
-c_a.detailsFrame:getWidth()-4,c_a.outputFluidLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local baa=
+_aa.selectedRecipe.input then _aa.selectedRecipe.input={}end;_aa.selectedRecipe.input.fluids=aba else if
+not _aa.selectedRecipe then _aa.selectedRecipe={}end;if
+not _aa.selectedRecipe.input then _aa.selectedRecipe.input={}end;_aa.selectedRecipe.input.fluids=
 nil
-if c_a.selectedRecipe and c_a.selectedRecipe.output and
-c_a.selectedRecipe.output.fluids then baa={}for caa,daa in
-ipairs(c_a.selectedRecipe.output.fluids)do baa[daa]=true end end
-c_a.itemListBox:open(cd.getListDisplayItems(baa,cc.fluids),true,{confirm=function(caa)
-if caa and
-next(caa)~=nil then local daa={}
-for _ba,aba in ipairs(caa)do table.insert(daa,aba.text)end
-c_a.outputFluidLabel:setText("Output Fluid: "..#daa)if c_a.selectedRecipe==nil then c_a.selectedRecipe={}end
+_aa.inputFluidLabel:setText("Input Fluid: 0")end;_aa.itemListBox:close()end})end)
+_aa.inputFluidRateLabel=_aa.detailsFrame:addLabel():setText("Input Fluid Rate:"):setPosition(2,
+_aa.inputFluidLabel:getY()+_aa.inputFluidLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.inputFluidRateInput=_aa.detailsFrame:addInput():setPosition(
+
+_aa.inputFluidRateLabel:getX()+_aa.inputFluidRateLabel:getWidth()+1,_aa.inputFluidRateLabel:getY()):setSize(
+
+_aa.detailsFrame:getWidth()-_aa.inputFluidRateLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white):setText("1")
+_aa.outputItemLabel=_aa.detailsFrame:addLabel():setText("Output Item:"):setPosition(2,
+
+_aa.inputFluidRateLabel:getY()+_aa.inputFluidRateLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.outputItemEditBtn=_aa.detailsFrame:addButton():setText("..."):setPosition(
+_aa.detailsFrame:getWidth()-4,_aa.outputItemLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local daa=
+nil
+if _aa.selectedRecipe and _aa.selectedRecipe.output and
+_aa.selectedRecipe.output.items then daa={}for _ba,aba in
+ipairs(_aa.selectedRecipe.output.items)do daa[aba]=true end end
+_aa.itemListBox:open(__a.getListDisplayItems(daa,_d.items),true,{confirm=function(_ba)
+if _ba and
+next(_ba)~=nil then local aba={}
+for bba,cba in ipairs(_ba)do table.insert(aba,cba.text)end
+_aa.outputItemLabel:setText("Output Item: "..#aba)if _aa.selectedRecipe==nil then _aa.selectedRecipe={}end
 if not
-c_a.selectedRecipe.output then c_a.selectedRecipe.output={}end;c_a.selectedRecipe.output.fluids=daa end;c_a.itemListBox:close()end})end)local d_a="Set Trigger"
-c_a.setTriggerBtn=c_a.detailsFrame:addButton():setPosition(2,
-c_a.outputFluidLabel:getY()+c_a.outputFluidLabel:getHeight()+1):setSize(
-#d_a,1):setText(d_a):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
-c_a.trigger:open(
-c_a.selectedRecipe and c_a.selectedRecipe.trigger or nil,function(baa)c_a.selectedRecipe=
-c_a.selectedRecipe or{}c_a.selectedRecipe.trigger=baa end)end)local _aa="Clr Trigger"
-c_a.clearTriggerBtn=c_a.detailsFrame:addButton():setPosition(
-c_a.setTriggerBtn:getX()+c_a.setTriggerBtn:getWidth()+3,c_a.setTriggerBtn:getY()):setSize(
-#_aa,1):setText(_aa):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
-c_a.selectedRecipe then c_a.selectedRecipe.trigger=nil end end)
-local aaa=c_a.detailsFrame:addButton():setPosition(
-c_a.detailsFrame:getWidth()-9,c_a.setTriggerBtn:getY()+2):setSize(8,1):setText("Save"):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
-c_a.selectedRecipe==nil then
-c_a.messageBox:open("Error","No recipe to save!")return end
-c_a.selectedRecipe.name=c_a.nameInput:getText()
-if c_a.selectedRecipe.id==nil then
-local baa,caa=ac.addRecipe(ac.MACHINE_TYPES.common,c_a.selectedRecipe)if not baa then
-c_a.messageBox:open("Error","Failed to add recipe! "..tostring(caa))return end else
-local baa,caa=ac.updateRecipe(ac.MACHINE_TYPES.common,c_a.selectedRecipe)if not baa then
-c_a.messageBox:open("Error","Failed to update recipe! "..tostring(caa))return end end;c_a.recipeListBox:refreshRecipeList()
-c_a.messageBox:open("Success","Recipe saved successfully.")end)
-c_a.detailsFrame:addLabel():setPosition(1,aaa:getY()+1):setText("")
-dd.setScrollable(c_a.detailsFrame,true,colors.gray,colors.lightGray,colors.gray,colors.white)c_a.itemListBox=bc:new(c_a.pframe)
-c_a.trigger=dc:new(c_a.pframe)c_a.messageBox=_d:new(c_a.pframe)
-c_a.confirmMessageBox=ad:new(c_a.pframe)return c_a end
-function __a:init()self.recipeListBox:refreshRecipeList()end;return __a end
+_aa.selectedRecipe.output then _aa.selectedRecipe.output={}end;_aa.selectedRecipe.output.items=aba else if
+not _aa.selectedRecipe then _aa.selectedRecipe={}end;if
+not _aa.selectedRecipe.output then _aa.selectedRecipe.output={}end;_aa.selectedRecipe.output.items=
+nil
+_aa.outputItemLabel:setText("Output Item: 0")end;_aa.itemListBox:close()end})end)
+_aa.outputFluidLabel=_aa.detailsFrame:addLabel():setText("Output Fluid:"):setPosition(2,
+_aa.outputItemLabel:getY()+_aa.outputItemLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.outputFluidEditBtn=_aa.detailsFrame:addButton():setText("..."):setPosition(
+_aa.detailsFrame:getWidth()-4,_aa.outputFluidLabel:getY()):setSize(3,1):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()local daa=
+nil
+if _aa.selectedRecipe and _aa.selectedRecipe.output and
+_aa.selectedRecipe.output.fluids then daa={}for _ba,aba in
+ipairs(_aa.selectedRecipe.output.fluids)do daa[aba]=true end end
+_aa.itemListBox:open(__a.getListDisplayItems(daa,_d.fluids),true,{confirm=function(_ba)
+if _ba and
+next(_ba)~=nil then local aba={}
+for bba,cba in ipairs(_ba)do table.insert(aba,cba.text)end
+_aa.outputFluidLabel:setText("Output Fluid: "..#aba)if _aa.selectedRecipe==nil then _aa.selectedRecipe={}end
+if not
+_aa.selectedRecipe.output then _aa.selectedRecipe.output={}end;_aa.selectedRecipe.output.fluids=aba else if
+not _aa.selectedRecipe then _aa.selectedRecipe={}end;if
+not _aa.selectedRecipe.output then _aa.selectedRecipe.output={}end;_aa.selectedRecipe.output.fluids=
+nil
+_aa.outputFluidLabel:setText("Output Fluid: 0")end;_aa.itemListBox:close()end})end)
+_aa.maxMachineLabel=_aa.detailsFrame:addLabel():setText("Max Machine:"):setPosition(2,
+_aa.outputFluidLabel:getY()+_aa.outputFluidLabel:getHeight()+1):setBackground(colors.lightGray):setForeground(colors.white)
+_aa.maxMachineInput=_aa.detailsFrame:addInput():setPosition(
+_aa.maxMachineLabel:getX()+_aa.maxMachineLabel:getWidth()+1,_aa.maxMachineLabel:getY()):setSize(
+_aa.detailsFrame:getWidth()-_aa.maxMachineLabel:getWidth()-4,1):setBackground(colors.lightGray):setForeground(colors.white):setText("-1")local aaa="Set Trigger"
+_aa.setTriggerBtn=_aa.detailsFrame:addButton():setPosition(2,
+_aa.maxMachineLabel:getY()+_aa.maxMachineLabel:getHeight()+1):setSize(
+#aaa,1):setText(aaa):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()
+_aa.trigger:open(
+_aa.selectedRecipe and _aa.selectedRecipe.trigger or nil,function(daa)_aa.selectedRecipe=
+_aa.selectedRecipe or{}_aa.selectedRecipe.trigger=daa end)end)local baa="Clr Trigger"
+_aa.clearTriggerBtn=_aa.detailsFrame:addButton():setPosition(
+_aa.setTriggerBtn:getX()+_aa.setTriggerBtn:getWidth()+3,_aa.setTriggerBtn:getY()):setSize(
+#baa,1):setText(baa):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
+_aa.selectedRecipe then _aa.selectedRecipe.trigger=nil end end)
+local caa=_aa.detailsFrame:addButton():setPosition(
+_aa.detailsFrame:getWidth()-9,_aa.setTriggerBtn:getY()+2):setSize(8,1):setText("Save"):setBackground(colors.lightGray):setForeground(colors.white):onClick(function()if
+_aa.selectedRecipe==nil then
+_aa.messageBox:open("Error","No recipe to save!")return end
+_aa.selectedRecipe.name=_aa.nameInput:getText()local daa=_aa.maxMachineInput:getText()
+if daa and daa~=""then
+local bba=tonumber(daa)if bba then _aa.selectedRecipe.maxMachine=bba else
+_aa.messageBox:open("Error","Max Machine must be a valid number!")return end else _aa.selectedRecipe.maxMachine=
+-1 end;local _ba=_aa.inputItemRateInput:getText()
+if
+_ba and _ba~=""then local bba=tonumber(_ba)if bba then _aa.selectedRecipe.inputItemRate=bba else
+_aa.messageBox:open("Error","Input Item Rate must be a valid number!")return end else
+_aa.selectedRecipe.inputItemRate=1 end;local aba=_aa.inputFluidRateInput:getText()
+if
+aba and aba~=""then local bba=tonumber(aba)if bba then _aa.selectedRecipe.inputFluidRate=bba else
+_aa.messageBox:open("Error","Input Fluid Rate must be a valid number!")return end else
+_aa.selectedRecipe.inputFluidRate=1 end
+if _aa.selectedRecipe.id==nil then
+local bba,cba=cc.addRecipe(cc.MACHINE_TYPES.common,_aa.selectedRecipe)if not bba then
+_aa.messageBox:open("Error","Failed to add recipe! "..tostring(cba))return end else
+local bba,cba=cc.updateRecipe(cc.MACHINE_TYPES.common,_aa.selectedRecipe)if not bba then
+_aa.messageBox:open("Error","Failed to update recipe! "..tostring(cba))return end end;_aa.recipeListBox:refreshRecipeList()
+_aa.messageBox:open("Success","Recipe saved successfully.")end)
+_aa.detailsFrame:addLabel():setPosition(1,caa:getY()+1):setText("")
+a_a.setScrollable(_aa.detailsFrame,true,colors.gray,colors.lightGray,colors.gray,colors.white)_aa.itemListBox=dc:new(_aa.pframe)
+_aa.trigger=ad:new(_aa.pframe)_aa.messageBox=bd:new(_aa.pframe)
+_aa.confirmMessageBox=cd:new(_aa.pframe)return _aa end
+function b_a:init()self.recipeListBox:refreshRecipeList()end;return b_a end
 modules["elements.ItemSelectedListBox"] = function(...) local aa=require("libraries.basalt")
 local ba=require("utils.Logger")
 local function ca(ab,bb)
@@ -3813,7 +3925,7 @@ local _a=c:gsub("%*",".*")_a="^".._a.."$"return d:match(_a)~=nil end;return b en
 modules["programs.recipe.manager.TriggerView"] = function(...) local _c=require("utils.StringUtils")
 local ac=require("wrapper.PeripheralWrapper")local bc=require("utils.OSUtils")
 local cc=require("utils.Logger")local dc=require("elements.ItemSelectedListBox")
-local _d=require("programs.recipe.manager.Trigger")local ad=require("programs.common.SnapShot")
+local _d=require("programs.common.Trigger")local ad=require("programs.common.SnapShot")
 local bd=require("elements.MessageBox")local cd=require("elements.ConfirmMessageBox")local dd=textutils
 local __a=colors;local a_a={}a_a.__index=a_a;local b_a=_d.TYPES;local c_a=_d.CONDITION_TYPES
 function a_a:new(d_a)
@@ -4121,13 +4233,10 @@ modules["programs.recipe.manager.RecipeList"] = function(...) local c=require("u
 function d:new(_a,aa,ba,ca,da)
 local _b=setmetatable({},d)_b.pframe=_a;_b.selectedRecipe=nil
 _b.innerFrame=_b.pframe:addFrame():setPosition(aa,ba):setSize(ca,da):setBackground(colors.lightGray):setForeground(colors.white)
-_b.searchInput=_b.innerFrame:addInput():setPosition(2,2):setSize(16,1):setBackground(colors.gray):setForeground(colors.white):setPlaceholderColor(colors.lightGray):setPlaceholder("Search...")
-_b.searchBtn=_b.innerFrame:addButton():setPosition(
-_b.searchInput:getX()+_b.searchInput:getWidth()+1,_b.searchInput:getY()):setSize(1,1):setText("S"):setBackground(colors.gray):setForeground(colors.white):onClick(function()
-local ab=_b.searchInput:getText():lower()
-_b.recipeList:setItems(_b.getDisplayRecipeListFn(ab))end)
+_b.searchInput=_b.innerFrame:addInput():setPosition(2,2):setSize(18,1):setBackground(colors.gray):setForeground(colors.white):setPlaceholderColor(colors.lightGray):setPlaceholder("Search..."):onChange("text",function(ab,bb)
+_b:refreshRecipeList(bb)end)
 _b.clearBtn=_b.innerFrame:addButton():setPosition(
-_b.searchBtn:getX()+_b.searchBtn:getWidth()+1,_b.searchBtn:getY()):setSize(1,1):setText("C"):setBackground(colors.gray):setForeground(colors.white):onClick(function()
+_b.searchInput:getX()+_b.searchInput:getWidth()+1,_b.searchInput:getY()):setSize(1,1):setText("C"):setBackground(colors.gray):setForeground(colors.white):onClick(function()
 _b.searchInput:setText("")
 _b.recipeList:setItems(_b.getDisplayRecipeListFn())end)
 _b.recipeList=_b.innerFrame:addList():setPosition(2,
@@ -4136,16 +4245,20 @@ _b.innerFrame:getHeight()- (
 _b.searchInput:getY()+_b.searchInput:getHeight()+3)):setBackground(colors.gray):setForeground(colors.white):onSelect(function(ab,bb,cb)
 _b.onSelectedCallback(cb)end)
 _b.newButton=_b.innerFrame:addButton():setPosition(_b.recipeList:getX(),
-_b.recipeList:getY()+_b.recipeList:getHeight()+1):setSize(7,1):setText("New"):setBackground(colors.gray):setForeground(colors.white):onClick(function()
+_b.recipeList:getY()+_b.recipeList:getHeight()+1):setSize(5,1):setText("New"):setBackground(colors.gray):setForeground(colors.white):onClick(function()
 _b.onNewCallback()end)
+_b.updateButton=_b.innerFrame:addButton():setPosition(
+_b.newButton:getX()+_b.newButton:getWidth()+1,_b.newButton:getY()):setSize(8,1):setText(" Update "):setBackground(colors.gray):setForeground(colors.white):onClick(function()
+_b.onUpdateCallback()end)
 _b.deleteButton=_b.innerFrame:addButton():setPosition(
-_b.newButton:getX()+_b.newButton:getWidth()+6,_b.newButton:getY()):setSize(7,1):setText("Del"):setBackground(colors.gray):setForeground(colors.white):onClick(function()
+_b.updateButton:getX()+_b.updateButton:getWidth()+1,_b.updateButton:getY()):setSize(5,1):setText("Del"):setBackground(colors.gray):setForeground(colors.white):onClick(function()
 _b.onDelCallback()end)return _b end
-function d:setOnSelected(_a)self.onSelectedCallback=_a;return self end;function d:setOnNew(_a)self.onNewCallback=_a;return self end;function d:setOnDel(_a)
-self.onDelCallback=_a;return self end;function d:setGetDisplayRecipeListFn(_a)
-self.getDisplayRecipeListFn=_a;return self end;function d:refreshRecipeList()
-local _a=self.searchInput:getText():lower()
-self.recipeList:setItems(self.getDisplayRecipeListFn(_a))end;function d:init()
+function d:setOnSelected(_a)self.onSelectedCallback=_a;return self end;function d:setOnNew(_a)self.onNewCallback=_a;return self end;function d:setOnUpdate(_a)
+self.onUpdateCallback=_a;return self end;function d:setOnDel(_a)self.onDelCallback=_a
+return self end;function d:setGetDisplayRecipeListFn(_a)
+self.getDisplayRecipeListFn=_a;return self end;function d:refreshRecipeList(_a)local aa=_a or
+self.searchInput:getText():lower()
+self.recipeList:setItems(self.getDisplayRecipeListFn(aa))end;function d:init()
 self:refreshRecipeList()return self end;return d end
 modules["programs.recipe.manager.Utils"] = function(...) Utils={}
 Utils.getListDisplayItems=function(a,b)local c={}if a then for d,_a in pairs(a)do
@@ -4213,9 +4326,10 @@ local db=ba.pullItems(ca.getName(),slot,_b)if db==0 then return bb end;bb=bb+db;
 while ab<_b do
 local bb=ca.pushItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end end elseif ba.isUnlimitedPeripheralInventory()then
 if
-string.find(ba.getName(),"crafting_storage")then
-ba.getItems=function()local ca=ba.items()for da,_b in ipairs(ca)do _b.displayName=_b.name
-_b.name=_b.technicalName end;return ca end
+string.find(ba.getName(),"crafting_storage")or ba.getPatternsFor~=nil then
+ba.getItems=function()
+local ca=ba.items()
+for da,_b in ipairs(ca)do _b.displayName=_b.name;_b.name=_b.technicalName end;return ca end
 ba.getItemFinder=function(ca)local da=nil
 return
 function()local _b=ba.items()
@@ -4301,8 +4415,9 @@ local da=_a.getTypes(ba)for _b,ab in ipairs(da)do if ab==ca then return true end
 _a.addPeripherals=function(ba)
 if ba==nil then error("Peripheral name cannot be nil")end;local ca=_a.wrap(ba)
 if ca~=nil then _a.loadedPeripherals[ba]=ca end end
-_a.reloadAll=function()_a.loadedPeripherals={}for ba,ca in ipairs(peripheral.getNames())do
-_a.addPeripherals(ca)end end
+_a.reloadAll=function()_a.loadedPeripherals={}
+for ba,ca in ipairs(peripheral.getNames())do
+d.debug("Loading peripheral: {}",ca)_a.addPeripherals(ca)end end
 _a.getAll=function()
 if _a.loadedPeripherals==nil then _a.reloadAll()end;return _a.loadedPeripherals end
 _a.getByName=function(ba)
@@ -4313,9 +4428,8 @@ error("Types cannot be nil or empty")end;local ca={}
 for da,_b in pairs(_a.getAll())do for ab,bb in ipairs(ba)do if
 _a.isTypeOf(_b,bb)then ca[da]=_b;break end end end;return ca end
 _a.getAllPeripheralsNameContains=function(ba)if ba==nil or ba==""then
-error("Part of name input cannot be nil or empty")end;local ca={}
-for da,_b in pairs(_a.getAll())do
-d.debug("Checking peripheral: {}",da)if string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
+error("Part of name input cannot be nil or empty")end;local ca={}for da,_b in pairs(_a.getAll())do if
+string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
 modules["elements.ScrollableFrame"] = function(...) local _a=require("utils.Logger")local aa={}aa.__index=aa
 local function ba(da)local _b=0;for ab,bb in
 ipairs(da.get("children"))do
@@ -4332,29 +4446,31 @@ return math.max(0,ac-bc)end})da._scrollbar=_c end;return da end
 function aa.updateScrollbarRange(da)
 if da._scrollbar then local _b=ba(da)local ab=da:getHeight()
 local bb=math.max(0,_b-ab)da._scrollbar.set("maxValue",bb)end end;return aa end
-modules["programs.recipe.manager.Trigger"] = function(...) local b={}
-b.TYPES={FLUID_COUNT="fluid_count",ITEM_COUNT="item_count",REDSTONE_SIGNAL="redstone_signal"}
-b.CONDITION_TYPES={COUNT_GREATER="count_greater",COUNT_LESS="count_less",COUNT_EQUAL="count_equal"}
-b.eval=function(c,d)if not c or not c.children then return true end
-for _a,aa in
-ipairs(c.children)do if b.evalTriggerNode(aa,d)then return true end end;return false end
-b.evalTriggerNode=function(c,d)if not c or not c.data then return true end;local _a=c.data
-local aa=false
-if _a.triggerType==b.TYPES.ITEM_COUNT then
-aa=b.evalItemCountTrigger(_a,d)elseif _a.triggerType==b.TYPES.FLUID_COUNT then
-aa=b.evalFluidCountTrigger(_a,d)elseif _a.triggerType==b.TYPES.REDSTONE_SIGNAL then
-aa=b.evalRedstoneSignalTrigger(_a,d)else return true end;local ba=true;if c.children and#c.children>0 then ba=false
-for ca,da in ipairs(c.children)do if
-b.evalTriggerNode(da,d)then ba=true;break end end end
-return aa and ba end
-b.evalItemCountTrigger=function(c,d)if not c.itemName or not d then return false end
-local _a=0;local aa=d("item",c.itemName)if aa then _a=aa.count or 0 end;return
-b.evalCondition(_a,c.amount,c.triggerConditionType)end
-b.evalFluidCountTrigger=function(c,d)if not c.itemName or not d then return false end
-local _a=0;local aa=d("fluid",c.itemName)if aa then _a=aa.amount or 0 end;return
-b.evalCondition(_a,c.amount,c.triggerConditionType)end;b.evalRedstoneSignalTrigger=function(c,d)return true end
-b.evalCondition=function(c,d,_a)
-if _a==
-b.CONDITION_TYPES.COUNT_GREATER then return c>d elseif _a==b.CONDITION_TYPES.COUNT_LESS then return c<d elseif _a==
-b.CONDITION_TYPES.COUNT_EQUAL then return c==d else return false end end;return b end
+modules["programs.common.Trigger"] = function(...) local c=require("utils.Logger")local d={}
+d.TYPES={FLUID_COUNT="fluid_count",ITEM_COUNT="item_count",REDSTONE_SIGNAL="redstone_signal"}
+d.CONDITION_TYPES={COUNT_GREATER="count_greater",COUNT_LESS="count_less",COUNT_EQUAL="count_equal"}
+d.eval=function(_a,aa)if not _a or not _a.children then return true end
+for ba,ca in
+ipairs(_a.children)do if d.evalTriggerNode(ca,aa)then return true end end;return false end
+d.evalTriggerNode=function(_a,aa)if not _a or not _a.data then return true end
+local ba=_a.data;local ca=false
+if ba.triggerType==d.TYPES.ITEM_COUNT then
+ca=d.evalItemCountTrigger(ba,aa)elseif ba.triggerType==d.TYPES.FLUID_COUNT then
+ca=d.evalFluidCountTrigger(ba,aa)elseif ba.triggerType==d.TYPES.REDSTONE_SIGNAL then
+ca=d.evalRedstoneSignalTrigger(ba,aa)else return true end;local da=true;if _a.children and#_a.children>0 then da=false
+for _b,ab in
+ipairs(_a.children)do if d.evalTriggerNode(ab,aa)then da=true;break end end end;return
+ca and da end
+d.evalItemCountTrigger=function(_a,aa)
+if not _a.itemName or not aa then return false end;local ba=0;local ca=aa("item",_a.itemName)
+if ca then ba=ca.count or 0 end
+return d.evalCondition(ba,_a.amount,_a.triggerConditionType)end
+d.evalFluidCountTrigger=function(_a,aa)
+if not _a.itemName or not aa then return false end;local ba=0;local ca=aa("fluid",_a.itemName)
+if ca then ba=ca.amount or 0 end
+return d.evalCondition(ba,_a.amount,_a.triggerConditionType)end;d.evalRedstoneSignalTrigger=function(_a,aa)return true end
+d.evalCondition=function(_a,aa,ba)
+if ba==
+d.CONDITION_TYPES.COUNT_GREATER then return _a>aa elseif ba==d.CONDITION_TYPES.COUNT_LESS then
+return _a<aa elseif ba==d.CONDITION_TYPES.COUNT_EQUAL then return _a==aa else return false end end;return d end
 return modules["programs.RecipeManager"](...)

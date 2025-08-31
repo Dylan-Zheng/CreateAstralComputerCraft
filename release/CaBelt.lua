@@ -2,93 +2,107 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CaBelt"] = function(...) local cd=require("utils.Logger")
-local dd=require("programs.common.Communicator")local __a=require("programs.command.CommandLine")
-local a_a=require("utils.OSUtils")local b_a=require("programs.recipe.manager.Trigger")
-local c_a=require("wrapper.PeripheralWrapper")local d_a=require("utils.TableUtils")cd.useDefault()
-cd.currentLevel=cd.levels.ERROR;local _aa={...}local aaa={}local baa={}local function caa()
-local _da=a_a.loadTable("cabelt_recipes")if _da~=nil then aaa=_da end end;local function daa()
-a_a.saveTable("cabelt_recipes",aaa)end
-local function _ba(_da,ada,bda,cda)ada=ada or 1;bda=bda or 5
-cda=cda or"local"if#_da==0 then print("No recipes found.")return end;local dda=math.ceil(
-#_da/bda)local __b=(ada-1)*bda+1;local a_b=math.min(
-__b+bda-1,#_da)
-print(string.format("=== Belt Recipes (Page %d/%d) ===",ada,dda))for i=__b,a_b do local b_b=_da[i]local c_b=b_b.output or"No Output"
-print(string.format("%d. %s",i,c_b))end
-if dda>1 then
-print(string.format("Showing %d-%d of %d recipes",__b,a_b,
-#_da))if ada<dda then
-print(string.format("Use 'list %s %d' for next page",cda,ada+1))end;if ada>1 then
-print(string.format("Use 'list %s %d' for previous page",cda,
-ada-1))end end end
-local function aba()local _da=__a:new("cabelt> ")
-_da:addCommand("list","List recipes",function(ada)local bda={}for __b in
-ada:gmatch("%S+")do table.insert(bda,__b)end
-if#bda<2 then
+modules["programs.CaBelt"] = function(...) local d_a=require("utils.Logger")
+local _aa=require("programs.common.Communicator")local aaa=require("programs.command.CommandLine")
+local baa=require("utils.OSUtils")local caa=require("programs.common.Trigger")
+local daa=require("wrapper.PeripheralWrapper")local _ba=require("utils.TableUtils")d_a.useDefault()
+d_a.currentLevel=d_a.levels.ERROR;local aba={...}local bba={}local cba={}local function dba()
+local bab=baa.loadTable("cabelt_recipes")if bab~=nil then bba=bab end end;local function _ca()
+baa.saveTable("cabelt_recipes",bba)end;local function aca()
+return baa.loadTable("cabelt_communicator_config")end
+local function bca(bab,cab,dab)
+local _bb={side=bab,channel=cab,secret=dab}baa.saveTable("cabelt_communicator_config",_bb)end
+local function cca(bab)local cab={}
+for dab,_bb in ipairs(bba)do if _bb.id then cab[_bb.id]=dab end end;for dab,_bb in ipairs(bab)do
+if _bb.id then local abb=cab[_bb.id]if abb then bba[abb]=_bb end end end;_ca()end
+local function dca(bab,cab,dab,_bb)cab=cab or 1;dab=dab or 5;_bb=_bb or"local"if#bab==0 then
+print("No recipes found.")return end;local abb=math.ceil(#bab/dab)local bbb=
+(cab-1)*dab+1;local cbb=math.min(bbb+dab-1,#bab)
+print(string.format("=== Belt Recipes (Page %d/%d) ===",cab,abb))for i=bbb,cbb do local dbb=bab[i]local _cb=dbb.output or"No Output"
+print(string.format("%d. %s",i,_cb))end
+if abb>1 then
+print(string.format("Showing %d-%d of %d recipes",bbb,cbb,
+#bab))if cab<abb then
+print(string.format("Use 'list %s %d' for next page",_bb,cab+1))end;if cab>1 then
+print(string.format("Use 'list %s %d' for previous page",_bb,
+cab-1))end end end
+local function _da()local bab=aaa:new("cabelt> ")
+bab:addCommand("list","List recipes",function(cab)local dab={}for bbb in
+cab:gmatch("%S+")do table.insert(dab,bbb)end
+if#dab<2 then
 print("Usage: list [remote|local] [page]")print("Examples:")
 print("  list remote             - List remote recipes")
 print("  list local              - List local recipes")
-print("  list local 2            - List local recipes page 2")return end;local cda=bda[2]local dda=tonumber(bda[3])or 1
-if cda=="local"then
-_ba(aaa,dda,nil,"local")elseif cda=="remote"then if#baa==0 then print("No remote recipes available.")
-return end;_ba(baa,dda,nil,"remote")else
-print("Usage: list [remote|local] [page]")end end,function(ada)
-local bda={}
-for dda in ada:gmatch("%S+")do table.insert(bda,dda)end;local cda=#bda
-if(cda==0 or cda==1)and ada:sub(-1)~=" "then local dda=
-ada:match("%S+$")or""local __b={}local a_b={"remote","local"}
-for b_b,c_b in
-ipairs(a_b)do if c_b:find(dda,1,true)==1 then
-table.insert(__b,c_b:sub(#dda+1))end end;return __b end;return{}end)
-_da:addCommand("set","Set belt recipe",function(ada)local bda={}for __b in ada:gmatch("%S+")do
-table.insert(bda,__b)end
-if#bda<2 then
+print("  list local 2            - List local recipes page 2")return end;local _bb=dab[2]local abb=tonumber(dab[3])or 1
+if _bb=="local"then
+dca(bba,abb,nil,"local")elseif _bb=="remote"then if#cba==0 then print("No remote recipes available.")
+return end;dca(cba,abb,nil,"remote")else
+print("Usage: list [remote|local] [page]")end end,function(cab)
+local dab={}
+for abb in cab:gmatch("%S+")do table.insert(dab,abb)end;local _bb=#dab
+if(_bb==0 or _bb==1)and cab:sub(-1)~=" "then local abb=
+cab:match("%S+$")or""local bbb={}local cbb={"remote","local"}
+for dbb,_cb in
+ipairs(cbb)do if _cb:find(abb,1,true)==1 then
+table.insert(bbb,_cb:sub(#abb+1))end end;return bbb end;return{}end)
+bab:addCommand("set","Set belt recipe",function(cab)local dab={}for bbb in cab:gmatch("%S+")do
+table.insert(dab,bbb)end
+if#dab<2 then
 print("Usage: set [recipe_output]")print("Examples:")
-print("  set minecraft:iron_ingot    - Set recipe with iron_ingot output")return end;local cda=bda[2]local dda=nil;for __b,a_b in ipairs(baa)do
-if a_b.output==cda then dda=a_b;break end end
-if not dda then
+print("  set minecraft:iron_ingot    - Set recipe with iron_ingot output")return end;local _bb=dab[2]local abb=nil;for bbb,cbb in ipairs(cba)do
+if cbb.output==_bb then abb=cbb;break end end
+if not abb then
 print("Recipe with output '"..
-cda.."' not found in remote recipes.")
-print("Use 'list remote' to see available recipes.")return end;aaa={dda}daa()
-print("Recipe set successfully: ".. (dda.output or"Unknown"))end,function(ada)
-local bda={}
-for dda in ada:gmatch("%S+")do table.insert(bda,dda)end;local cda=#bda
-if(cda==0 or cda==1)and ada:sub(-1)~=" "then local dda=
-ada:match("%S+$")or""local __b={}
-for a_b,b_b in ipairs(baa)do if b_b.output and
-b_b.output:find(dda,1,true)==1 then
-table.insert(__b,b_b.output:sub(#dda+1))end end;return __b end;return{}end)
-_da:addCommand("reboot","Reboot the program",function(ada)print("Rebooting...")os.reboot()end)return _da end;caa()
-if _aa~=nil and#_aa>=3 then local _da=_aa[1]local ada=tonumber(_aa[2])
-local bda=_aa[3]
-if _da and ada and bda then dd.open(_da,ada,"recipe",bda)
-local cda=dd.communicationChannels[_da][ada]["recipe"]
-cda.addMessageHandler("getRecipesRes",function(dda,__b,a_b)baa=__b or{}end)
-parallel.waitForAll(dd.listen,function()while next(baa)==nil do
-cda.send("getRecipesReq","belt")os.sleep(1)end end,function()
-local dda=aba()print("CaBelt Manager - Network Mode")
-print("Connected to channel "..ada.." on "..
-_da)
-print("Type 'help' for available commands or 'exit' to quit")while true do local __b,a_b=pcall(function()dda:run()end)
-if not __b then print(
-"Error: "..tostring(a_b))end end end)else print("Error: Invalid network parameters")
-print("Usage: cabelt [side] [channel] [secret]")print("Example: cabelt top 100 mySecret")end end;c_a.reloadAll()
-local bba=c_a.getAllPeripheralsNameContains("crafting_storage")local cba=next(bba)local dba=bba[cba]
-local _ca=c_a.getAllPeripheralsNameContains("belt")cba=next(_ca)local aca=_ca[cba]
-local bca=c_a.getAllPeripheralsNameContains("drawer")cba=next(bca)local cca=bca[cba]local dca=aaa[1]
-parallel.waitForAll(function()
-while true do local _da=0.2
+_bb.."' not found in remote recipes.")
+print("Use 'list remote' to see available recipes.")return end;bba={abb}_ca()
+print("Recipe set successfully: ".. (abb.output or"Unknown"))end,function(cab)
+local dab={}
+for abb in cab:gmatch("%S+")do table.insert(dab,abb)end;local _bb=#dab
+if(_bb==0 or _bb==1)and cab:sub(-1)~=" "then local abb=
+cab:match("%S+$")or""local bbb={}
+for cbb,dbb in ipairs(cba)do if dbb.output and
+dbb.output:find(abb,1,true)==1 then
+table.insert(bbb,dbb.output:sub(#abb+1))end end;return bbb end;return{}end)
+bab:addCommand("reboot","Reboot the program",function(cab)print("Rebooting...")os.reboot()end)return bab end;dba()
+if aba~=nil and#aba>=3 then local bab=aba[1]local cab=tonumber(aba[2])
+local dab=aba[3]
+if bab and cab and dab then bca(bab,cab,dab)
+_aa.open(bab,cab,"recipe",dab)
+local _bb=_aa.communicationChannels[bab][cab]["recipe"]
+_bb.addMessageHandler("getRecipesRes",function(abb,bbb,cbb)cba=bbb or{}end)
+parallel.waitForAll(_aa.listen,function()while next(cba)==nil do
+_bb.send("getRecipesReq","belt")os.sleep(1)end end,function()
+local abb=_da()print("CaBelt Manager - Network Mode")
+print("Connected to channel "..cab.." on "..
+bab)
+print("Type 'help' for available commands or 'exit' to quit")while true do local bbb,cbb=pcall(function()abb:run()end)
+if not bbb then print(
+"Error: "..tostring(cbb))end end end)else print("Error: Invalid network parameters")
+print("Usage: cabelt [side] [channel] [secret]")print("Example: cabelt top 100 mySecret")end end;daa.reloadAll()
+local ada=daa.getAllPeripheralsNameContains("crafting_storage")local bda=next(ada)local cda=ada[bda]
+local dda=daa.getAllPeripheralsNameContains("belt")bda=next(dda)local __b=dda[bda]
+local a_b=daa.getAllPeripheralsNameContains("drawer")bda=next(a_b)local b_b=a_b[bda]local c_b=bba[1]
+local d_b=function()local bab=aca()
+if bab and bab.side and
+bab.channel and bab.secret then
+print("Found saved communicator config, attempting to connect...")
+_aa.open(bab.side,bab.channel,"recipe",bab.secret)
+local cab=_aa.communicationChannels[bab.side][bab.channel]["recipe"]
+cab.addMessageHandler("getRecipesRes",function(dab,_bb,abb)cba=_bb or{}end)
+cab.addMessageHandler("update",function(dab,_bb,abb)
+if _bb and type(_bb)=="table"then cca(_bb)end end)_aa.listen()end end
+local _ab=function()
+while true do local bab=0.2
 if
-b_a.eval(dca.trigger,function(ada,bda)if
-ada=="item"then return dba.getItem(bda)elseif ada=="fluid"then
-return dba.getFluid(bda)end;return nil end)then local ada=cca.getItem(dca.incomplete)
-if ada then
-cca.transferItemTo(aca,ada.name,ada.count)else dba.transferItemTo(aca,dca.input,4)end else _da=1 end;os.sleep(_da)end end,function()
-while
-true do
-for _da,ada in ipairs(cca.getItems())do if ada.name~=dca.incomplete and
-ada.name~=dca.input then
-dba.transferItemFrom(cca,ada.name,ada.count)end end;os.sleep(1)end end) end
+caa.eval(c_b.trigger,function(cab,dab)if cab=="item"then return cda.getItem(dab)elseif cab=="fluid"then return
+cda.getFluid(dab)end;return nil end)then local cab=b_b.getItem(c_b.incomplete)
+if cab then
+b_b.transferItemTo(__b,cab.name,cab.count)else cda.transferItemTo(__b,c_b.input,4)end else bab=1 end;os.sleep(bab)end end
+local aab=function()
+while true do
+for bab,cab in ipairs(b_b.getItems())do if cab.name~=c_b.incomplete and
+cab.name~=c_b.input then
+cda.transferItemFrom(b_b,cab.name,cab.count)end end;os.sleep(1)end end;parallel.waitForAll(d_b,_ab,aab) end
 modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
 b.useDefault=function()
 b.addPrintFunction(function(c,d,_a,aa)
@@ -183,8 +197,8 @@ for _d,ad in pairs(ac.communicationChannels)do
 for bd,cd in pairs(ad)do for dd,__a in pairs(cd)do
 table.insert(dc,ac.communicationChannels[_d][bd][dd])end end end;return dc end;return ac end
 modules["programs.command.CommandLine"] = function(...) local ba={}ba.__index=ba
-function ba.filterSuggestions(cb,db)local _c={}
-local ac=string.lower(db or"")for bc,cc in ipairs(cb)do local dc=string.lower(cc)
+function ba.filterSuggestions(cb,db)local _c={}db=db or""
+local ac=string.lower(db)for bc,cc in ipairs(cb)do local dc=string.lower(cc)
 if dc:find(ac,1,true)==1 then
 local _d=cc:sub(#db+1)if _d~=""then table.insert(_c,_d)end end end
 return _c end
@@ -229,31 +243,33 @@ return ab end)if not ca then
 c.error("Failed to serialize table for {}, error: {}",_a,da)return end;local _b=fs.open(_a,"w")if _b then
 _b.write(ba)_b.close()else
 c.error("Failed to open file for writing: {}",_a)end end;return d end
-modules["programs.recipe.manager.Trigger"] = function(...) local b={}
-b.TYPES={FLUID_COUNT="fluid_count",ITEM_COUNT="item_count",REDSTONE_SIGNAL="redstone_signal"}
-b.CONDITION_TYPES={COUNT_GREATER="count_greater",COUNT_LESS="count_less",COUNT_EQUAL="count_equal"}
-b.eval=function(c,d)if not c or not c.children then return true end
-for _a,aa in
-ipairs(c.children)do if b.evalTriggerNode(aa,d)then return true end end;return false end
-b.evalTriggerNode=function(c,d)if not c or not c.data then return true end;local _a=c.data
-local aa=false
-if _a.triggerType==b.TYPES.ITEM_COUNT then
-aa=b.evalItemCountTrigger(_a,d)elseif _a.triggerType==b.TYPES.FLUID_COUNT then
-aa=b.evalFluidCountTrigger(_a,d)elseif _a.triggerType==b.TYPES.REDSTONE_SIGNAL then
-aa=b.evalRedstoneSignalTrigger(_a,d)else return true end;local ba=true;if c.children and#c.children>0 then ba=false
-for ca,da in ipairs(c.children)do if
-b.evalTriggerNode(da,d)then ba=true;break end end end
-return aa and ba end
-b.evalItemCountTrigger=function(c,d)if not c.itemName or not d then return false end
-local _a=0;local aa=d("item",c.itemName)if aa then _a=aa.count or 0 end;return
-b.evalCondition(_a,c.amount,c.triggerConditionType)end
-b.evalFluidCountTrigger=function(c,d)if not c.itemName or not d then return false end
-local _a=0;local aa=d("fluid",c.itemName)if aa then _a=aa.amount or 0 end;return
-b.evalCondition(_a,c.amount,c.triggerConditionType)end;b.evalRedstoneSignalTrigger=function(c,d)return true end
-b.evalCondition=function(c,d,_a)
-if _a==
-b.CONDITION_TYPES.COUNT_GREATER then return c>d elseif _a==b.CONDITION_TYPES.COUNT_LESS then return c<d elseif _a==
-b.CONDITION_TYPES.COUNT_EQUAL then return c==d else return false end end;return b end
+modules["programs.common.Trigger"] = function(...) local c=require("utils.Logger")local d={}
+d.TYPES={FLUID_COUNT="fluid_count",ITEM_COUNT="item_count",REDSTONE_SIGNAL="redstone_signal"}
+d.CONDITION_TYPES={COUNT_GREATER="count_greater",COUNT_LESS="count_less",COUNT_EQUAL="count_equal"}
+d.eval=function(_a,aa)if not _a or not _a.children then return true end
+for ba,ca in
+ipairs(_a.children)do if d.evalTriggerNode(ca,aa)then return true end end;return false end
+d.evalTriggerNode=function(_a,aa)if not _a or not _a.data then return true end
+local ba=_a.data;local ca=false
+if ba.triggerType==d.TYPES.ITEM_COUNT then
+ca=d.evalItemCountTrigger(ba,aa)elseif ba.triggerType==d.TYPES.FLUID_COUNT then
+ca=d.evalFluidCountTrigger(ba,aa)elseif ba.triggerType==d.TYPES.REDSTONE_SIGNAL then
+ca=d.evalRedstoneSignalTrigger(ba,aa)else return true end;local da=true;if _a.children and#_a.children>0 then da=false
+for _b,ab in
+ipairs(_a.children)do if d.evalTriggerNode(ab,aa)then da=true;break end end end;return
+ca and da end
+d.evalItemCountTrigger=function(_a,aa)
+if not _a.itemName or not aa then return false end;local ba=0;local ca=aa("item",_a.itemName)
+if ca then ba=ca.count or 0 end
+return d.evalCondition(ba,_a.amount,_a.triggerConditionType)end
+d.evalFluidCountTrigger=function(_a,aa)
+if not _a.itemName or not aa then return false end;local ba=0;local ca=aa("fluid",_a.itemName)
+if ca then ba=ca.amount or 0 end
+return d.evalCondition(ba,_a.amount,_a.triggerConditionType)end;d.evalRedstoneSignalTrigger=function(_a,aa)return true end
+d.evalCondition=function(_a,aa,ba)
+if ba==
+d.CONDITION_TYPES.COUNT_GREATER then return _a>aa elseif ba==d.CONDITION_TYPES.COUNT_LESS then
+return _a<aa elseif ba==d.CONDITION_TYPES.COUNT_EQUAL then return _a==aa else return false end end;return d end
 modules["wrapper.PeripheralWrapper"] = function(...) local d=require("utils.Logger")local _a={}
 local aa={DEFAULT_INVENTORY=1,UNLIMITED_PERIPHERAL_INVENTORY=2,TANK=3,REDSTONE=4}_a.SIDES={"top","bottom","left","right","front","back"}
 _a.loadedPeripherals={}
@@ -302,9 +318,10 @@ local db=ba.pullItems(ca.getName(),slot,_b)if db==0 then return bb end;bb=bb+db;
 while ab<_b do
 local bb=ca.pushItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end end elseif ba.isUnlimitedPeripheralInventory()then
 if
-string.find(ba.getName(),"crafting_storage")then
-ba.getItems=function()local ca=ba.items()for da,_b in ipairs(ca)do _b.displayName=_b.name
-_b.name=_b.technicalName end;return ca end
+string.find(ba.getName(),"crafting_storage")or ba.getPatternsFor~=nil then
+ba.getItems=function()
+local ca=ba.items()
+for da,_b in ipairs(ca)do _b.displayName=_b.name;_b.name=_b.technicalName end;return ca end
 ba.getItemFinder=function(ca)local da=nil
 return
 function()local _b=ba.items()
@@ -390,8 +407,9 @@ local da=_a.getTypes(ba)for _b,ab in ipairs(da)do if ab==ca then return true end
 _a.addPeripherals=function(ba)
 if ba==nil then error("Peripheral name cannot be nil")end;local ca=_a.wrap(ba)
 if ca~=nil then _a.loadedPeripherals[ba]=ca end end
-_a.reloadAll=function()_a.loadedPeripherals={}for ba,ca in ipairs(peripheral.getNames())do
-_a.addPeripherals(ca)end end
+_a.reloadAll=function()_a.loadedPeripherals={}
+for ba,ca in ipairs(peripheral.getNames())do
+d.debug("Loading peripheral: {}",ca)_a.addPeripherals(ca)end end
 _a.getAll=function()
 if _a.loadedPeripherals==nil then _a.reloadAll()end;return _a.loadedPeripherals end
 _a.getByName=function(ba)
@@ -402,9 +420,8 @@ error("Types cannot be nil or empty")end;local ca={}
 for da,_b in pairs(_a.getAll())do for ab,bb in ipairs(ba)do if
 _a.isTypeOf(_b,bb)then ca[da]=_b;break end end end;return ca end
 _a.getAllPeripheralsNameContains=function(ba)if ba==nil or ba==""then
-error("Part of name input cannot be nil or empty")end;local ca={}
-for da,_b in pairs(_a.getAll())do
-d.debug("Checking peripheral: {}",da)if string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
+error("Part of name input cannot be nil or empty")end;local ca={}for da,_b in pairs(_a.getAll())do if
+string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
 modules["utils.TableUtils"] = function(...) local b={}
 b.findInArray=function(c,d)if c==nil or d==nil then return nil end;for _a,aa in ipairs(c)do
 if d(aa)then return _a end end;return nil end

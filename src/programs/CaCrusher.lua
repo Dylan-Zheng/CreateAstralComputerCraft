@@ -392,10 +392,13 @@ if args ~= nil and #args > 0 then
 end
 
 PeripheralWrapper.reloadAll()
+
 local crushers = PeripheralWrapper.getAllPeripheralsNameContains("create:crushing_wheel")
 local storages = PeripheralWrapper.getAllPeripheralsNameContains("crafting_storage")
-local key = next(storages) -- Assuming only one storage is available
-local storage = storages[key]
+local storage = storages[next(storages)]
+
+local redrouters = PeripheralWrapper.getPeripheralByName("redrouter")
+local redrouter = redrouters[next(redrouters)]
 
 local totalCrushers = TableUtils.getLength(crushers)
 
@@ -506,68 +509,77 @@ local checkAndRunRecipe = function()
             end
         end
 
-        local currentTotalCrushers = totalCrushers
+        local waitTime = 1
+
         local currentTriggeredRecipeCount = #triggeredRecipes
+        if #currentTriggeredRecipeCount > 0 then
+            waitTime = 0.2
+            redrouter.setOutputSignals(true)
+            local currentTotalCrushers = totalCrushers
 
-        local numOfCrushersForEachRecipe = math.max(1, math.floor(currentTotalCrushers / math.max(1, currentTriggeredRecipeCount)))
+            local numOfCrushersForEachRecipe = math.max(1,
+                math.floor(currentTotalCrushers / math.max(1, currentTriggeredRecipeCount)))
 
-        for _, recipe in ipairs(triggeredRecipes) do
-            local usedCrushersCount = marker:getOnUseCrusherCountForRecipe(recipe)
-            local maxMachineForRecipe
-            
-            if recipe.maxMachine and recipe.maxMachine > 0 then
-                maxMachineForRecipe = math.min(numOfCrushersForEachRecipe, recipe.maxMachine)
-            else
-                maxMachineForRecipe = numOfCrushersForEachRecipe
-            end
+            for _, recipe in ipairs(triggeredRecipes) do
+                local usedCrushersCount = marker:getOnUseCrusherCountForRecipe(recipe)
+                local maxMachineForRecipe
 
-            if usedCrushersCount > maxMachineForRecipe then
-                local toRemove = usedCrushersCount - maxMachineForRecipe
-                for _, crusher in pairs(marker.recipeOnCrusher[recipe.id].crushers) do
-                    if toRemove <= 0 then
-                        break
-                    end
-                    marker:remove(crusher)
-                    toRemove = toRemove - 1
+                if recipe.maxMachine and recipe.maxMachine > 0 then
+                    maxMachineForRecipe = math.min(numOfCrushersForEachRecipe, recipe.maxMachine)
+                else
+                    maxMachineForRecipe = numOfCrushersForEachRecipe
                 end
-                usedCrushersCount = marker:getOnUseCrusherCountForRecipe(recipe) -- Update count after removal
-            end
 
-            if usedCrushersCount < maxMachineForRecipe then
-                local crusherNeeded = maxMachineForRecipe - usedCrushersCount
-                for _, crusher in pairs(crushers) do
-                    if crusherNeeded <= 0 then
-                        break
+                if usedCrushersCount > maxMachineForRecipe then
+                    local toRemove = usedCrushersCount - maxMachineForRecipe
+                    for _, crusher in pairs(marker.recipeOnCrusher[recipe.id].crushers) do
+                        if toRemove <= 0 then
+                            break
+                        end
+                        marker:remove(crusher)
+                        toRemove = toRemove - 1
                     end
-                    if not marker:isUsing(crusher) then
-                        marker:set(recipe, crusher)
-                        crusherNeeded = crusherNeeded - 1
-                    end
+                    usedCrushersCount = marker:getOnUseCrusherCountForRecipe(recipe) -- Update count after removal
                 end
-            end
 
-            -- Transfer items to all crushers assigned to this recipe
-            if recipe.input and recipe.input.items and #recipe.input.items > 0 then
-                for _, crusher in pairs(marker.recipeOnCrusher[recipe.id].crushers) do
-                    for _, inputItem in ipairs(recipe.input.items) do
-                        local transferAmount = math.min(64, recipe.inputItemRate or 64)
-                        storage.transferItemTo(crusher, inputItem, transferAmount)
+                if usedCrushersCount < maxMachineForRecipe then
+                    local crusherNeeded = maxMachineForRecipe - usedCrushersCount
+                    for _, crusher in pairs(crushers) do
+                        if crusherNeeded <= 0 then
+                            break
+                        end
+                        if not marker:isUsing(crusher) then
+                            marker:set(recipe, crusher)
+                            crusherNeeded = crusherNeeded - 1
+                        end
                     end
                 end
+
+                -- Transfer items to all crushers assigned to this recipe
+                if recipe.input and recipe.input.items and #recipe.input.items > 0 then
+                    for _, crusher in pairs(marker.recipeOnCrusher[recipe.id].crushers) do
+                        for _, inputItem in ipairs(recipe.input.items) do
+                            local transferAmount = math.min(64, recipe.inputItemRate or 64)
+                            storage.transferItemTo(crusher, inputItem, transferAmount)
+                        end
+                    end
+                end
+                -- Subtract the allocated crushers for this recipe (not just the ones currently in use)
+                currentTotalCrushers = currentTotalCrushers - maxMachineForRecipe
+                currentTriggeredRecipeCount = currentTriggeredRecipeCount - 1
+                numOfCrushersForEachRecipe = math.max(1,
+                    math.floor(currentTotalCrushers / math.max(1, currentTriggeredRecipeCount)))
             end
-            -- Subtract the allocated crushers for this recipe (not just the ones currently in use)
-            currentTotalCrushers = currentTotalCrushers - maxMachineForRecipe
-            currentTriggeredRecipeCount = currentTriggeredRecipeCount - 1
-            numOfCrushersForEachRecipe = math.max(1, math.floor(currentTotalCrushers / math.max(1, currentTriggeredRecipeCount)))
+        else
+            redrouter.setOutputSignals(false)
         end
-        sleep(1)
+        sleep(waitTime)
     end
 end
 
 local runChannel = function()
     local config = loadCommunicatorConfig()
     if config and config.side and config.channel and config.secret then
-        print("Found saved communicator config, attempting to connect...")
         Communicator.open(config.side, config.channel, "recipe", config.secret)
         local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
         openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
