@@ -512,7 +512,7 @@ local checkAndRunRecipe = function()
         local waitTime = 1
 
         local currentTriggeredRecipeCount = #triggeredRecipes
-        if #currentTriggeredRecipeCount > 0 then
+        if currentTriggeredRecipeCount > 0 then
             waitTime = 0.2
             redrouter.setOutputSignals(true)
             local currentTotalCrushers = totalCrushers

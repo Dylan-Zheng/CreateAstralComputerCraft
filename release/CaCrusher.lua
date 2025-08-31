@@ -145,9 +145,9 @@ if bbb then table.insert(bab,abb)else
 local cbb=c_b:getOnUseCrusherCountForRecipe(abb)
 if cbb>0 then for dbb,_cb in
 pairs(c_b.recipeOnCrusher[abb.id].crushers)do c_b:remove(_cb)end end end end end;local cab=1;local dab=#bab
-if#dab>0 then cab=0.2;a_b.setOutputSignals(true)
-local _bb=b_b
-local abb=math.max(1,math.floor(_bb/math.max(1,dab)))
+if dab>0 then cab=0.2;a_b.setOutputSignals(true)local _bb=b_b
+local abb=math.max(1,math.floor(
+_bb/math.max(1,dab)))
 for bbb,cbb in ipairs(bab)do local dbb=c_b:getOnUseCrusherCountForRecipe(cbb)
 local _cb;if cbb.maxMachine and cbb.maxMachine>0 then
 _cb=math.min(abb,cbb.maxMachine)else _cb=abb end
