@@ -1,5 +1,6 @@
 local basalt = require("libraries.basalt")
 local Logger = require("utils.Logger")
+local Communicator = require("programs.common.Communicator")
 local StoreManager = require("programs.recipe.manager.StoreManager")
 local ItemSelectedListBox = require("elements.ItemSelectedListBox")
 local SnapShot = require("programs.common.SnapShot")
@@ -54,12 +55,18 @@ function CommonRecipeTab:new(pframe)
                 this.inputFluidLabel:setText("Input Fluid: " .. (this.selectedRecipe.input and this.selectedRecipe.input.fluids and #this.selectedRecipe.input.fluids or 0))
                 this.outputItemLabel:setText("Output Item: " .. (this.selectedRecipe.output and this.selectedRecipe.output.items and #this.selectedRecipe.output.items or 0))
                 this.outputFluidLabel:setText("Output Fluid: " .. (this.selectedRecipe.output and this.selectedRecipe.output.fluids and #this.selectedRecipe.output.fluids or 0))
+                this.maxMachineInput:setText(tostring(this.selectedRecipe.maxMachine or -1))
+                this.inputItemRateInput:setText(tostring(this.selectedRecipe.inputItemRate or 1))
+                this.inputFluidRateInput:setText(tostring(this.selectedRecipe.inputFluidRate or 1))
             else
                 this.nameInput:setText("")
                 this.inputItemLabel:setText("Input Item:")
                 this.inputFluidLabel:setText("Input Fluid:")
                 this.outputItemLabel:setText("Output Item:")
                 this.outputFluidLabel:setText("Output Fluid:")
+                this.maxMachineInput:setText("-1")
+                this.inputItemRateInput:setText("1")
+                this.inputFluidRateInput:setText("1")
             end
         end)
         :setOnNew(function()
@@ -69,6 +76,9 @@ function CommonRecipeTab:new(pframe)
             this.inputFluidLabel:setText("Input Fluid:")
             this.outputItemLabel:setText("Output Item:")
             this.outputFluidLabel:setText("Output Fluid:")
+            this.maxMachineInput:setText("-1")
+            this.inputItemRateInput:setText("1")
+            this.inputFluidRateInput:setText("1")
         end)
         :setOnDel(function(recipe)
             if this.selectedRecipe == nil or this.selectedRecipe.id == nil then
@@ -87,10 +97,31 @@ function CommonRecipeTab:new(pframe)
                 this.inputFluidLabel:setText("Input Fluid:")
                 this.outputItemLabel:setText("Output Item:")
                 this.outputFluidLabel:setText("Output Fluid:")
+                this.maxMachineInput:setText("-1")
+                this.inputItemRateInput:setText("1")
+                this.inputFluidRateInput:setText("1")
                 this.recipeListBox:refreshRecipeList()
             end)
         end)
         :setGetDisplayRecipeListFn(getDisplayRecipeList)
+        :setOnUpdate(function()
+            -- Send all common recipes via Communicator
+            local allRecipes = StoreManager.getAllRecipesByType(StoreManager.MACHINE_TYPES.common)
+            if Communicator and Communicator.communicationChannels then
+                for side, channels in pairs(Communicator.communicationChannels) do
+                    for channel, topics in pairs(channels) do
+                        for topic, openChannel in pairs(topics) do
+                            if topic == "recipe" then
+                                openChannel.send("update", allRecipes)
+                                Logger.info("Sent {} common recipes via update event", #allRecipes)
+                            end
+                        end
+                    end
+                end
+            else
+                Logger.warn("Communicator not available for sending updates")
+            end
+        end)
 
     this.detailsFrame = this.innerFrame:addFrame()
         :setPosition(this.recipeListBox.innerFrame:getX() + this.recipeListBox.innerFrame:getWidth(), 2)
@@ -144,14 +175,36 @@ function CommonRecipeTab:new(pframe)
                         this.selectedRecipe.input = {}
                     end
                     this.selectedRecipe.input.items = inputsItems
+                else
+                    if not this.selectedRecipe then
+                        this.selectedRecipe = {}
+                    end
+                    if not this.selectedRecipe.input then
+                        this.selectedRecipe.input = {}
+                    end
+                    this.selectedRecipe.input.items = nil   
+                    this.inputItemLabel:setText("Input Item: 0")
                 end
                 this.itemListBox:close()
             end})
         end)
+
+    this.inputItemRateLabel = this.detailsFrame:addLabel()
+        :setText("Input Item Rate:")
+        :setPosition(2, this.inputItemLabel:getY() + this.inputItemLabel:getHeight() + 1)
+        :setBackground(colors.lightGray)
+        :setForeground(colors.white)
+
+    this.inputItemRateInput = this.detailsFrame:addInput()
+        :setPosition(this.inputItemRateLabel:getX() + this.inputItemRateLabel:getWidth() + 1, this.inputItemRateLabel:getY())
+        :setSize(this.detailsFrame:getWidth() - this.inputItemRateLabel:getWidth() - 4, 1)
+        :setBackground(colors.lightGray)
+        :setForeground(colors.white)
+        :setText("1")
         
     this.inputFluidLabel = this.detailsFrame:addLabel()
         :setText("Input Fluid:")
-        :setPosition(2, this.inputItemLabel:getY() + this.inputItemLabel:getHeight() + 1)
+        :setPosition(2, this.inputItemRateLabel:getY() + this.inputItemRateLabel:getHeight() + 1)
         :setBackground(colors.lightGray)
         :setForeground(colors.white)
 
@@ -183,14 +236,36 @@ function CommonRecipeTab:new(pframe)
                         this.selectedRecipe.input = {}
                     end
                     this.selectedRecipe.input.fluids = inputsFluids
+                else
+                    if not this.selectedRecipe then
+                        this.selectedRecipe = {}
+                    end
+                    if not this.selectedRecipe.input then
+                        this.selectedRecipe.input = {}
+                    end
+                    this.selectedRecipe.input.fluids = nil   
+                    this.inputFluidLabel:setText("Input Fluid: 0")
                 end
                 this.itemListBox:close()
             end})
         end)
 
+    this.inputFluidRateLabel = this.detailsFrame:addLabel()
+        :setText("Input Fluid Rate:")
+        :setPosition(2, this.inputFluidLabel:getY() + this.inputFluidLabel:getHeight() + 1)
+        :setBackground(colors.lightGray)
+        :setForeground(colors.white)
+
+    this.inputFluidRateInput = this.detailsFrame:addInput()
+        :setPosition(this.inputFluidRateLabel:getX() + this.inputFluidRateLabel:getWidth() + 1, this.inputFluidRateLabel:getY())
+        :setSize(this.detailsFrame:getWidth() - this.inputFluidRateLabel:getWidth() - 4, 1)
+        :setBackground(colors.lightGray)
+        :setForeground(colors.white)
+        :setText("1")
+
     this.outputItemLabel = this.detailsFrame:addLabel()
         :setText("Output Item:")
-        :setPosition(2, this.inputFluidLabel:getY() + this.inputFluidLabel:getHeight() + 1)
+        :setPosition(2, this.inputFluidRateLabel:getY() + this.inputFluidRateLabel:getHeight() + 1)
         :setBackground(colors.lightGray)
         :setForeground(colors.white)
 
@@ -222,6 +297,15 @@ function CommonRecipeTab:new(pframe)
                         this.selectedRecipe.output = {}
                     end
                     this.selectedRecipe.output.items = outputsItems
+                else
+                    if not this.selectedRecipe then
+                        this.selectedRecipe = {}
+                    end
+                    if not this.selectedRecipe.output then
+                        this.selectedRecipe.output = {}
+                    end
+                    this.selectedRecipe.output.items = nil   
+                    this.outputItemLabel:setText("Output Item: 0")
                 end
                 this.itemListBox:close()
             end})
@@ -261,14 +345,36 @@ function CommonRecipeTab:new(pframe)
                         this.selectedRecipe.output = {}
                     end
                     this.selectedRecipe.output.fluids = outputsFluids
+                else
+                    if not this.selectedRecipe then
+                        this.selectedRecipe = {}
+                    end
+                    if not this.selectedRecipe.output then
+                        this.selectedRecipe.output = {}
+                    end
+                    this.selectedRecipe.output.fluids = nil   
+                    this.outputFluidLabel:setText("Output Fluid: 0")
                 end
                 this.itemListBox:close()
             end})
         end)
 
+    this.maxMachineLabel = this.detailsFrame:addLabel()
+        :setText("Max Machine:")
+        :setPosition(2, this.outputFluidLabel:getY() + this.outputFluidLabel:getHeight() + 1)
+        :setBackground(colors.lightGray)
+        :setForeground(colors.white)
+
+    this.maxMachineInput = this.detailsFrame:addInput()
+        :setPosition(this.maxMachineLabel:getX() + this.maxMachineLabel:getWidth() + 1, this.maxMachineLabel:getY())
+        :setSize(this.detailsFrame:getWidth() - this.maxMachineLabel:getWidth() - 4, 1)
+        :setBackground(colors.lightGray)
+        :setForeground(colors.white)
+        :setText("-1")
+
     local setTriggerBtnText = "Set Trigger"
     this.setTriggerBtn = this.detailsFrame:addButton()
-        :setPosition(2, this.outputFluidLabel:getY() + this.outputFluidLabel:getHeight() + 1)
+        :setPosition(2, this.maxMachineLabel:getY() + this.maxMachineLabel:getHeight() + 1)
         :setSize(#setTriggerBtnText, 1)
         :setText(setTriggerBtnText)
         :setBackground(colors.lightGray)
@@ -305,6 +411,48 @@ function CommonRecipeTab:new(pframe)
                 return
             end
             this.selectedRecipe.name = this.nameInput:getText()
+            
+            -- Save maxMachine field
+            local maxMachineText = this.maxMachineInput:getText()
+            if maxMachineText and maxMachineText ~= "" then
+                local maxMachineNum = tonumber(maxMachineText)
+                if maxMachineNum then
+                    this.selectedRecipe.maxMachine = maxMachineNum
+                else
+                    this.messageBox:open("Error", "Max Machine must be a valid number!")
+                    return
+                end
+            else
+                this.selectedRecipe.maxMachine = -1
+            end
+
+            -- Save inputItemRate field
+            local inputItemRateText = this.inputItemRateInput:getText()
+            if inputItemRateText and inputItemRateText ~= "" then
+                local inputItemRateNum = tonumber(inputItemRateText)
+                if inputItemRateNum then
+                    this.selectedRecipe.inputItemRate = inputItemRateNum
+                else
+                    this.messageBox:open("Error", "Input Item Rate must be a valid number!")
+                    return
+                end
+            else
+                this.selectedRecipe.inputItemRate = 1
+            end
+
+            -- Save inputFluidRate field
+            local inputFluidRateText = this.inputFluidRateInput:getText()
+            if inputFluidRateText and inputFluidRateText ~= "" then
+                local inputFluidRateNum = tonumber(inputFluidRateText)
+                if inputFluidRateNum then
+                    this.selectedRecipe.inputFluidRate = inputFluidRateNum
+                else
+                    this.messageBox:open("Error", "Input Fluid Rate must be a valid number!")
+                    return
+                end
+            else
+                this.selectedRecipe.inputFluidRate = 1
+            end
 
             if this.selectedRecipe.id == nil then
                 -- New recipe
