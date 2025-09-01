@@ -146,7 +146,8 @@ for _bb,abb in
 ipairs(cba)do dab.recipeOnDepot[abb.id]={recipe=abb,depots={}}end;for _bb,abb in pairs(dda)do
 dab.depotOnUse[abb.getId()]={onUse=false,depot=abb,recipe=nil}end end,set=function(dab,_bb,abb)
 local bbb=dab.depotOnUse[abb.getId()]bbb.onUse=true;bbb.recipe=_bb;local cbb=dab.recipeOnDepot[_bb.id]
-cbb.depots[abb.getId()]=abb;cbb.count=(cbb.count or 0)+1 end,remove=function(dab,_bb)
+cbb.depots[abb.getId()]=abb;cbb.count=(cbb.count or 0)+1 end,remove=function(dab,_bb)if
+_bb==nil then return end
 local abb=dab.depotOnUse[_bb.getId()].recipe;dab.depotOnUse[_bb.getId()].onUse=false;dab.depotOnUse[_bb.getId()].recipe=
 nil;dab.recipeOnDepot[abb.id].depots[_bb.getId()]=
 nil
@@ -198,13 +199,13 @@ while true do
 for dab,_bb in pairs(d_b.depotOnUse)do local abb=_bb.depot
 if d_b:isUsing(abb)then
 if
-d_b:isCompleted(abb)then local bbb=_bb.recipe;local cbb=abb.getItems(bbb.input)local dbb=0
-for _cb,acb in ipairs(cbb)do
-local bcb=b_b.transferItemFrom(abb,acb.name,acb.count)
-if bcb==acb.count then
+d_b:isCompleted(abb)then local bbb=_bb.recipe;local cbb=abb.getItems(bbb.input)
+for dbb,_cb in ipairs(cbb)do
+local acb=b_b.transferItemFrom(abb,_cb.name,_cb.count)
+if acb==_cb.count then
 _aa.debug("Transferred completed recipe "..
-bbb.input.." from depot "..abb.getId())d_b:remove(abb)else
-_aa.error("Failed to transfer completed recipe {} from depot {}",bbb.input,abb.getId())end end end end end
+bbb.input.." from depot "..abb.getId())else
+_aa.error("Failed to transfer completed recipe {} from depot {}",bbb.input,abb.getId())end end;d_b:remove(abb)end end end
 for dab,_bb in ipairs(d_b.lostTrackDepots)do
 for abb,bbb in ipairs(_bb.getItems())do
 local cbb=b_b.transferItemFrom(_bb,bbb.name,bbb.count)

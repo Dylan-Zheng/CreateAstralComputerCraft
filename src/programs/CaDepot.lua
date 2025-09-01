@@ -511,6 +511,9 @@ local marker = {
     end,
 
     remove = function(self, depot)
+        if depot == nil then
+            return
+        end
         local recipe = self.depotOnUse[depot.getId()].recipe
         self.depotOnUse[depot.getId()].onUse = false
         self.depotOnUse[depot.getId()].recipe = nil
@@ -649,17 +652,16 @@ local checkAndMoveCompletedRecipe = function()
                 if marker:isCompleted(depot) then
                     local recipe = onUseDepotInfo.recipe
                     local items = depot.getItems(recipe.input)
-                    local totalTransferred = 0
-
                     for _, item in ipairs(items) do
                         local transferred = storage.transferItemFrom(depot, item.name, item.count)
                         if transferred == item.count then
                             Logger.debug("Transferred completed recipe " .. recipe.input .. " from depot " .. depot.getId())
-                            marker:remove(depot)
+                            
                         else
                             Logger.error("Failed to transfer completed recipe {} from depot {}", recipe.input, depot.getId())
                         end
                     end
+                    marker:remove(depot)
                 end
             end
         end
