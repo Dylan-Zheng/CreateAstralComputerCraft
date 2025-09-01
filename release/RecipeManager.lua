@@ -2907,10 +2907,11 @@ if aba.selectedRecipe then
 aba.inputLabel:setText("In: "..dd.ellipsisMiddle(aba.selectedRecipe.input,
 aba.inputLabel:getWidth()-4))
 aba.outputLabel:setText("Out: "..#aba.selectedRecipe.output)
-aba.depotTypeDropdown:setItems(baa(aba.selectedRecipe.depotType))else
+aba.depotTypeDropdown:setItems(baa(aba.selectedRecipe.depotType))
+aba.maxMachineInput:setText(tostring(aba.selectedRecipe.maxMachine or-1))else
 aba.messageBox:open("Error","Recipe not found!")end else aba.selectedRecipe=nil
 aba.inputLabel:setText("In: ")aba.outputLabel:setText("Out: ")
-aba.depotTypeDropdown:setItems(baa())end;aba.recipeListBox:refreshRecipeList()end):setOnNew(function()
+aba.depotTypeDropdown:setItems(baa())aba.maxMachineInput:setText("-1")end;aba.recipeListBox:refreshRecipeList()end):setOnNew(function()
 aba:addNewRecipe()end):setOnDel(function()if
 
 aba.selectedRecipe==nil or aba.selectedRecipe.id==nil then
@@ -2971,10 +2972,15 @@ aba.outputLabel:getY()+aba.outputLabel:getHeight()+1):setText("Type: "):setBackg
 aba.depotTypeDropdown=aba.detailFrame:addDropdown():setPosition(
 aba.typeLabel:getX()+aba.typeLabel:getWidth()+1,aba.typeLabel:getY()):setBackground(_aa.lightGray):setForeground(_aa.white):setSize(10,1):setItems(baa()):onSelect(function(dba,_ca,aca)aba.selectedRecipe=
 aba.selectedRecipe or{}
-aba.selectedRecipe.depotType=aca.value end)local bba="Set Trigger"
-aba.setTriggerBtn=aba.detailFrame:addButton():setPosition(2,
+aba.selectedRecipe.depotType=aca.value end)
+aba.maxMachineLabel=aba.detailFrame:addLabel():setPosition(2,
 
-aba.depotTypeDropdown:getY()+aba.depotTypeDropdown:getHeight()+1):setSize(
+aba.depotTypeDropdown:getY()+aba.depotTypeDropdown:getHeight()+1):setText("Max Machine: "):setBackground(_aa.gray):setForeground(_aa.white)
+aba.maxMachineInput=aba.detailFrame:addInput():setPosition(
+aba.maxMachineLabel:getX()+aba.maxMachineLabel:getWidth()+1,aba.maxMachineLabel:getY()):setSize(
+aba.detailFrame:getWidth()-aba.maxMachineLabel:getWidth()-4,1):setText("-1"):setBackground(_aa.black):setForeground(_aa.white)local bba="Set Trigger"
+aba.setTriggerBtn=aba.detailFrame:addButton():setPosition(2,
+aba.maxMachineInput:getY()+aba.maxMachineInput:getHeight()+1):setSize(
 #bba,1):setText(bba):setBackground(_aa.lightGray):setForeground(_aa.white):onClick(function()
 aba.trigger:open(
 aba.selectedRecipe and aba.selectedRecipe.trigger or nil,function(dba)aba.selectedRecipe=
@@ -2987,20 +2993,25 @@ aba.saveBtn=aba.detailFrame:addButton():setPosition(
 aba.detailFrame:getWidth()-6,aba.detailFrame:getHeight()-1):setSize(6,1):setText("Save"):setBackground(_aa.green):setForeground(_aa.black):onClick(function()if
 aba.selectedRecipe==nil then
 aba.messageBox:open("Error","No recipe selected to save!")return end
-if aba.selectedRecipe.id~=
-nil then
-local dba=ad.updateRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not dba then
+local dba=aba.maxMachineInput:getText()
+if dba and dba~=""then local _ca=tonumber(dba)if _ca then
+aba.selectedRecipe.maxMachine=_ca else
+aba.messageBox:open("Error","Max Machine must be a valid number!")return end else aba.selectedRecipe.maxMachine=
+-1 end
+if aba.selectedRecipe.id~=nil then
+local _ca=ad.updateRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not _ca then
 aba.messageBox:open("Error","Failed to update recipe!")return end
 aba.recipeListBox:refreshRecipeList()
 aba.messageBox:open("Success","Recipe updated successfully!")return else
-local dba,_ca=ad.addRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not dba then
+local _ca,aca=ad.addRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not _ca then
 aba.messageBox:open("Error","Failed to add recipe!")return end
-aba.selectedRecipe.id=_ca;aba.recipeListBox:refreshRecipeList()
+aba.selectedRecipe.id=aca;aba.recipeListBox:refreshRecipeList()
 aba.messageBox:open("Success","Recipe added successfully!")end end)aba.itemListBox=bd:new(aba.pframe)
 aba.trigger=__a:new(aba.pframe)aba.messageBox=a_a:new(aba.pframe)
 aba.confirmMessageBox=b_a:new(aba.pframe)return aba end
 function DepotRecipeTab:addNewRecipe()self.selectedRecipe=nil
-self.inputLabel:setText("In: ")self.outputLabel:setText("Out: ")end;function DepotRecipeTab:init()
+self.inputLabel:setText("In: ")self.outputLabel:setText("Out: ")
+self.maxMachineInput:setText("-1")end;function DepotRecipeTab:init()
 self.recipeListBox:refreshRecipeList()return self end;return DepotRecipeTab end
 modules["programs.recipe.manager.StoreManager"] = function(...) local aa=require("utils.OSUtils")
 local ba=require("utils.Logger")local ca={machines={depot={},basin={},belt={},common={}}}
