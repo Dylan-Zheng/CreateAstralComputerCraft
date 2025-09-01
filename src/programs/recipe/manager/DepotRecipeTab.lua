@@ -85,6 +85,7 @@ function DepotRecipeTab:new(pframe)
                     this.inputLabel:setText("In: " .. StringUtils.ellipsisMiddle(this.selectedRecipe.input, this.inputLabel:getWidth() - 4))
                     this.outputLabel:setText("Out: " .. #this.selectedRecipe.output)
                     this.depotTypeDropdown:setItems(getDepotTypeDisplayItems(this.selectedRecipe.depotType))
+                    this.maxMachineInput:setText(tostring(this.selectedRecipe.maxMachine or -1))
                 else
                     this.messageBox:open("Error", "Recipe not found!")
                 end
@@ -93,6 +94,7 @@ function DepotRecipeTab:new(pframe)
                 this.inputLabel:setText("In: ")
                 this.outputLabel:setText("Out: ")
                 this.depotTypeDropdown:setItems(getDepotTypeDisplayItems())
+                this.maxMachineInput:setText("-1")
             end
             this.recipeListBox:refreshRecipeList()
         end)
@@ -241,9 +243,22 @@ function DepotRecipeTab:new(pframe)
             this.selectedRecipe.depotType = item.value
         end)
 
+    this.maxMachineLabel = this.detailFrame:addLabel()
+        :setPosition(2, this.depotTypeDropdown:getY() + this.depotTypeDropdown:getHeight() + 1)
+        :setText("Max Machine: ")
+        :setBackground(colors.gray)
+        :setForeground(colors.white)
+
+    this.maxMachineInput = this.detailFrame:addInput()
+        :setPosition(this.maxMachineLabel:getX() + this.maxMachineLabel:getWidth() + 1, this.maxMachineLabel:getY())
+        :setSize(this.detailFrame:getWidth() - this.maxMachineLabel:getWidth() - 4, 1)
+        :setText("-1")
+        :setBackground(colors.black)
+        :setForeground(colors.white)
+
     local setTiggerBtnText = "Set Trigger"
     this.setTriggerBtn = this.detailFrame:addButton()
-        :setPosition(2, this.depotTypeDropdown:getY() + this.depotTypeDropdown:getHeight() + 1)
+        :setPosition(2, this.maxMachineInput:getY() + this.maxMachineInput:getHeight() + 1)
         :setSize(#setTiggerBtnText, 1)
         :setText(setTiggerBtnText)
         :setBackground(colors.lightGray)
@@ -280,6 +295,20 @@ function DepotRecipeTab:new(pframe)
                 return
             end
             
+            -- Save maxMachine field
+            local maxMachineText = this.maxMachineInput:getText()
+            if maxMachineText and maxMachineText ~= "" then
+                local maxMachineNum = tonumber(maxMachineText)
+                if maxMachineNum then
+                    this.selectedRecipe.maxMachine = maxMachineNum
+                else
+                    this.messageBox:open("Error", "Max Machine must be a valid number!")
+                    return
+                end
+            else
+                this.selectedRecipe.maxMachine = -1
+            end
+            
             if this.selectedRecipe.id ~= nil then
                 local success = StoreManager.updateRecipe(StoreManager.MACHINE_TYPES.depot, textutils.unserialize(textutils.serialize(this.selectedRecipe))   )
                 if not success then
@@ -313,6 +342,7 @@ function DepotRecipeTab:addNewRecipe()
     self.selectedRecipe = nil
     self.inputLabel:setText("In: ")
     self.outputLabel:setText("Out: ")
+    self.maxMachineInput:setText("-1")
 end
 
 function DepotRecipeTab:init()

@@ -258,7 +258,8 @@ local function createCommandLine()
                 input = remoteRecipe.input,
                 output = remoteRecipe.output,
                 depotType = remoteRecipe.depotType,
-                trigger = remoteRecipe.trigger
+                trigger = remoteRecipe.trigger,
+                maxMachine = remoteRecipe.maxMachine or -1
             }
 
             table.insert(recipes, newRecipe)
@@ -297,7 +298,8 @@ local function createCommandLine()
                         input = remoteRecipe.input,
                         output = remoteRecipe.output,
                         depotType = remoteRecipe.depotType,
-                        trigger = remoteRecipe.trigger
+                        trigger = remoteRecipe.trigger,
+                        maxMachine = remoteRecipe.maxMachine or -1
                     }
                     table.insert(recipes, newRecipe)
                     addedCount = addedCount + 1
@@ -545,11 +547,19 @@ local marker = {
 
 marker:init()
 
+local checkInputItem = function(recipe)
+    local item = storage.getItem(recipe.input)
+    if not item then
+        return false
+    end
+    return true
+end
+
 local checkAndRunRecipe = function()
     while true do
         local triggeredRecipes = {}
         for _, recipe in ipairs(recipes) do
-            if recipe.trigger then
+            if checkInputItem(recipe) and recipe.trigger then
                 local triggered = Trigger.eval(recipe.trigger, function(type, itemName)
                     if type == "item" then
                         return storage.getItem(itemName)
@@ -564,13 +574,41 @@ local checkAndRunRecipe = function()
             end
         end
         
-        local numOfDepotsForEachRecipe = totalDepots / math.max(1, #triggeredRecipes)
+        local currentTotalDepots = totalDepots
+        local currentTriggeredRecipeCount = #triggeredRecipes
+
+        local numOfDepotsForEachRecipe = math.max(1, math.floor(currentTotalDepots / math.max(1, currentTriggeredRecipeCount)))
 
         for _, recipe in ipairs(triggeredRecipes) do
-            local onUseDepotCount = marker:getOnUseDepotCountForRecipe(recipe)
-            if onUseDepotCount < numOfDepotsForEachRecipe then
-                local depotNeeded = numOfDepotsForEachRecipe - onUseDepotCount
-                Logger.info("Need {} depots for recipe {}", depotNeeded, recipe.input)
+            local usedDepotsCount = marker:getOnUseDepotCountForRecipe(recipe)
+            local maxMachineForRecipe
+            
+            if recipe.maxMachine and recipe.maxMachine > 0 then
+                -- If average allocation exceeds maxMachine limit, use maxMachine
+                -- Otherwise use average allocation
+                maxMachineForRecipe = math.min(numOfDepotsForEachRecipe, recipe.maxMachine)
+            else
+                -- Use fair share allocation (maxMachine = -1 means unlimited)
+                maxMachineForRecipe = numOfDepotsForEachRecipe
+            end
+
+            print("recipe " .. (recipe.input or "Unnamed") .. " usedDepotsCount: " .. usedDepotsCount .. ", maxMachineForRecipe: " .. maxMachineForRecipe)
+            if usedDepotsCount > maxMachineForRecipe then
+                print("Releasing depots for recipe: " .. (recipe.input or "Unnamed"))
+                local toRemove = usedDepotsCount - maxMachineForRecipe
+                for _, depot in pairs(marker.recipeOnDepot[recipe.id].depots) do
+                    if toRemove <= 0 then
+                        break
+                    end
+                    marker:remove(depot)
+                    toRemove = toRemove - 1
+                end
+                usedDepotsCount = marker:getOnUseDepotCountForRecipe(recipe) -- Update count after removal
+            end
+
+            if usedDepotsCount < maxMachineForRecipe then
+                local depotNeeded = maxMachineForRecipe - usedDepotsCount
+                Logger.info("Need {} depots for recipe {} (max: {})", depotNeeded, recipe.input, maxMachineForRecipe)
                 for _, depot in pairs(depots) do
                     if depotNeeded <= 0 then
                         break
@@ -592,6 +630,12 @@ local checkAndRunRecipe = function()
                     end
                 end
             end
+            
+            -- Subtract the allocated depots for this recipe (not just the ones currently in use)
+            currentTotalDepots = currentTotalDepots - maxMachineForRecipe
+            print("currentTotalDepots: " .. currentTotalDepots .. " (allocated " .. maxMachineForRecipe .. " to " .. (recipe.input or "Unnamed") .. ")")
+            currentTriggeredRecipeCount = currentTriggeredRecipeCount - 1
+            numOfDepotsForEachRecipe = math.max(1, math.floor(currentTotalDepots / math.max(1, currentTriggeredRecipeCount)))
         end
         os.sleep(1)
     end
@@ -610,7 +654,7 @@ local checkAndMoveCompletedRecipe = function()
                     for _, item in ipairs(items) do
                         local transferred = storage.transferItemFrom(depot, item.name, item.count)
                         if transferred == item.count then
-                            Logger.error("Transferred completed recipe " .. recipe.input .. " from depot " .. depot.getId())
+                            Logger.debug("Transferred completed recipe " .. recipe.input .. " from depot " .. depot.getId())
                             marker:remove(depot)
                         else
                             Logger.error("Failed to transfer completed recipe {} from depot {}", recipe.input, depot.getId())
