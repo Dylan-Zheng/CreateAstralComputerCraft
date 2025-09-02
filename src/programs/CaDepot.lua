@@ -533,6 +533,9 @@ local marker = {
         depotOnUseInfo.onUse = true
         depotOnUseInfo.recipe = recipe
 
+        if self.recipeOnDepot[recipe.id] == nil then
+            self.recipeOnDepot[recipe.id] = { recipe = recipe, depots = {}, count = 0 }
+        end
         local recipeOnDepotInfo = self.recipeOnDepot[recipe.id]
         recipeOnDepotInfo.depots[depot.getId()] = depot
         recipeOnDepotInfo.count = (recipeOnDepotInfo.count or 0) + 1
@@ -545,6 +548,9 @@ local marker = {
         local recipe = self.depotOnUse[depot.getId()].recipe
         self.depotOnUse[depot.getId()].onUse = false
         self.depotOnUse[depot.getId()].recipe = nil
+        if self.recipeOnDepot[recipe.id] == nil then
+            self.recipeOnDepot[recipe.id] = { recipe = recipe, depots = {}, count = 0 }
+        end
         self.recipeOnDepot[recipe.id].depots[depot.getId()] = nil
         self.recipeOnDepot[recipe.id].count = math.max(0, (self.recipeOnDepot[recipe.id].count or 1) - 1)
     end,
@@ -572,6 +578,9 @@ local marker = {
     end,
 
     getOnUseDepotCountForRecipe = function(self, recipe)
+        if self.recipeOnDepot[recipe.id] == nil then
+            self.recipeOnDepot[recipe.id] = { recipe = recipe, depots = {}, count = 0 }
+        end
         return self.recipeOnDepot[recipe.id].count or 0
     end,
 }

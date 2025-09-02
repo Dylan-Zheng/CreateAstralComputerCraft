@@ -2,558 +2,2010 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CaDepot"] = function(...) local caa=require("utils.Logger")
-local daa=require("programs.common.Communicator")local _ba=require("programs.command.CommandLine")
-local aba=require("utils.OSUtils")local bba=require("programs.common.Trigger")
-local cba=require("wrapper.PeripheralWrapper")local dba=require("utils.TableUtils")caa.useDefault()
-caa.currentLevel=caa.levels.ERROR;local _ca={...}local aca={}local bca={}local function cca()
-local _cb=aba.loadTable("cadepot_recipes")if _cb~=nil then aca=_cb end end;local function dca()
-aba.saveTable("cadepot_recipes",aca)end;local function _da()
-return aba.loadTable("cadepot_communicator_config")end
-local function ada(_cb,acb,bcb)
-local ccb={side=_cb,channel=acb,secret=bcb}aba.saveTable("cadepot_communicator_config",ccb)end
-local function bda(_cb)local acb={}
-for bcb,ccb in ipairs(aca)do if ccb.id then acb[ccb.id]=bcb end end;for bcb,ccb in ipairs(_cb)do
-if ccb.id then local dcb=acb[ccb.id]if dcb then aca[dcb]=ccb end end end;dca()end;local function cda(_cb)
-for acb,bcb in ipairs(aca)do if bcb.input==_cb then return bcb end end;return nil end
-local function dda(_cb)for acb,bcb in ipairs(aca)do
-if
-bcb.input==_cb then table.remove(aca,acb)return true end end;return false end
-local function __b(_cb,acb,bcb)acb=acb or 1;bcb=bcb or 5;if#_cb==0 then print("No recipes found.")
-return end;local ccb=math.ceil(#_cb/bcb)local dcb=
-(acb-1)*bcb+1;local _db=math.min(dcb+bcb-1,#_cb)
-print(string.format("=== Recipes (Page %d/%d) ===",acb,ccb))
-for i=dcb,_db do local adb=_cb[i]
-local bdb=
-({"none","fire","soul_fire","lava","water"})[adb.depotType+1]or"unknown"local cdb=table.concat(adb.output,", ")
-print(string.format("%d. [%s] %s -> %s",i,bdb,adb.input,cdb))end
-if ccb>1 then
-print(string.format("Showing %d-%d of %d recipes",dcb,_db,#_cb))if acb<ccb then
-print(string.format("Use 'list recipe local %d' for next page",acb+1))end;if acb>1 then
-print(string.format("Use 'list recipe local %d' for previous page",
-acb-1))end end end;cca()
-local a_b=function()local _cb=_da()
-if
-_cb and _cb.side and _cb.channel and _cb.secret then
-caa.info("Found saved communicator config, attempting to connect...")
-daa.open(_cb.side,_cb.channel,"recipe",_cb.secret)
-local acb=daa.communicationChannels[_cb.side][_cb.channel]["recipe"]
-acb.addMessageHandler("getRecipesRes",function(bcb,ccb,dcb)bca=ccb or{}end)
-acb.addMessageHandler("update",function(bcb,ccb,dcb)
-if ccb and type(ccb)=="table"then bda(ccb)end end)daa.listen()end end
-local function b_b()local _cb=_ba:new("cadepot> ")
-_cb:addCommand("list","List recipes",function(acb)local bcb={}for adb in
-acb:gmatch("%S+")do table.insert(bcb,adb)end;if#bcb<3 then
-print("Usage: list recipe [remote|local] [page]")return end;local ccb=bcb[2]local dcb=bcb[3]local _db=
-tonumber(bcb[4])or 1;if ccb~="recipe"then
-print("Usage: list recipe [remote|local] [page]")return end
-if dcb=="local"then __b(aca,_db)elseif dcb==
-"remote"then
-if#bca==0 then print("No remote recipes available.")return end;__b(bca,_db)else
-print("Usage: list recipe [remote|local] [page]")end end,function(acb)
-local bcb={}
-for ccb in acb:gmatch("%S+")do table.insert(bcb,ccb)end
-if#bcb==1 then local ccb=acb:match("%S+$")or""local dcb={}if
-("recipe"):find(ccb,1,true)==1 then
-table.insert(dcb,("recipe"):sub(#ccb+1))end;return dcb elseif#bcb==2 then
-local ccb=acb:match("%S+$")or""local dcb={}local _db={"remote","local"}for adb,bdb in ipairs(_db)do
-if
-bdb:find(ccb,1,true)==1 then table.insert(dcb,bdb:sub(#ccb+1))end end;return dcb end;return{}end)
-_cb:addCommand("add","Add recipe(s) from remote by depotType",function(acb)local bcb={}for adb in acb:gmatch("%S+")do
-table.insert(bcb,adb)end
-if#bcb<2 then
-print("Usage: add [depotType] [input_name]")
-print("DepotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4)")print("Examples:")
-print("  add fire minecraft:iron_ore    - Add specific recipe")
-print("  add fire                       - Add all fire-type recipes")
-print("Use 'list recipe remote' to see available recipes")return end;local ccb=bcb[2]local dcb=bcb[3]local _db=nil
-if ccb=="none"or ccb=="0"then _db=0 elseif
-ccb=="fire"or ccb=="1"then _db=1 elseif ccb=="soul_fire"or ccb=="2"then _db=2 elseif ccb=="lava"or ccb==
-"3"then _db=3 elseif ccb=="water"or ccb=="4"then _db=4 elseif tonumber(ccb)and
-tonumber(ccb)>=0 and tonumber(ccb)<=4 then
-_db=tonumber(ccb)else print("Invalid depotType: "..ccb)
-print("Valid depotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4)")return end
-if dcb then local adb=nil
-for ddb,__c in ipairs(bca)do if __c.input==dcb and __c.depotType==_db then
-adb=__c;break end end
-if not adb then
-print("Remote recipe '"..
-dcb.."' with depotType ".._db.." not found")
-print("Use 'list recipe remote' to see available remote recipes")return end;if cda(dcb)then
-print("Recipe with input '"..dcb.."' already exists locally")return end
-local bdb={id=adb.id,input=adb.input,output=adb.output,depotType=adb.depotType,trigger=adb.trigger,maxMachine=
-adb.maxMachine or-1}table.insert(aca,bdb)dca()
-print("Recipe added from remote successfully:")print("  Input: "..bdb.input)print("  Output: "..
-table.concat(bdb.output,", "))
-local cdb=({"none","fire","soul_fire","lava","water"})[
-bdb.depotType+1]or"unknown"
-print("  DepotType: "..bdb.depotType.." ("..cdb..")")else local adb={}for __c,a_c in ipairs(bca)do
-if a_c.depotType==_db then table.insert(adb,a_c)end end
-if#adb==0 then
-local __c=({"none","fire","soul_fire","lava","water"})[
-_db+1]or"unknown"
-print("No remote recipes found with depotType ".._db.." ("..__c..")")
-print("Use 'list recipe remote' to see available remote recipes")return end;local bdb=0;local cdb=0
-for __c,a_c in ipairs(adb)do
-if not cda(a_c.input)then
-local b_c={id=a_c.id,input=a_c.input,output=a_c.output,depotType=a_c.depotType,trigger=a_c.trigger,maxMachine=
-a_c.maxMachine or-1}table.insert(aca,b_c)bdb=bdb+1 else cdb=cdb+1 end end;dca()local ddb=
-({"none","fire","soul_fire","lava","water"})[_db+1]or"unknown"
-print(
-"Batch add completed for depotType ".._db.." ("..ddb.."):")print("  Added: "..bdb.." recipes")if
-cdb>0 then
-print("  Skipped: "..cdb.." recipes (already exist)")end end end,function(acb)
-local bcb={}
-for ccb in acb:gmatch("%S+")do table.insert(bcb,ccb)end
-if#bcb==1 and acb:sub(-1)~=" "then
-local ccb=acb:match("%S+$")or""local dcb={}
-local _db={"none","fire","soul_fire","lava","water","0","1","2","3","4"}
-for adb,bdb in ipairs(_db)do if bdb:find(ccb,1,true)==1 then
-table.insert(dcb,bdb:sub(#ccb+1))end end;return dcb elseif#bcb==2 then local ccb=bcb[2]local dcb=nil
-if ccb=="none"or ccb=="0"then dcb=0 elseif
-ccb=="fire"or ccb=="1"then dcb=1 elseif ccb=="soul_fire"or ccb=="2"then dcb=2 elseif ccb=="lava"or ccb==
-"3"then dcb=3 elseif ccb=="water"or ccb=="4"then dcb=4 elseif tonumber(ccb)and
-tonumber(ccb)>=0 and tonumber(ccb)<=4 then
-dcb=tonumber(ccb)end
-if dcb~=nil then local _db={}local adb=acb:match("%S+$")or""
-for bdb,cdb in ipairs(bca)do if
+modules["programs.CaDepot"] = function(...) local Logger = require("utils.Logger")
+local Communicator = require("programs.common.Communicator")
+local CommandLine = require("programs.command.CommandLine")
+local OSUtils = require("utils.OSUtils")
+local Trigger = require("programs.common.Trigger")
+local PeripheralWrapper = require("wrapper.PeripheralWrapper")
+local TableUtils = require("utils.TableUtils")
 
-cdb.depotType==dcb and cdb.input:find(adb,1,true)==1 then
-table.insert(_db,cdb.input:sub(#adb+1))end end;return _db end end;return{}end)
-_cb:addCommand("rm","Remove recipe",function(acb)local bcb={}
-for adb in acb:gmatch("%S+")do table.insert(bcb,adb)end;if#bcb<2 then print("Usage: rm [input]")return end
-local ccb=bcb[2]local dcb=false;local _db=nil
-for adb,bdb in ipairs(aca)do if bdb.input==ccb then _db=bdb
-table.remove(aca,adb)dcb=true;break end end
-if dcb then dca()
-local adb=
-({"none","fire","soul_fire","lava","water"})[_db.depotType+1]or"unknown"
-print("Recipe removed: ["..adb.."] ".._db.input)else
-print("Recipe '"..ccb.."' not found")end end,function(acb)
-local bcb={}local ccb=acb:match("%S+$")or""
-for dcb,_db in ipairs(aca)do if
-_db.input:find(ccb,1,true)==1 then
-table.insert(bcb,_db.input:sub(#ccb+1))end end;return bcb end)
-_cb:addCommand("reboot","Exit the program",function(acb)print("Goodbye!")os.reboot()end)return _cb end
-local c_b=function(_cb)
-_cb.addMessageHandler("getRecipesRes",function(acb,bcb,ccb)bca=bcb or{}end)
-_cb.addMessageHandler("update",function(acb,bcb,ccb)if bcb and type(bcb)=="table"then bda(bcb)
-_cb.send("getRecipesReq","depot")end end)end
-local d_b=function()local _cb=b_b()while true do
-local acb,bcb=pcall(function()_cb:run()end)
-if not acb then print("Error: "..tostring(bcb))end end end
-if _ca~=nil and#_ca>0 then local _cb=_ca[1]local acb=tonumber(_ca[2])
-local bcb=_ca[3]
-if _cb and acb and bcb then ada(_cb,acb,bcb)
-daa.open(_cb,acb,"recipe",bcb)
-local ccb=daa.communicationChannels[_cb][acb]["recipe"]c_b(ccb)
-parallel.waitForAll(daa.listen,function()while next(bca)==nil do
-ccb.send("getRecipesReq","depot")sleep(1)end end,d_b)end end;cba.reloadAll()
-local _ab=cba.getAllPeripheralsNameContains("depot")
-local aab=cba.getAllPeripheralsNameContains("crafting_storage")local bab=next(aab)local cab=aab[bab]local dab=dba.getLength(_ab)
-local _bb={recipeOnDepot={},depotOnUse={},lostTrackDepots={},init=function(_cb)
-for acb,bcb in
-ipairs(aca)do _cb.recipeOnDepot[bcb.id]={recipe=bcb,depots={}}end;for acb,bcb in pairs(_ab)do
-_cb.depotOnUse[bcb.getId()]={onUse=false,depot=bcb,recipe=nil}end end,set=function(_cb,acb,bcb)
-local ccb=_cb.depotOnUse[bcb.getId()]ccb.onUse=true;ccb.recipe=acb;local dcb=_cb.recipeOnDepot[acb.id]
-dcb.depots[bcb.getId()]=bcb;dcb.count=(dcb.count or 0)+1 end,remove=function(_cb,acb)if
-acb==nil then return end
-local bcb=_cb.depotOnUse[acb.getId()].recipe;_cb.depotOnUse[acb.getId()].onUse=false;_cb.depotOnUse[acb.getId()].recipe=
-nil;_cb.recipeOnDepot[bcb.id].depots[acb.getId()]=
-nil
-_cb.recipeOnDepot[bcb.id].count=math.max(0,(
-_cb.recipeOnDepot[bcb.id].count or 1)-1)end,isUsing=function(_cb,acb)return
-_cb.depotOnUse[acb.getId()].onUse end,isCompleted=function(_cb,acb)if
-not _cb:isUsing(acb)then return false end
-local bcb=_cb.depotOnUse[acb.getId()].recipe;local ccb=acb.getItem(bcb.input)if ccb==nil or ccb.count==0 then
-return true end end,isLoseTrack=function(_cb,acb)if
+Logger.useDefault()
+Logger.currentLevel = Logger.levels.ERROR
 
-not _cb:isUsing(acb)and#acb.getItems()>0 then return true end;return false end,getOnUseDepotCountForRecipe=function(_cb,acb)return
-_cb.recipeOnDepot[acb.id].count or 0 end}_bb:init()
-local abb=function(_cb)local acb=cab.getItem(_cb.input)
-if not acb then return false end;return true end
-local bbb=function()
-while true do local _cb={}
-for dcb,_db in ipairs(aca)do
-if abb(_db)and _db.trigger then
-local adb=bba.eval(_db.trigger,function(bdb,cdb)
-if bdb=="item"then return
-cab.getItem(cdb)elseif bdb=="fluid"then return cab.getFluid(cdb)end;return nil end)if adb then table.insert(_cb,_db)end end end;local acb=dab;local bcb=#_cb
-local ccb=math.max(1,math.floor(acb/math.max(1,bcb)))
-for dcb,_db in ipairs(_cb)do local adb=_bb:getOnUseDepotCountForRecipe(_db)local bdb;if
-_db.maxMachine and _db.maxMachine>0 then
-bdb=math.min(ccb,_db.maxMachine)else bdb=ccb end
-caa.debug("recipe "..
-(_db.input or"Unnamed")..
-" usedDepotsCount: "..adb..", maxMachineForRecipe: "..bdb)
-if adb>bdb then
-caa.info("Releasing depots for recipe: ".. (_db.input or"Unnamed"))local cdb=adb-bdb
-for ddb,__c in
-pairs(_bb.recipeOnDepot[_db.id].depots)do if cdb<=0 then break end;_bb:remove(__c)cdb=cdb-1 end;adb=_bb:getOnUseDepotCountForRecipe(_db)end
-if adb<bdb then local cdb=bdb-adb
-caa.info("Need {} depots for recipe {} (max: {})",cdb,_db.input,bdb)
-for ddb,__c in pairs(_ab)do if cdb<=0 then break end
-if not _bb:isUsing(__c)then
-local a_c=cab.transferItemTo(__c,_db.input,64)
-caa.info("Transferred {} items to depot {}",a_c,__c.getId())
-if a_c<=0 then
-if _bb:isLoseTrack(__c)then
-caa.info("Lost track of depot {}",__c.getId())table.insert(_bb.lostTrackDepots,__c)end else _bb:set(_db,__c)cdb=cdb-1 end else
-caa.info("Depot {} is already in use for recipe {}",__c.getId(),_db.input)end end end;acb=acb-bdb;bcb=bcb-1
-ccb=math.max(1,math.floor(acb/math.max(1,bcb)))end;os.sleep(1)end end
-local cbb=function()
-while true do
-for _cb,acb in pairs(_bb.depotOnUse)do local bcb=acb.depot
-if _bb:isUsing(bcb)then
-if
-_bb:isCompleted(bcb)then local ccb=acb.recipe;local dcb=bcb.getItems(ccb.input)
-for _db,adb in ipairs(dcb)do
-local bdb=cab.transferItemFrom(bcb,adb.name,adb.count)
-if bdb==adb.count then
-caa.debug("Transferred completed recipe "..
-ccb.input.." from depot "..bcb.getId())else
-caa.error("Failed to transfer completed recipe {} from depot {}",ccb.input,bcb.getId())end end;_bb:remove(bcb)end end end
-for _cb,acb in ipairs(_bb.lostTrackDepots)do
-for bcb,ccb in ipairs(acb.getItems())do
-local dcb=cab.transferItemFrom(acb,ccb.name,ccb.count)
-if dcb>0 then
-caa.debug("Transferred lost item {} from depot {}",ccb.name,acb.getId())else
-caa.error("Failed to transfer lost item {} from depot {}",ccb.name,acb.getId())end end end;os.sleep(1)end end
-local dbb=function()local _cb=_da()
-if
-_cb and _cb.side and _cb.channel and _cb.secret then
-caa.info("Found saved communicator config, attempting to connect...")
-daa.open(_cb.side,_cb.channel,"recipe",_cb.secret)
-local acb=daa.communicationChannels[_cb.side][_cb.channel]["recipe"]c_b(acb)daa.listen()end end;parallel.waitForAll(dbb,bbb,cbb,d_b) end
-modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
-b.useDefault=function()
-b.addPrintFunction(function(c,d,_a,aa)
-print(string.format("[%s][%s:%d] %s",c,d,_a,aa))end)end;b.levels={DEBUG=1,INFO=2,WARN=3,ERROR=4}b.addPrintFunction=function(c)
-table.insert(b.printFunctions,c)end
-b.print=function(c,d,_a,aa,...)
-if
-c>=b.currentLevel then local ba=b.formatBraces(aa,...)for ca,da in ipairs(b.printFunctions)do
-da(c,d,_a,ba)end end end
-b.custom=function(c,d,...)local _a=debug.getinfo(2,"l").currentline
-local aa=debug.getinfo(2,"S").short_src;b.print(c,aa,_a,d,...)end
-b.debug=function(c,...)local d=debug.getinfo(2,"l").currentline
-local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.DEBUG,_a,d,c,...)end
-b.info=function(c,...)local d=debug.getinfo(2,"l").currentline
-local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.INFO,_a,d,c,...)end
-b.warn=function(c,...)local d=debug.getinfo(2,"l").currentline
-local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.WARN,_a,d,c,...)end
-b.error=function(c,...)local d=debug.getinfo(2,"l").currentline
-local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.ERROR,_a,d,c,...)end
-b.formatBraces=function(c,...)local d={...}local _a=1
-local aa=tostring(c):gsub("{}",function()local ba=d[_a]_a=_a+1
-return tostring(ba)end)return aa end;return b end
-modules["programs.common.Communicator"] = function(...) local _b=require("utils.Logger")
-local ab=require("utils.OSUtils")
-local function bb(dc,_d)local ad=""local bd=_d
-for i=1,#dc do local cd=dc:sub(i,i)
-local dd=bd:sub((i-1)%#bd+1,(i-1)%#bd+1)ad=ad..
-string.char(bit.bxor(string.byte(cd),string.byte(dd)))end;return ad end
-local function cb(dc,_d)return textutils.unserialize(bb(dc,_d))end
-local function db(dc,_d)return bb(textutils.serialize(dc),_d)end;local _c={}_c.__index=_c
-function _c:new(dc,_d,ad,bd)local cd=setmetatable({},_c)
-cd.computerId=os.getComputerID()cd.side=dc;cd.secret=bd;cd.channel=_d;cd.protocol=ad
-cd.modem=peripheral.wrap(dc)cd.modem.open(_d)cd.eventHandle={}
-cd.send=function(dd,__a,a_a)
-local b_a={protocol=cd.protocol,senderId=cd.computerId,receiverId=a_a,details=db({eventCode=dd,payload=__a},cd.secret)}
-_b.debug("Sending message on side {}, channel {}: {}",cd.side,cd.channel,textutils.serialize(b_a))
-cd.modem.transmit(cd.channel,cd.channel,textutils.serialize(b_a))end
-cd.addMessageHandler=function(dd,__a)cd.eventHandle[dd]=__a end;return cd end;local ac={communicationChannels={}}
-function ac.open(dc,_d,ad,bd)local cd=_c:new(dc,_d,ad,bd)
-if not
-ac.communicationChannels[dc]then ac.communicationChannels[dc]={}end;if not ac.communicationChannels[dc][_d]then
-ac.communicationChannels[dc][_d]={}end
-if
-ac.communicationChannels[dc][_d][ad]then return false,
-string.format("Channel already opened on side %s, channel %d, protocol %s",dc,_d,ad)end
-ac.communicationChannels[dc][_d][ad]=cd;return cd end
-local bc=function(dc,_d)if
-ac.communicationChannels[dc]and ac.communicationChannels[dc][_d]then return true end;return false end
-local cc=function(dc,_d,ad)local bd=textutils.unserialize(ad)if
-not bd or not bd.protocol then return end
-local cd=ac.communicationChannels[dc][_d][bd.protocol]if not cd then return end;if
-bd.receiverId~=nil and bd.receiverId~=cd.computerId then return end
-local dd=cb(bd.details,cd.secret)local __a=cd.eventHandle[dd.eventCode]if __a then
-__a(dd.eventCode,dd.payload,bd.senderId)end end
-function ac.listen()
-while true do local dc,_d,ad,bd,cd,dd=os.pullEvent("modem_message")
-_b.debug("Received message on side {}, channel {}, distance {}: {}",_d,ad,dd,cd)
-if bc(_d,ad)then
-local __a,a_a=pcall(function()cc(_d,ad,cd)end)if not __a then
-_b.error("Error handling serialized message: "..a_a)end end end end
-function ac.close(dc,_d,ad)
-if ac.communicationChannels[dc]and
-ac.communicationChannels[dc][_d]and
-ac.communicationChannels[dc][_d][ad]then
-local bd=ac.communicationChannels[dc][_d][ad]bd.modem.close(_d)ac.communicationChannels[dc][_d][ad]=
-nil;if
-next(ac.communicationChannels[dc][_d])==nil then
-ac.communicationChannels[dc][_d]=nil end
-if
-next(ac.communicationChannels[dc])==nil then ac.communicationChannels[dc]=nil end;return true else return false,
-string.format("No such channel to close on side %s, channel %d, protocol %s",dc,_d,ad)end end
-function ac.closeAllChannels()
-for dc,_d in pairs(ac.communicationChannels)do for ad,bd in pairs(_d)do for cd,dd in pairs(bd)do
-dd.modem.close(ad)end end end;ac.communicationChannels={}end
-function ac.saveSettings()local dc={}
-for _d,ad in pairs(ac.communicationChannels)do
-for bd,cd in pairs(ad)do for dd,__a in pairs(cd)do
-table.insert(dc,{side=_d,channel=bd,protocol=dd,secret=__a.secret})end end end;return ab.saveTable("communicator_settings.dat",dc)end
-function ac.loadSettings()local dc=ab.loadTable("communicator_settings.dat")if not
-dc or#dc==0 then
-_b.warn("No communicator settings found.")return false end
-for _d,ad in ipairs(dc)do local bd=ad.side
-local cd=ad.channel;local dd=ad.protocol;local __a=ad.secret;local a_a,b_a=ac.open(bd,cd,dd,__a)if not a_a then
-_b.error(
-"Failed to open communication channel: "..b_a)end end;return true end
-function ac.getSettings()local dc={}
-for _d,ad in pairs(ac.communicationChannels)do
-for bd,cd in pairs(ad)do for dd,__a in pairs(cd)do
-table.insert(dc,{side=_d,channel=bd,protocol=dd,secret=__a.secret})end end end;return dc end
-function ac.getOpenChannels()local dc={}
-for _d,ad in pairs(ac.communicationChannels)do
-for bd,cd in pairs(ad)do for dd,__a in pairs(cd)do
-table.insert(dc,ac.communicationChannels[_d][bd][dd])end end end;return dc end;return ac end
-modules["programs.command.CommandLine"] = function(...) local ba={}ba.__index=ba
-function ba.filterSuggestions(cb,db)local _c={}db=db or""
-local ac=string.lower(db)for bc,cc in ipairs(cb)do local dc=string.lower(cc)
-if dc:find(ac,1,true)==1 then
-local _d=cc:sub(#db+1)if _d~=""then table.insert(_c,_d)end end end
-return _c end
-function ba:new(cb)local db=setmetatable({},ba)db.suffix=cb or"> "
-db.commands={help={name="help",description="Display available commands",func=function(_c)
-print("Available commands:")for ac,bc in pairs(db.commands)do
-print(string.format(" - %s: %s",ac,bc.description))end end}}return db end
-local ca=function(cb)local db=string.find(cb," ")if db then
-return string.sub(cb,1,db-1),true else return cb,false end end;local da=function(cb,db)return cb.commands[db]end
-local _b=function(cb,db)
-local _c={}local ac,bc=ca(db)
-if bc then local cc=da(cb,ac)
-if cc and cc.complete then
-local dc=string.sub(db,#ac+2)_c=cc.complete(dc)or{}end else local cc={}for dc,_d in pairs(cb.commands)do
-if dc:find(ac)==1 then table.insert(cc,dc)end end
-_c=ba.filterSuggestions(cc,ac)end;return _c end
-local function ab(cb,db)local _c,ac=#cb,#db;local bc={}for i=0,_c do bc[i]={}bc[i][0]=i end;for j=0,ac do
-bc[0][j]=j end
-for i=1,_c do for j=1,ac do
-local cc=(cb:sub(i,i)==db:sub(j,j))and 0 or 1
-bc[i][j]=math.min(bc[i-1][j]+1,bc[i][j-1]+1,bc[i-1][j-1]+cc)end end;return bc[_c][ac]end
-local function bb(cb,db)local _c=nil;local ac=math.huge;local bc=3
-for cc,dc in pairs(cb.commands)do
-local _d=ab(db:lower(),cc:lower())if _d<ac and _d<=bc then ac=_d;_c=cc end end;return _c end;function ba:addCommand(cb,db,_c,ac)
-self.commands[cb]={name=cb,description=db,func=_c,complete=ac}return self end
-function ba:run()
-write(self.suffix)
-local cb=read(nil,nil,function(bc)return _b(self,bc)end)local db,_c=ca(cb)local ac=da(self,db)
-if ac then return ac.func(cb)else local bc=bb(self,db)
-if bc then print(
-"Unknown command: "..db)
-print("Do you mean \""..bc.."\"?")else print("Unknown command: "..db)end end end;function ba:changeSuffix(cb)self.suffix=cb end;return ba end
-modules["utils.OSUtils"] = function(...) local c=require("utils.Logger")local d={}
-d.SIDES={TOP="top",BOTTOM="bottom",LEFT="left",RIGHT="right",FRONT="front",BACK="back"}
-d.timestampBaseIdGenerate=function()local _a=os.epoch("utc")
-local aa=math.random(1000,9999)return tostring(_a).."-"..tostring(aa)end
-d.loadTable=function(_a)local aa={}local ba=fs.open(_a,"r")if ba then local ca=ba.readAll()
-aa=textutils.unserialize(ca)ba.close()else return nil end;return aa end
-d.saveTable=function(_a,aa)local ba
-local ca,da=xpcall(function()ba=textutils.serialize(aa)end,function(ab)
-return ab end)if not ca then
-c.error("Failed to serialize table for {}, error: {}",_a,da)return end;local _b=fs.open(_a,"w")if _b then
-_b.write(ba)_b.close()else
-c.error("Failed to open file for writing: {}",_a)end end;return d end
-modules["programs.common.Trigger"] = function(...) local c=require("utils.Logger")local d={}
-d.TYPES={FLUID_COUNT="fluid_count",ITEM_COUNT="item_count",REDSTONE_SIGNAL="redstone_signal"}
-d.CONDITION_TYPES={COUNT_GREATER="count_greater",COUNT_LESS="count_less",COUNT_EQUAL="count_equal"}
-d.eval=function(_a,aa)if not _a or not _a.children then return true end
-for ba,ca in
-ipairs(_a.children)do if d.evalTriggerNode(ca,aa)then return true end end;return false end
-d.evalTriggerNode=function(_a,aa)if not _a or not _a.data then return true end
-local ba=_a.data;local ca=false
-if ba.triggerType==d.TYPES.ITEM_COUNT then
-ca=d.evalItemCountTrigger(ba,aa)elseif ba.triggerType==d.TYPES.FLUID_COUNT then
-ca=d.evalFluidCountTrigger(ba,aa)elseif ba.triggerType==d.TYPES.REDSTONE_SIGNAL then
-ca=d.evalRedstoneSignalTrigger(ba,aa)else return true end;local da=true;if _a.children and#_a.children>0 then da=false
-for _b,ab in
-ipairs(_a.children)do if d.evalTriggerNode(ab,aa)then da=true;break end end end;return
-ca and da end
-d.evalItemCountTrigger=function(_a,aa)
-if not _a.itemName or not aa then return false end;local ba=0;local ca=aa("item",_a.itemName)
-if ca then ba=ca.count or 0 end
-return d.evalCondition(ba,_a.amount,_a.triggerConditionType)end
-d.evalFluidCountTrigger=function(_a,aa)
-if not _a.itemName or not aa then return false end;local ba=0;local ca=aa("fluid",_a.itemName)
-if ca then ba=ca.amount or 0 end
-return d.evalCondition(ba,_a.amount,_a.triggerConditionType)end;d.evalRedstoneSignalTrigger=function(_a,aa)return true end
-d.evalCondition=function(_a,aa,ba)
-if ba==
-d.CONDITION_TYPES.COUNT_GREATER then return _a>aa elseif ba==d.CONDITION_TYPES.COUNT_LESS then
-return _a<aa elseif ba==d.CONDITION_TYPES.COUNT_EQUAL then return _a==aa else return false end end;return d end
-modules["wrapper.PeripheralWrapper"] = function(...) local d=require("utils.Logger")local _a={}
-local aa={DEFAULT_INVENTORY=1,UNLIMITED_PERIPHERAL_INVENTORY=2,TANK=3,REDSTONE=4}_a.SIDES={"top","bottom","left","right","front","back"}
-_a.loadedPeripherals={}
-_a.wrap=function(ba)if ba==nil or ba==""then
-error("Peripheral name cannot be nil or empty")end;local ca=peripheral.wrap(ba)
-_a.addBaseMethods(ca,ba)if ca==nil then
-error("Failed to wrap peripheral '"..ba.."'")end;if ca.isInventory()then
-_a.addInventoryMethods(ca)end
-if ca.isTank()then _a.addTankMethods(ca)end
-if ca.isRedstone()then _a.addRedstoneMethods(ca)end;return ca end
-_a.addBaseMethods=function(ba,ca)
-if ba==nil then error("Peripheral cannot be nil")end;if ba.getTypes==nil then ba._types=_a.getTypes(ba)
-ba.getTypes=function()return ba._types end end
-if ba.isTypeOf==nil then ba.isTypeOf=function(da)return
-_a.isTypeOf(ba,da)end end;ba._id=ca;ba.getName=function()return ba._id end
-ba.getId=function()return ba._id end;ba._isInventory=_a.isInventory(ba)
-ba.isInventory=function()return ba._isInventory end;ba._isTank=_a.isTank(ba)
-ba.isTank=function()return ba._isTank end;ba._isRedstone=_a.isRedstone(ba)
-ba.isRedstone=function()return ba._isRedstone end
-ba._isDefaultInventory=_a.isTypeOf(ba,aa.DEFAULT_INVENTORY)
-ba.isDefaultInventory=function()return ba._isDefaultInventory end
-ba._isUnlimitedPeripheralInventory=_a.isTypeOf(ba,aa.UNLIMITED_PERIPHERAL_INVENTORY)
-ba.isUnlimitedPeripheralInventory=function()return ba._isUnlimitedPeripheralInventory end end
-_a.addInventoryMethods=function(ba)
-if _a.isTypeOf(ba,aa.DEFAULT_INVENTORY)then
-ba.getItems=function()local ca={}local da={}
-for _b,ab in
-pairs(ba.list())do if ca[ab.name]==nil then ca[ab.name]={name=ab.name,count=0}
-table.insert(da,ca[ab.name])end;ca[ab.name].count=
-ca[ab.name].count+ab.count end;return da,ca end
-ba.getItem=function(ca)local da,_b=ba.getItems()if _b[ca]then return _b[ca]end;return nil end
-ba.transferItemTo=function(ca,da,_b)
-if ca.isDefaultInventory()then local ab=ba.size()local bb=0
-for slot=1,ab do
-local cb=ba.getItemDetail(slot)
-if cb~=nil and cb.name==da then local db=math.min(cb.count,_b)
-local _c=ba.pushItems(ca.getName(),slot,db)if _c==0 then return bb end;bb=bb+_c;_b=_b-_c end;if _b<=0 then return bb end end;return bb elseif ca.isUnlimitedPeripheralInventory()then local ab=0
-while ab<_b do
-local bb=ca.pullItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end;return 0 end
-ba.transferItemFrom=function(ca,da,_b)
-if ca.isDefaultInventory()then local ab=ca.size()local bb=0
-for slot=1,ab do
-local cb=ca.getItemDetail(slot)
-if cb~=nil and cb.name==da then
-local db=ba.pullItems(ca.getName(),slot,_b)if db==0 then return bb end;bb=bb+db;_b=_b-db end;if _b<=0 then return bb end end;return bb elseif ca.isUnlimitedPeripheralInventory()then local ab=0
-while ab<_b do
-local bb=ca.pushItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end end elseif ba.isUnlimitedPeripheralInventory()then
-if
-string.find(ba.getName(),"crafting_storage")or ba.getPatternsFor~=nil then
-ba.getItems=function()
-local ca=ba.items()
-for da,_b in ipairs(ca)do _b.displayName=_b.name;_b.name=_b.technicalName end;return ca end
-ba.getItemFinder=function(ca)local da=nil
-return
-function()local _b=ba.items()
-if not _b or#_b==0 then return nil end
-if da~=nil and _b[da]and _b[da].technicalName==ca then
-local ab,bb=_b[da],da;ab.displayName=ab.name;ab.name=ab.technicalName;return ab,bb end
-for ab,bb in ipairs(_b)do if bb.technicalName==ca then da=ab;bb.displayName=bb.name
-bb.name=bb.technicalName;return bb,da end end;return nil end end else ba.getItems=function()return ba.items()end
-ba.getItemFinder=function(ca)
-local da=nil
-return
-function()local _b=ba.items()if not _b or#_b==0 then return nil end
-if
-da~=nil and _b[da]and _b[da].name==ca then local ab,bb=_b[da],da;return ab,bb end
-for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return nil end end end;ba._itemFinders={}
-ba.getItem=function(ca)if ba._itemFinders[ca]==nil then
-ba._itemFinders[ca]=ba.getItemFinder(ca)end
-return ba._itemFinders[ca]()end
-ba.transferItemTo=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pushItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end
-ba.transferItemFrom=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end else
-error("Peripheral "..
-ba.getName().." types "..table.concat(_a.getTypes(ba),", ")..
-" is not an inventory")end end
-_a.addTankMethods=function(ba)
-if ba==nil then error("Peripheral cannot be nil")end
-if not _a.isTank(ba)then error("Peripheral is not a tank")end
-ba.getFluids=function()local ca={}local da={}
-for _b,ab in pairs(ba.tanks())do
-if ca[ab.name]==nil then
-ca[ab.name]={name=ab.name,amount=0}table.insert(da,ca[ab.name])end
-ca[ab.name].amount=ca[ab.name].amount+ab.amount end;return da end
-ba.getFluidFinder=function(ca)local da=nil
-return
-function()local _b=ba.tanks()
-if not _b or#_b==0 then return nil end
-if da~=nil and _b[da]and _b[da].name==ca then return _b[da],da end
-for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return nil end end;ba._fluidFinders={}
-ba.getFluid=function(ca)if ba._fluidFinders[ca]==nil then
-ba._fluidFinders[ca]=ba.getFluidFinder(ca)end
-return ba._fluidFinders[ca]()end
-ba.transferFluidTo=function(ca,da,_b)if ca.isTank()==false then
-error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pushFluid(ca.getName(),
-_b-ab,da)if bb==0 then return ab end
-ab=ab+bb end;return ab end
-ba.transferFluidFrom=function(ca,da,_b)if ca.isTank()==false then
-error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pullFluid(ca.getName(),
-_b-ab,da)if bb==0 then return ab end
-ab=ab+bb end;return ab end end
-_a.addRedstoneMethods=function(ba)
-if ba==nil then error("Peripheral cannot be nil")end;if not _a.isRedstone(ba)then
-error("Peripheral is not a redstone peripheral")end
-ba.setOutputSignals=function(ca,...)local da={...}if
-not da or#da==0 then da=_a.SIDES end;for _b,ab in ipairs(da)do if ba.getOutput(ab)~=ca then
-ba.setOutput(ab,ca)end end end
-ba.getInputSignals=function(...)local ca={...}if not ca or#ca==0 then ca=_a.SIDES end
-for da,_b in
-ipairs(ca)do if ba.getInput(_b)then return true end end;return false end
-ba.getOutputSignals=function(...)local ca={...}if not ca or#ca==0 then ca=_a.SIDES end
-local da={}for _b,ab in ipairs(ca)do da[ab]=ba.getOutput(ab)end;return da end end
-_a.getTypes=function(ba)if ba._types~=nil then return ba._types end;local ca={}if ba.list~=nil then
-table.insert(ca,aa.DEFAULT_INVENTORY)end;if ba.items~=nil then
-table.insert(ca,aa.UNLIMITED_PERIPHERAL_INVENTORY)end;if ba.tanks~=nil then
-table.insert(ca,aa.TANK)end;if ba.getInput~=nil then
-table.insert(ca,aa.REDSTONE)end;ba._types=ca;return ca end
-_a.isInventory=function(ba)local ca=_a.getTypes(ba)
-if ba._isInventory~=nil then return ba._isInventory end;for da,_b in ipairs(ca)do
-if
-_b==aa.DEFAULT_INVENTORY or _b==aa.UNLIMITED_PERIPHERAL_INVENTORY then ba._isInventory=true;return true end end
-ba._isInventory=false;return false end
-_a.isTank=function(ba)local ca=_a.getTypes(ba)
-if ba._isTank~=nil then return ba._isTank end
-for da,_b in ipairs(ca)do if _b==aa.TANK then ba._isTank=true;return true end end;ba._isTank=false;return false end
-_a.isRedstone=function(ba)local ca=_a.getTypes(ba)
-if ba._isRedstone~=nil then return ba._isRedstone end;for da,_b in ipairs(ca)do
-if _b==aa.REDSTONE then ba._isRedstone=true;return true end end;ba._isRedstone=false;return false end
-_a.isTypeOf=function(ba,ca)
-if ba==nil then error("Peripheral cannot be nil")end;if ca==nil then error("Type cannot be nil")end
-local da=_a.getTypes(ba)for _b,ab in ipairs(da)do if ab==ca then return true end end;return false end
-_a.addPeripherals=function(ba)
-if ba==nil then error("Peripheral name cannot be nil")end;local ca=_a.wrap(ba)
-if ca~=nil then _a.loadedPeripherals[ba]=ca end end
-_a.reloadAll=function()_a.loadedPeripherals={}
-for ba,ca in ipairs(peripheral.getNames())do
-d.debug("Loading peripheral: {}",ca)_a.addPeripherals(ca)end end
-_a.getAll=function()
-if _a.loadedPeripherals==nil then _a.reloadAll()end;return _a.loadedPeripherals end
-_a.getByName=function(ba)
-if ba==nil then error("Peripheral name cannot be nil")end
-if _a.loadedPeripherals[ba]==nil then _a.addPeripherals(ba)end;return _a.loadedPeripherals[ba]end
-_a.getByTypes=function(ba)if ba==nil or#ba==0 then
-error("Types cannot be nil or empty")end;local ca={}
-for da,_b in pairs(_a.getAll())do for ab,bb in ipairs(ba)do if
-_a.isTypeOf(_b,bb)then ca[da]=_b;break end end end;return ca end
-_a.getAllPeripheralsNameContains=function(ba)if ba==nil or ba==""then
-error("Part of name input cannot be nil or empty")end;local ca={}for da,_b in pairs(_a.getAll())do if
-string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
-modules["utils.TableUtils"] = function(...) local b={}
-b.findInArray=function(c,d)if c==nil or d==nil then return nil end;for _a,aa in ipairs(c)do
-if d(aa)then return _a end end;return nil end
-b.getLength=function(c)if c==nil then return 0 end;local d=0;for _a in pairs(c)do d=d+1 end;return d end
-b.getAllKeyValueAsTreeString=function(c,d,_a)d=d or""_a=_a or{}if _a[c]then
-return d.."<circular reference>\n"end;_a[c]=true;local aa=d.."{\n"
-for ba,ca in pairs(c)do
-aa=aa..d.."  ["..tostring(ba)..
-"] = "
-if type(ca)=="table"then
-aa=aa..b.getAllKeyValueAsTreeString(ca,d.."  ",_a)elseif type(ca)=="function"then aa=aa.."function\n"else
-aa=aa..tostring(ca).."\n"end end;aa=aa..d.."}\n"return aa end;return b end
+local args = { ... }
+
+-- Recipes storage
+local recipes = {}
+
+local remoteRecipes = {}
+
+-- Load recipes from file
+local function loadRecipes()
+    local data = OSUtils.loadTable("cadepot_recipes")
+    if data ~= nil then
+        recipes = data
+    end
+end
+
+-- Save recipes to file
+local function saveRecipes()
+    OSUtils.saveTable("cadepot_recipes", recipes)
+end
+
+-- Load communicator config from file
+local function loadCommunicatorConfig()
+    return OSUtils.loadTable("cadepot_communicator_config")
+end
+
+-- Save communicator config to file
+local function saveCommunicatorConfig(side, channel, secret)
+    local config = {
+        side = side,
+        channel = channel,
+        secret = secret
+    }
+    OSUtils.saveTable("cadepot_communicator_config", config)
+end
+
+-- Update recipes by ID
+local function updateRecipesByID(newRecipes)
+    local recipeMap = {}
+    -- Create a map of existing recipes by ID
+    for i, recipe in ipairs(recipes) do
+        if recipe.id then
+            recipeMap[recipe.id] = i
+        end
+    end
+
+    -- Update existing recipes or add new ones
+    for _, newRecipe in ipairs(newRecipes) do
+        if newRecipe.id then
+            local existingIndex = recipeMap[newRecipe.id]
+            if existingIndex then
+                recipes[existingIndex] = newRecipe
+            end
+        end
+    end
+
+    -- Save updated recipes
+    saveRecipes()
+end
+
+-- Get recipe by input name
+local function getRecipeByInput(inputName)
+    for _, recipe in ipairs(recipes) do
+        if recipe.input == inputName then
+            return recipe
+        end
+    end
+    return nil
+end
+
+-- Remove recipe by input name
+local function removeRecipeByInput(inputName)
+    for i, recipe in ipairs(recipes) do
+        if recipe.input == inputName then
+            table.remove(recipes, i)
+            return true
+        end
+    end
+    return false
+end
+
+-- Display recipes with pagination
+local function displayRecipes(recipeList, page, pageSize)
+    page = page or 1
+    pageSize = pageSize or 5
+
+    if #recipeList == 0 then
+        print("No recipes found.")
+        return
+    end
+
+    local totalPages = math.ceil(#recipeList / pageSize)
+    local startIdx = (page - 1) * pageSize + 1
+    local endIdx = math.min(startIdx + pageSize - 1, #recipeList)
+
+    print(string.format("=== Recipes (Page %d/%d) ===", page, totalPages))
+    for i = startIdx, endIdx do
+        local recipe = recipeList[i]
+        local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water" })[recipe.depotType + 1] or "unknown"
+        local outputStr = table.concat(recipe.output, ", ")
+        print(string.format("%d. [%s] %s -> %s", i, depotTypeName, recipe.input, outputStr))
+    end
+
+    if totalPages > 1 then
+        print(string.format("Showing %d-%d of %d recipes", startIdx, endIdx, #recipeList))
+        if page < totalPages then
+            print(string.format("Use 'list recipe local %d' for next page", page + 1))
+        end
+        if page > 1 then
+            print(string.format("Use 'list recipe local %d' for previous page", page - 1))
+        end
+    end
+end
+
+-- Initialize recipes
+loadRecipes()
+
+local runChannel = function()
+    local config = loadCommunicatorConfig()
+    if config and config.side and config.channel and config.secret then
+        Logger.info("Found saved communicator config, attempting to connect...")
+        Communicator.open(config.side, config.channel, "recipe", config.secret)
+        local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
+        openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
+            remoteRecipes = payload or {}
+        end)
+
+        -- Add update event handler
+        openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
+            if payload and type(payload) == "table" then
+                updateRecipesByID(payload)
+            end
+        end)
+
+        Communicator.listen()
+    end
+end
+
+-- Command line interface
+local function createCommandLine()
+    local cli = CommandLine:new("cadepot> ")
+
+    -- List recipes command
+    cli:addCommand("list", "List recipes", function(input)
+        local parts = {}
+        for word in input:gmatch("%S+") do
+            table.insert(parts, word)
+        end
+
+        if #parts < 3 then
+            print("Usage: list recipe [remote|local] [page]")
+            return
+        end
+
+        local recipeType = parts[2]
+        local location = parts[3]
+        local page = tonumber(parts[4]) or 1
+
+        if recipeType ~= "recipe" then
+            print("Usage: list recipe [remote|local] [page]")
+            return
+        end
+
+        if location == "local" then
+            displayRecipes(recipes, page)
+        elseif location == "remote" then
+            if #remoteRecipes == 0 then
+                print("No remote recipes available.")
+                return
+            end
+            displayRecipes(remoteRecipes, page)
+        else
+            print("Usage: list recipe [remote|local] [page]")
+        end
+    end, function(text)
+        local parts = {}
+        for word in text:gmatch("%S+") do
+            table.insert(parts, word)
+        end
+
+        if #parts == 1 then
+            -- 补全第二个参数 "recipe"
+            local partial = text:match("%S+$") or ""
+            local suggestions = {}
+            if ("recipe"):find(partial, 1, true) == 1 then
+                table.insert(suggestions, ("recipe"):sub(#partial + 1))
+            end
+            return suggestions
+        elseif #parts == 2 then
+            -- 补全第三个参数 "remote"/"local"
+            local partial = text:match("%S+$") or ""
+            local suggestions = {}
+            local options = { "remote", "local" }
+            for _, option in ipairs(options) do
+                if option:find(partial, 1, true) == 1 then
+                    table.insert(suggestions, option:sub(#partial + 1))
+                end
+            end
+            return suggestions
+        end
+        return {}
+    end)
+
+    -- Add recipe command (from remote by depotType)
+    cli:addCommand("add", "Add recipe(s) from remote by depotType", function(input)
+        local parts = {}
+        for word in input:gmatch("%S+") do
+            table.insert(parts, word)
+        end
+
+        if #parts < 2 then
+            print("Usage: add [depotType] [input_name]")
+            print("DepotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4)")
+            print("Examples:")
+            print("  add fire minecraft:iron_ore    - Add specific recipe")
+            print("  add fire                       - Add all fire-type recipes")
+            print("Use 'list recipe remote' to see available recipes")
+            return
+        end
+
+        local depotTypeInput = parts[2]
+        local inputItem = parts[3] -- Optional
+
+        -- Parse depot type
+        local targetDepotType = nil
+        if depotTypeInput == "none" or depotTypeInput == "0" then
+            targetDepotType = 0
+        elseif depotTypeInput == "fire" or depotTypeInput == "1" then
+            targetDepotType = 1
+        elseif depotTypeInput == "soul_fire" or depotTypeInput == "2" then
+            targetDepotType = 2
+        elseif depotTypeInput == "lava" or depotTypeInput == "3" then
+            targetDepotType = 3
+        elseif depotTypeInput == "water" or depotTypeInput == "4" then
+            targetDepotType = 4
+        elseif tonumber(depotTypeInput) and tonumber(depotTypeInput) >= 0 and tonumber(depotTypeInput) <= 4 then
+            targetDepotType = tonumber(depotTypeInput)
+        else
+            print("Invalid depotType: " .. depotTypeInput)
+            print("Valid depotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4)")
+            return
+        end
+
+        if inputItem then
+            -- Add specific recipe with matching depotType
+            local remoteRecipe = nil
+            for _, recipe in ipairs(remoteRecipes) do
+                if recipe.input == inputItem and recipe.depotType == targetDepotType then
+                    remoteRecipe = recipe
+                    break
+                end
+            end
+
+            if not remoteRecipe then
+                print("Remote recipe '" .. inputItem .. "' with depotType " .. targetDepotType .. " not found")
+                print("Use 'list recipe remote' to see available remote recipes")
+                return
+            end
+
+            -- Check if recipe already exists locally
+            if getRecipeByInput(inputItem) then
+                print("Recipe with input '" .. inputItem .. "' already exists locally")
+                return
+            end
+
+            -- Copy the remote recipe to local
+            local newRecipe = {
+                id = remoteRecipe.id,
+                input = remoteRecipe.input,
+                output = remoteRecipe.output,
+                depotType = remoteRecipe.depotType,
+                trigger = remoteRecipe.trigger,
+                maxMachine = remoteRecipe.maxMachine or -1
+            }
+
+            table.insert(recipes, newRecipe)
+            saveRecipes()
+            print("Recipe added from remote successfully:")
+            print("  Input: " .. newRecipe.input)
+            print("  Output: " .. table.concat(newRecipe.output, ", "))
+            local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water" })[newRecipe.depotType + 1] or
+                "unknown"
+            print("  DepotType: " .. newRecipe.depotType .. " (" .. depotTypeName .. ")")
+        else
+            -- Add all recipes with matching depotType
+            local matchingRecipes = {}
+            for _, recipe in ipairs(remoteRecipes) do
+                if recipe.depotType == targetDepotType then
+                    table.insert(matchingRecipes, recipe)
+                end
+            end
+
+            if #matchingRecipes == 0 then
+                local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water" })[targetDepotType + 1] or
+                    "unknown"
+                print("No remote recipes found with depotType " .. targetDepotType .. " (" .. depotTypeName .. ")")
+                print("Use 'list recipe remote' to see available remote recipes")
+                return
+            end
+
+            local addedCount = 0
+            local skippedCount = 0
+
+            for _, remoteRecipe in ipairs(matchingRecipes) do
+                -- Check if recipe already exists locally
+                if not getRecipeByInput(remoteRecipe.input) then
+                    local newRecipe = {
+                        id = remoteRecipe.id,
+                        input = remoteRecipe.input,
+                        output = remoteRecipe.output,
+                        depotType = remoteRecipe.depotType,
+                        trigger = remoteRecipe.trigger,
+                        maxMachine = remoteRecipe.maxMachine or -1
+                    }
+                    table.insert(recipes, newRecipe)
+                    addedCount = addedCount + 1
+                else
+                    skippedCount = skippedCount + 1
+                end
+            end
+
+            saveRecipes()
+            local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water" })[targetDepotType + 1] or "unknown"
+            print("Batch add completed for depotType " .. targetDepotType .. " (" .. depotTypeName .. "):")
+            print("  Added: " .. addedCount .. " recipes")
+            if skippedCount > 0 then
+                print("  Skipped: " .. skippedCount .. " recipes (already exist)")
+            end
+        end
+    end, function(text)
+        local parts = {}
+        for word in text:gmatch("%S+") do
+            table.insert(parts, word)
+        end
+
+        -- First argument: provide depotType completion
+        if #parts == 1 and text:sub(-1) ~= " " then
+            local partial = text:match("%S+$") or ""
+            local suggestions = {}
+            local options = { "none", "fire", "soul_fire", "lava", "water", "0", "1", "2", "3", "4" }
+            for _, option in ipairs(options) do
+                if option:find(partial, 1, true) == 1 then
+                    table.insert(suggestions, option:sub(#partial + 1))
+                end
+            end
+            return suggestions
+        elseif #parts == 2 then
+            -- Second argument (optional): provide remote recipe inputs for the specified depotType
+            local depotTypeInput = parts[2]
+            local targetDepotType = nil
+
+            -- Parse depot type
+            if depotTypeInput == "none" or depotTypeInput == "0" then
+                targetDepotType = 0
+            elseif depotTypeInput == "fire" or depotTypeInput == "1" then
+                targetDepotType = 1
+            elseif depotTypeInput == "soul_fire" or depotTypeInput == "2" then
+                targetDepotType = 2
+            elseif depotTypeInput == "lava" or depotTypeInput == "3" then
+                targetDepotType = 3
+            elseif depotTypeInput == "water" or depotTypeInput == "4" then
+                targetDepotType = 4
+            elseif tonumber(depotTypeInput) and tonumber(depotTypeInput) >= 0 and tonumber(depotTypeInput) <= 4 then
+                targetDepotType = tonumber(depotTypeInput)
+            end
+
+            if targetDepotType ~= nil then
+                local suggestions = {}
+                local partial = text:match("%S+$") or ""
+                for _, recipe in ipairs(remoteRecipes) do
+                    if recipe.depotType == targetDepotType and recipe.input:find(partial, 1, true) == 1 then
+                        table.insert(suggestions, recipe.input:sub(#partial + 1))
+                    end
+                end
+                return suggestions
+            end
+        end
+        return {}
+    end)
+
+    -- Remove recipe command
+    cli:addCommand("rm", "Remove recipe", function(input)
+        local parts = {}
+        for word in input:gmatch("%S+") do
+            table.insert(parts, word)
+        end
+
+        if #parts < 2 then
+            print("Usage: rm [input]")
+            return
+        end
+
+        local identifier = parts[2]
+
+        -- Remove by input
+        local removed = false
+        local removedRecipe = nil
+
+        for i, recipe in ipairs(recipes) do
+            if recipe.input == identifier then
+                removedRecipe = recipe
+                table.remove(recipes, i)
+                removed = true
+                break
+            end
+        end
+
+        if removed then
+            saveRecipes()
+            local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water" })[removedRecipe.depotType + 1] or
+                "unknown"
+            print("Recipe removed: [" .. depotTypeName .. "] " .. removedRecipe.input)
+        else
+            print("Recipe '" .. identifier .. "' not found")
+        end
+    end, function(text)
+        -- Provide completion for recipe inputs
+        local suggestions = {}
+        local partial = text:match("%S+$") or ""
+
+        for _, recipe in ipairs(recipes) do
+            if recipe.input:find(partial, 1, true) == 1 then
+                table.insert(suggestions, recipe.input:sub(#partial + 1))
+            end
+        end
+
+        return suggestions
+    end)
+
+    -- Exit command
+    cli:addCommand("reboot", "Exit the program", function(input)
+        print("Goodbye!")
+        os.reboot()
+    end)
+
+    return cli
+end
+
+local setMesssageHandler = function(openChannel)
+    openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
+        remoteRecipes = payload or {}
+    end)
+
+    -- Add update event handler
+    openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
+        if payload and type(payload) == "table" then
+            updateRecipesByID(payload)
+            openChannel.send("getRecipesReq", "depot")
+        end
+    end)
+end
+
+local runCommandLine = function()
+    local cli = createCommandLine()
+    while true do
+        local success, result = pcall(function() cli:run() end)
+        if not success then
+            print("Error: " .. tostring(result))
+        end
+    end
+end
+
+-- Main execution
+if args ~= nil and #args > 0 then
+    local side = args[1]
+    local channel = tonumber(args[2])
+    local secret = args[3]
+
+    if side and channel and secret then
+        -- Save communicator config
+        saveCommunicatorConfig(side, channel, secret)
+
+        -- Network mode
+        Communicator.open(side, channel, "recipe", secret)
+        local openChannel = Communicator.communicationChannels[side][channel]["recipe"]
+        setMesssageHandler(openChannel)
+
+        parallel.waitForAll(Communicator.listen,
+            function()
+                while next(remoteRecipes) == nil do
+                    openChannel.send("getRecipesReq", "depot")
+                    sleep(1) -- Wait for response
+                end
+            end,
+            runCommandLine
+        )
+    end
+end
+
+PeripheralWrapper.reloadAll()
+local depots = PeripheralWrapper.getAllPeripheralsNameContains("depot")
+local storages = PeripheralWrapper.getAllPeripheralsNameContains("crafting_storage")
+local key = next(storages) -- Assuming only one storage is available
+local storage = storages[key]
+
+local totalDepots = TableUtils.getLength(depots)
+
+
+
+local marker = {
+    recipeOnDepot = {},
+    depotOnUse = {},
+    lostTrackDepots = {},
+
+    init = function(self)
+        for _, recipe in ipairs(recipes) do
+            self.recipeOnDepot[recipe.id] = {
+                recipe = recipe,
+                depots = {}
+            }
+        end
+        for _, depot in pairs(depots) do
+            self.depotOnUse[depot.getId()] = {
+                onUse = false,
+                depot = depot,
+                recipe = nil
+            }
+        end
+    end,
+
+    set = function(self, recipe, depot)
+        local depotOnUseInfo = self.depotOnUse[depot.getId()]
+        depotOnUseInfo.onUse = true
+        depotOnUseInfo.recipe = recipe
+
+        if self.recipeOnDepot[recipe.id] == nil then
+            self.recipeOnDepot[recipe.id] = { recipe = recipe, depots = {}, count = 0 }
+        end
+        local recipeOnDepotInfo = self.recipeOnDepot[recipe.id]
+        recipeOnDepotInfo.depots[depot.getId()] = depot
+        recipeOnDepotInfo.count = (recipeOnDepotInfo.count or 0) + 1
+    end,
+
+    remove = function(self, depot)
+        if depot == nil then
+            return
+        end
+        local recipe = self.depotOnUse[depot.getId()].recipe
+        self.depotOnUse[depot.getId()].onUse = false
+        self.depotOnUse[depot.getId()].recipe = nil
+        if self.recipeOnDepot[recipe.id] == nil then
+            self.recipeOnDepot[recipe.id] = { recipe = recipe, depots = {}, count = 0 }
+        end
+        self.recipeOnDepot[recipe.id].depots[depot.getId()] = nil
+        self.recipeOnDepot[recipe.id].count = math.max(0, (self.recipeOnDepot[recipe.id].count or 1) - 1)
+    end,
+
+    isUsing = function(self, depot)
+        return self.depotOnUse[depot.getId()].onUse
+    end,
+
+    isCompleted = function(self, depot)
+        if not self:isUsing(depot) then
+            return false
+        end
+        local recipe = self.depotOnUse[depot.getId()].recipe
+        local input = depot.getItem(recipe.input)
+        if input == nil or input.count == 0 then
+            return true
+        end
+    end,
+
+    isLoseTrack = function(self, depot)
+        if not self:isUsing(depot) and #depot.getItems() > 0 then
+            return true
+        end
+        return false
+    end,
+
+    getOnUseDepotCountForRecipe = function(self, recipe)
+        if self.recipeOnDepot[recipe.id] == nil then
+            self.recipeOnDepot[recipe.id] = { recipe = recipe, depots = {}, count = 0 }
+        end
+        return self.recipeOnDepot[recipe.id].count or 0
+    end,
+}
+
+marker:init()
+
+local checkInputItem = function(recipe)
+    local item = storage.getItem(recipe.input)
+    if not item then
+        return false
+    end
+    return true
+end
+
+local checkAndRunRecipe = function()
+    while true do
+        local triggeredRecipes = {}
+        for _, recipe in ipairs(recipes) do
+            if checkInputItem(recipe) and recipe.trigger then
+                local triggered = Trigger.eval(recipe.trigger, function(type, itemName)
+                    if type == "item" then
+                        return storage.getItem(itemName)
+                    elseif type == "fluid" then
+                        return storage.getFluid(itemName)
+                    end
+                    return nil
+                end)
+                if triggered then
+                    table.insert(triggeredRecipes, recipe)
+                end
+            end
+        end
+
+        local currentTotalDepots = totalDepots
+        local currentTriggeredRecipeCount = #triggeredRecipes
+
+        local numOfDepotsForEachRecipe = math.max(1,
+            math.floor(currentTotalDepots / math.max(1, currentTriggeredRecipeCount)))
+
+        for _, recipe in ipairs(triggeredRecipes) do
+            local usedDepotsCount = marker:getOnUseDepotCountForRecipe(recipe)
+            local maxMachineForRecipe
+
+            if recipe.maxMachine and recipe.maxMachine > 0 then
+                -- If average allocation exceeds maxMachine limit, use maxMachine
+                -- Otherwise use average allocation
+                maxMachineForRecipe = math.min(numOfDepotsForEachRecipe, recipe.maxMachine)
+            else
+                -- Use fair share allocation (maxMachine = -1 means unlimited)
+                maxMachineForRecipe = numOfDepotsForEachRecipe
+            end
+
+            Logger.debug("recipe " ..
+            (recipe.input or "Unnamed") ..
+            " usedDepotsCount: " .. usedDepotsCount .. ", maxMachineForRecipe: " .. maxMachineForRecipe)
+            if usedDepotsCount > maxMachineForRecipe then
+                Logger.info("Releasing depots for recipe: " .. (recipe.input or "Unnamed"))
+                local toRemove = usedDepotsCount - maxMachineForRecipe
+                for _, depot in pairs(marker.recipeOnDepot[recipe.id].depots) do
+                    if toRemove <= 0 then
+                        break
+                    end
+                    marker:remove(depot)
+                    toRemove = toRemove - 1
+                end
+                usedDepotsCount = marker:getOnUseDepotCountForRecipe(recipe) -- Update count after removal
+            end
+
+            if usedDepotsCount < maxMachineForRecipe then
+                local depotNeeded = maxMachineForRecipe - usedDepotsCount
+                Logger.info("Need {} depots for recipe {} (max: {})", depotNeeded, recipe.input, maxMachineForRecipe)
+                for _, depot in pairs(depots) do
+                    if depotNeeded <= 0 then
+                        break
+                    end
+                    if not marker:isUsing(depot) then
+                        local transfered = storage.transferItemTo(depot, recipe.input, 64)
+                        Logger.info("Transferred {} items to depot {}", transfered, depot.getId())
+                        if transfered <= 0 then
+                            if marker:isLoseTrack(depot) then
+                                Logger.info("Lost track of depot {}", depot.getId())
+                                table.insert(marker.lostTrackDepots, depot)
+                            end
+                        else
+                            marker:set(recipe, depot)
+                            depotNeeded = depotNeeded - 1
+                        end
+                    else
+                        Logger.info("Depot {} is already in use for recipe {}", depot.getId(), recipe.input)
+                    end
+                end
+            end
+
+            -- Subtract the allocated depots for this recipe (not just the ones currently in use)
+            currentTotalDepots = currentTotalDepots - maxMachineForRecipe
+            currentTriggeredRecipeCount = currentTriggeredRecipeCount - 1
+            numOfDepotsForEachRecipe = math.max(1,
+                math.floor(currentTotalDepots / math.max(1, currentTriggeredRecipeCount)))
+        end
+        os.sleep(1)
+    end
+end
+
+local checkAndMoveCompletedRecipe = function()
+    while true do
+        for key, onUseDepotInfo in pairs(marker.depotOnUse) do
+            local depot = onUseDepotInfo.depot
+            if marker:isUsing(depot) then
+                if marker:isCompleted(depot) then
+                    local recipe = onUseDepotInfo.recipe
+                    local items = depot.getItems(recipe.input)
+                    for _, item in ipairs(items) do
+                        local transferred = storage.transferItemFrom(depot, item.name, item.count)
+                        if transferred == item.count then
+                            Logger.debug("Transferred completed recipe " ..
+                            recipe.input .. " from depot " .. depot.getId())
+                        else
+                            Logger.error("Failed to transfer completed recipe {} from depot {}", recipe.input,
+                                depot.getId())
+                        end
+                    end
+                    marker:remove(depot)
+                end
+            end
+        end
+
+        -- Handle lost track depots
+        for _, depot in ipairs(marker.lostTrackDepots) do
+            for _, item in ipairs(depot.getItems()) do
+                local transfered = storage.transferItemFrom(depot, item.name, item.count)
+                if transfered > 0 then
+                    Logger.debug("Transferred lost item {} from depot {}", item.name, depot.getId())
+                else
+                    Logger.error("Failed to transfer lost item {} from depot {}", item.name, depot.getId())
+                end
+            end
+        end
+        os.sleep(1)
+    end
+end
+
+local runChannel = function()
+    local config = loadCommunicatorConfig()
+    if config and config.side and config.channel and config.secret then
+        Logger.info("Found saved communicator config, attempting to connect...")
+        Communicator.open(config.side, config.channel, "recipe", config.secret)
+        local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
+        setMesssageHandler(openChannel)
+        Communicator.listen()
+    end
+end
+
+
+parallel.waitForAll(
+    runChannel,
+    checkAndRunRecipe,
+    checkAndMoveCompletedRecipe,
+    runCommandLine
+)
+ end
+modules["utils.Logger"] = function(...) local Logger = {
+    currentLevel = 1, -- Default to DEBUG
+    printFunctions = {}
+}
+
+Logger.useDefault = function()
+    Logger.addPrintFunction(function(level, src, currentline, message)
+        print(string.format("[%s][%s:%d] %s", level, src, currentline, message))
+    end)
+end
+
+Logger.levels = {
+    DEBUG = 1,
+    INFO = 2,
+    WARN = 3,
+    ERROR = 4,
+}
+
+Logger.addPrintFunction = function(func)
+    table.insert(Logger.printFunctions, func)
+end
+
+Logger.print = function(level, src, currentline, message, ...)
+    if level >= Logger.currentLevel then
+        local completeMessage = Logger.formatBraces(message, ...)
+        for _, func in ipairs(Logger.printFunctions) do
+            func(level, src, currentline, completeMessage)
+        end
+    end
+end
+
+Logger.custom = function(level, message, ...)
+    local currentline = debug.getinfo(2, "l").currentline
+    local src = debug.getinfo(2, "S").short_src
+    Logger.print(level, src, currentline, message, ...)
+end
+
+Logger.debug = function(message, ...)
+    local currentline = debug.getinfo(2, "l").currentline
+    local src = debug.getinfo(2, "S").short_src
+    Logger.print(Logger.levels.DEBUG, src, currentline, message, ...)
+end 
+
+Logger.info = function(message, ...)
+    local currentline = debug.getinfo(2, "l").currentline
+    local src = debug.getinfo(2, "S").short_src
+    Logger.print(Logger.levels.INFO, src, currentline, message, ...)
+end
+
+Logger.warn = function(message, ...)
+    local currentline = debug.getinfo(2, "l").currentline
+    local src = debug.getinfo(2, "S").short_src
+    Logger.print(Logger.levels.WARN, src, currentline, message, ...)
+end
+
+Logger.error = function(message, ...)
+    local currentline = debug.getinfo(2, "l").currentline
+    local src = debug.getinfo(2, "S").short_src
+    Logger.print(Logger.levels.ERROR, src, currentline, message, ...)
+end
+
+Logger.formatBraces = function(message, ...)
+    local args = {...}
+    local i = 1
+    local formatted = tostring(message):gsub("{}", function()
+        local arg = args[i]
+        i = i + 1
+        return tostring(arg)
+    end)
+    return formatted
+end
+
+return Logger end
+modules["programs.common.Communicator"] = function(...) local Logger = require("utils.Logger")
+local OSUtils = require("utils.OSUtils")
+
+local function xorCipher(text, secret)
+    local encrypted = ""
+    local key = secret
+    for i = 1, #text do
+        local char = text:sub(i, i)
+        local keyChar = key:sub((i - 1) % #key + 1, (i - 1) % #key + 1)
+        encrypted = encrypted .. string.char(bit.bxor(string.byte(char), string.byte(keyChar)))
+    end
+    return encrypted
+end
+
+local function decrypt(encryptedText, secret)
+    return textutils.unserialize(xorCipher(encryptedText, secret))
+end
+
+local function encrypt(table, secret)
+    return xorCipher(textutils.serialize(table), secret)
+end
+
+
+local CommunicationChannel = {}
+CommunicationChannel.__index = CommunicationChannel
+
+function CommunicationChannel:new(side, channel, protocol, secret)
+    local this = setmetatable({}, CommunicationChannel)
+    this.computerId = os.getComputerID()
+    this.side = side
+    this.secret = secret
+    this.channel = channel
+    this.protocol = protocol
+    
+    -- 验证调制解调器
+    this.modem = peripheral.wrap(side)
+    this.modem.open(channel)
+    this.eventHandle = {}
+
+    this.send = function(eventCode, data, receiverId)
+        local message = {
+            protocol = this.protocol,
+            senderId = this.computerId,
+            receiverId = receiverId,
+            details = encrypt({
+                eventCode = eventCode,
+                payload = data
+            }, this.secret)
+        }
+        Logger.debug("Sending message on side {}, channel {}: {}", this.side, this.channel, textutils.serialize(message))
+        this.modem.transmit(this.channel, this.channel, textutils.serialize(message))
+    end
+
+    this.addMessageHandler = function(eventCode, callback)
+        this.eventHandle[eventCode] = callback
+    end
+
+    return this
+end
+
+local Communicator = {
+    communicationChannels = {}
+}
+
+function Communicator.open(side, channel, protocol, secret)
+    local channelInstance = CommunicationChannel:new(side, channel, protocol, secret)
+    if not Communicator.communicationChannels[side] then
+        Communicator.communicationChannels[side] = {}
+    end
+    if not Communicator.communicationChannels[side][channel] then
+        Communicator.communicationChannels[side][channel] = {}
+    end
+    if Communicator.communicationChannels[side][channel][protocol] then
+        return false, string.format("Channel already opened on side %s, channel %d, protocol %s", side, channel, protocol)  
+    end
+    Communicator.communicationChannels[side][channel][protocol] = channelInstance
+    return channelInstance
+end
+
+local isOpened = function(side, channel)
+    if Communicator.communicationChannels[side] and 
+       Communicator.communicationChannels[side][channel] then
+        return true
+    end
+    return false
+end
+
+local handleSerializedMessage = function(side, channel, serializedMessage)
+    local message = textutils.unserialize(serializedMessage)
+    if not message or not message.protocol then
+        return  -- 如果消息格式无效，直接返回
+    end
+    
+    local channelInstance = Communicator.communicationChannels[side][channel][message.protocol]
+    if not channelInstance then
+        return  -- 如果找不到对应的通道实例，直接返回
+    end
+    
+    if message.receiverId ~= nil and message.receiverId ~= channelInstance.computerId then
+        return
+    end
+    local details = decrypt(message.details, channelInstance.secret)
+    local handler = channelInstance.eventHandle[details.eventCode]
+    if handler then
+        handler(details.eventCode, details.payload, message.senderId)
+    end
+end
+
+function Communicator.listen()
+    while true do
+        local _, side, channel, _, serializedMessage, distance = os.pullEvent("modem_message")
+        Logger.debug("Received message on side {}, channel {}, distance {}: {}", side, channel, distance, serializedMessage)
+        if isOpened(side, channel) then
+            local success, err = pcall(function()
+                handleSerializedMessage(side, channel, serializedMessage)
+            end)
+            if not success then
+                Logger.error("Error handling serialized message: " .. err)
+            end
+        end
+    end
+end
+
+function Communicator.close(side, channel, protocol)
+    if Communicator.communicationChannels[side] and 
+       Communicator.communicationChannels[side][channel] and
+       Communicator.communicationChannels[side][channel][protocol] then
+        local instance = Communicator.communicationChannels[side][channel][protocol]
+        instance.modem.close(channel)
+        Communicator.communicationChannels[side][channel][protocol] = nil
+        if next(Communicator.communicationChannels[side][channel]) == nil then
+            Communicator.communicationChannels[side][channel] = nil
+        end
+        if next(Communicator.communicationChannels[side]) == nil then
+            Communicator.communicationChannels[side] = nil
+        end
+        return true
+    else
+        return false, string.format("No such channel to close on side %s, channel %d, protocol %s", side, channel, protocol)
+    end
+end
+
+function Communicator.closeAllChannels()
+    for side, channels in pairs(Communicator.communicationChannels) do
+        for channel, protocols in pairs(channels) do
+            for protocol, instance in pairs(protocols) do
+                instance.modem.close(channel)
+            end
+        end
+    end
+    Communicator.communicationChannels = {}
+end
+
+function Communicator.saveSettings()
+    local settings = {}
+    for side, channels in pairs(Communicator.communicationChannels) do
+        for channel, protocols in pairs(channels) do
+            for protocol, instance in pairs(protocols) do
+                table.insert(settings, {
+                    side = side,
+                    channel = channel,
+                    protocol = protocol,
+                    secret = instance.secret
+                })
+            end
+        end
+    end
+    return OSUtils.saveTable("communicator_settings.dat", settings)
+end
+
+function Communicator.loadSettings()
+    local settings = OSUtils.loadTable("communicator_settings.dat")
+    if not settings or #settings == 0 then
+        Logger.warn("No communicator settings found.")
+        return false
+    end
+    for _, setting in ipairs(settings) do
+        local side = setting.side
+        local channel = setting.channel
+        local protocol = setting.protocol
+        local secret = setting.secret
+        local channelInstance, err = Communicator.open(side, channel, protocol, secret)
+        if not channelInstance then
+            Logger.error("Failed to open communication channel: " .. err)
+        end
+    end
+    return true
+end
+
+function Communicator.getSettings()
+    local settings = {}
+    for side, channels in pairs(Communicator.communicationChannels) do
+        for channel, protocols in pairs(channels) do
+            for protocol, instance in pairs(protocols) do
+                table.insert(settings, {
+                    side = side,
+                    channel = channel,
+                    protocol = protocol,
+                    secret = instance.secret
+                })
+            end
+        end
+    end
+    return settings
+end
+
+
+function Communicator.getOpenChannels()
+    local openChannels = {}
+    for side, channels in pairs(Communicator.communicationChannels) do
+        for channel, protocols in pairs(channels) do
+            for protocol, _ in pairs(protocols) do
+                table.insert(openChannels, Communicator.communicationChannels[side][channel][protocol])
+            end
+        end
+    end
+    return openChannels
+end
+
+
+
+return Communicator
+
+ end
+modules["programs.command.CommandLine"] = function(...) local CommandLine = {}
+CommandLine.__index = CommandLine
+
+-- Helper function to filter suggestions and return only the untyped part
+function CommandLine.filterSuggestions(candidates, partial)
+    local filtered = {}
+    partial = partial or ""
+    local partialLower = string.lower(partial)
+    
+    for _, candidate in ipairs(candidates) do
+        local candidateLower = string.lower(candidate)
+        if candidateLower:find(partialLower, 1, true) == 1 then
+            -- Return only the part that hasn't been typed yet
+            local remaining = candidate:sub(#partial + 1)
+            if remaining ~= "" then
+                table.insert(filtered, remaining)
+            end
+        end
+    end
+    
+    return filtered
+end
+
+function CommandLine:new(suffix)
+    local instance = setmetatable({}, CommandLine)
+    instance.suffix = suffix or "> "
+    instance.commands = {
+        help = {
+            name = "help",
+            description = "Display available commands",
+            func = function(input)
+                print("Available commands:")
+                for cmdName, cmd in pairs(instance.commands) do
+                    print(string.format(" - %s: %s", cmdName, cmd.description))
+                end
+            end
+        }
+    }
+    return instance
+end
+
+local getUserInputCommandName = function(input)
+    local firstSpace = string.find(input, " ")
+    if firstSpace then
+        return string.sub(input, 1, firstSpace - 1), true
+    else
+        return input, false
+    end
+end
+
+local getCommands = function(commandLine, commandName)
+    return commandLine.commands[commandName]
+end
+
+local getCommandSuggestion = function(commandLine, text)
+    local suggestions = {}
+    local commandName, isCompleted = getUserInputCommandName(text)
+    if isCompleted then
+        local command = getCommands(commandLine, commandName)
+        if command and command.complete then
+            local argsText = string.sub(text, #commandName + 2)
+            suggestions = command.complete(argsText) or {}
+        end
+    else
+        -- Collect all matching command names
+        local candidates = {}
+        for cmdName, cmd in pairs(commandLine.commands) do
+            if cmdName:find(commandName) == 1 then
+                table.insert(candidates, cmdName)
+            end
+        end
+        -- Use filterSuggestions to return only the untyped part
+        suggestions = CommandLine.filterSuggestions(candidates, commandName)
+    end
+    return suggestions
+end
+
+-- Calculate Levenshtein distance between two strings
+local function levenshteinDistance(str1, str2)
+    local len1, len2 = #str1, #str2
+    local matrix = {}
+    
+    -- Initialize matrix
+    for i = 0, len1 do
+        matrix[i] = {}
+        matrix[i][0] = i
+    end
+    for j = 0, len2 do
+        matrix[0][j] = j
+    end
+    
+    -- Fill matrix
+    for i = 1, len1 do
+        for j = 1, len2 do
+            local cost = (str1:sub(i, i) == str2:sub(j, j)) and 0 or 1
+            matrix[i][j] = math.min(
+                matrix[i-1][j] + 1,      -- deletion
+                matrix[i][j-1] + 1,      -- insertion
+                matrix[i-1][j-1] + cost  -- substitution
+            )
+        end
+    end
+    
+    return matrix[len1][len2]
+end
+
+local function findClosestCommand(commandLine, inputCommand)
+    local closestCommand = nil
+    local minDistance = math.huge
+    local maxDistance = 3  -- Only suggest if distance is 3 or less
+    
+    for cmdName, cmd in pairs(commandLine.commands) do
+        local distance = levenshteinDistance(inputCommand:lower(), cmdName:lower())
+        if distance < minDistance and distance <= maxDistance then
+            minDistance = distance
+            closestCommand = cmdName
+        end
+    end
+    
+    return closestCommand
+end
+
+function CommandLine:addCommand(cmdName, description, cmdFunc, completeFunc)
+    self.commands[cmdName] = {
+        name = cmdName,
+        description = description,
+        func = cmdFunc,
+        complete = completeFunc
+    }
+    return self
+end
+
+function CommandLine:run()
+    write(self.suffix)
+    local commandLineText = read(nil, nil, function(text)
+        return getCommandSuggestion(self, text)
+    end)
+    local commandName, isCompleted = getUserInputCommandName(commandLineText)
+    local command = getCommands(self, commandName)
+    if command then
+        return command.func(commandLineText)
+    else
+        local closestCommand = findClosestCommand(self, commandName)
+        if closestCommand then
+            print("Unknown command: " .. commandName)
+            print("Do you mean \"" .. closestCommand .. "\"?")
+        else
+            print("Unknown command: " .. commandName)
+        end
+    end
+end
+
+function CommandLine:changeSuffix(newSuffix)
+    self.suffix = newSuffix
+end
+
+return CommandLine end
+modules["utils.OSUtils"] = function(...) local Logger = require("utils.Logger")
+
+local OSUtils = {}
+
+OSUtils.SIDES = {
+    TOP = "top",
+    BOTTOM = "bottom",
+    LEFT = "left",
+    RIGHT = "right",
+    FRONT = "front",
+    BACK = "back"
+}
+
+OSUtils.timestampBaseIdGenerate = function()
+    local timestamp = os.epoch("utc")
+    local random = math.random(1000, 9999)
+    return tostring(timestamp) .. "-" .. tostring(random)
+end
+
+OSUtils.loadTable = function(file_name)
+    local obj = {}
+    local file = fs.open(file_name, "r")
+    if file then
+        local text = file.readAll()
+        obj = textutils.unserialize(text)
+        file.close()
+    else
+        return nil
+    end
+    return obj
+end
+
+OSUtils.saveTable = function(file_name, obj)
+    local serialized
+    local success, err = xpcall(function()
+        serialized = textutils.serialize(obj)
+    end, function(error)
+        return error
+    end)
+    
+    if not success then
+        Logger.error("Failed to serialize table for {}, error: {}", file_name, err)
+        return
+    end
+    
+    local file = fs.open(file_name, "w")
+    if file then
+        file.write(serialized)
+        file.close()
+    else
+        Logger.error("Failed to open file for writing: {}", file_name)
+    end
+end
+
+return OSUtils end
+modules["programs.common.Trigger"] = function(...) local Logger = require("utils.Logger")
+local Triggers = {}
+
+Triggers.TYPES = {
+    FLUID_COUNT = "fluid_count",
+    ITEM_COUNT = "item_count",
+    REDSTONE_SIGNAL = "redstone_signal",
+}
+
+Triggers.CONDITION_TYPES = {
+    COUNT_GREATER = "count_greater",
+    COUNT_LESS = "count_less",
+    COUNT_EQUAL = "count_equal"
+}
+
+Triggers.eval = function(triggerStatement, getFn)
+    -- If no trigger statement or invalid structure, return true (no restrictions)
+    if not triggerStatement or not triggerStatement.children then
+        return true
+    end
+    
+    for _, childNode in ipairs(triggerStatement.children) do
+        if Triggers.evalTriggerNode(childNode, getFn) then
+            return true
+        end
+    end
+    
+    return false -- All children passed
+end
+
+-- Evaluate a single trigger node and its children
+Triggers.evalTriggerNode = function(node, getFn)
+    if not node or not node.data then
+        return true -- Invalid node, skip
+    end
+    
+    local data = node.data
+    local nodeResult = false
+    
+    -- Evaluate current node based on its trigger type
+    if data.triggerType == Triggers.TYPES.ITEM_COUNT then
+        nodeResult = Triggers.evalItemCountTrigger(data, getFn)
+    elseif data.triggerType == Triggers.TYPES.FLUID_COUNT then
+        nodeResult = Triggers.evalFluidCountTrigger(data, getFn)
+    elseif data.triggerType == Triggers.TYPES.REDSTONE_SIGNAL then
+        nodeResult = Triggers.evalRedstoneSignalTrigger(data, getFn)
+    else
+        return true -- Unknown type, skip
+    end
+    
+    -- Evaluate children with OR logic
+    local childrenResult = true
+    if node.children and #node.children > 0 then
+        childrenResult = false -- Start with false for OR logic
+        for _, childNode in ipairs(node.children) do
+            if Triggers.evalTriggerNode(childNode, getFn) then
+                childrenResult = true -- If any child passes, children pass (OR logic)
+                break
+            end
+        end
+    end
+    
+    -- Return AND of parent node and children result
+    return nodeResult and childrenResult
+end
+
+-- Evaluate ITEM_COUNT trigger using getFn
+Triggers.evalItemCountTrigger = function(data, getFn)
+    if not data.itemName or not getFn then
+        return false
+    end
+    
+    local currentCount = 0
+    local item = getFn("item", data.itemName)
+    if item then
+        currentCount = item.count or 0
+    end
+    return Triggers.evalCondition(currentCount, data.amount, data.triggerConditionType)
+end
+
+-- Evaluate FLUID_COUNT trigger using getFn
+Triggers.evalFluidCountTrigger = function(data, getFn)
+    if not data.itemName or not getFn then
+        return false
+    end
+
+    local currentAmount = 0
+    local fluid = getFn("fluid", data.itemName)
+    if fluid then
+        currentAmount = fluid.amount or 0
+    end
+    return Triggers.evalCondition(currentAmount, data.amount, data.triggerConditionType)
+end
+
+-- Evaluate REDSTONE_SIGNAL trigger (placeholder implementation)
+Triggers.evalRedstoneSignalTrigger = function(data, getFn)
+    -- TODO: Implement redstone signal evaluation
+    -- For now, always return true as placeholder
+    return true
+end
+
+-- Helper function to evaluate condition based on condition type
+Triggers.evalCondition = function(currentValue, targetValue, conditionType)
+    if conditionType == Triggers.CONDITION_TYPES.COUNT_GREATER then
+        return currentValue > targetValue
+    elseif conditionType == Triggers.CONDITION_TYPES.COUNT_LESS then
+        return currentValue < targetValue
+    elseif conditionType == Triggers.CONDITION_TYPES.COUNT_EQUAL then
+        return currentValue == targetValue
+    else
+        return false
+    end
+end
+
+return Triggers end
+modules["wrapper.PeripheralWrapper"] = function(...) local Logger = require("utils.Logger")
+
+local PeripheralWrapper = {}
+
+local TYPES = {
+    DEFAULT_INVENTORY = 1,
+    UNLIMITED_PERIPHERAL_INVENTORY = 2,
+    TANK = 3,
+    REDSTONE = 4,
+}
+
+PeripheralWrapper.SIDES = {
+    "top",
+    "bottom",
+    "left",
+    "right",
+    "front",
+    "back"
+}
+
+PeripheralWrapper.loadedPeripherals = {}
+
+PeripheralWrapper.wrap = function(peripheralName)
+    if peripheralName == nil or peripheralName == "" then
+        error("Peripheral name cannot be nil or empty")
+    end
+
+    local wrappedPeripheral = peripheral.wrap(peripheralName)
+    PeripheralWrapper.addBaseMethods(wrappedPeripheral, peripheralName)
+
+    if wrappedPeripheral == nil then
+        error("Failed to wrap peripheral '" .. peripheralName .. "'")
+    end
+
+    if wrappedPeripheral.isInventory() then
+        PeripheralWrapper.addInventoryMethods(wrappedPeripheral)
+    end
+
+    if wrappedPeripheral.isTank() then
+        PeripheralWrapper.addTankMethods(wrappedPeripheral)
+    end
+
+    if wrappedPeripheral.isRedstone() then
+        PeripheralWrapper.addRedstoneMethods(wrappedPeripheral)
+    end
+
+    return wrappedPeripheral
+end
+
+
+PeripheralWrapper.addBaseMethods = function(peripheral, peripheralName)
+    if peripheral == nil then
+        error("Peripheral cannot be nil")
+    end
+
+    if peripheral.getTypes == nil then
+        peripheral._types = PeripheralWrapper.getTypes(peripheral)
+        peripheral.getTypes = function()
+            return peripheral._types
+        end
+    end
+
+    if peripheral.isTypeOf == nil then
+        peripheral.isTypeOf = function(type)
+            return PeripheralWrapper.isTypeOf(peripheral, type)
+        end
+    end
+
+    peripheral._id = peripheralName
+    peripheral.getName = function()
+        return peripheral._id
+    end
+
+    peripheral.getId = function()
+        return peripheral._id
+    end
+
+    peripheral._isInventory = PeripheralWrapper.isInventory(peripheral)
+    peripheral.isInventory = function()
+        return peripheral._isInventory
+    end
+
+    peripheral._isTank = PeripheralWrapper.isTank(peripheral)
+    peripheral.isTank = function()
+        return peripheral._isTank
+    end
+
+    peripheral._isRedstone = PeripheralWrapper.isRedstone(peripheral)
+    peripheral.isRedstone = function()
+        return peripheral._isRedstone
+    end
+
+    peripheral._isDefaultInventory = PeripheralWrapper.isTypeOf(peripheral, TYPES.DEFAULT_INVENTORY)
+    peripheral.isDefaultInventory = function()
+        return peripheral._isDefaultInventory
+    end
+
+    peripheral._isUnlimitedPeripheralInventory = PeripheralWrapper.isTypeOf(peripheral,
+        TYPES.UNLIMITED_PERIPHERAL_INVENTORY)
+    peripheral.isUnlimitedPeripheralInventory = function()
+        return peripheral._isUnlimitedPeripheralInventory
+    end
+end
+
+
+PeripheralWrapper.addInventoryMethods = function(peripheral)
+    -- add for DEFAULT_INVENTORY
+    if PeripheralWrapper.isTypeOf(peripheral, TYPES.DEFAULT_INVENTORY) then
+        -- add getItems method
+        peripheral.getItems = function()
+            local itemsTable = {}
+            local items = {}
+            for _, item in pairs(peripheral.list()) do
+                if itemsTable[item.name] == nil then
+                    itemsTable[item.name] = {
+                        name = item.name,
+                        count = 0,
+                    }
+                    table.insert(items, itemsTable[item.name])
+                end
+                itemsTable[item.name].count = itemsTable[item.name].count + item.count
+            end
+            return items, itemsTable
+        end
+
+        peripheral.getItem = function(item_name)
+            local _, itemsTable = peripheral.getItems()
+            if itemsTable[item_name] then
+                return itemsTable[item_name]
+            end
+            return nil
+        end
+
+        -- add transferItemTo method (renamed from pushItems)
+        peripheral.transferItemTo = function(toPeripheral, itemName, amount)
+            if toPeripheral.isDefaultInventory() then
+                local size = peripheral.size()
+                local totalTransferred = 0
+                for slot = 1, size do
+                    local item = peripheral.getItemDetail(slot)
+                    if item ~= nil and item.name == itemName then
+                        local toTransfer = math.min(item.count, amount)
+                        local transferred = peripheral.pushItems(toPeripheral.getName(), slot, toTransfer)
+                        if transferred == 0 then
+                            return totalTransferred
+                        end
+                        totalTransferred = totalTransferred + transferred
+                        amount = amount - transferred
+                    end
+                    if amount <= 0 then
+                        return totalTransferred
+                    end
+                end
+                return totalTransferred
+            elseif toPeripheral.isUnlimitedPeripheralInventory() then
+                local totalTransferred = 0
+                while totalTransferred < amount do
+                    local transferred = toPeripheral.pullItem(peripheral.getName(), itemName, amount - totalTransferred)
+                    if transferred == 0 then
+                        return totalTransferred
+                    end
+                    totalTransferred = totalTransferred + transferred
+                end
+                return totalTransferred
+            end
+            return 0
+        end
+
+        -- add transferItemFrom method (renamed from pullItems)
+        peripheral.transferItemFrom = function(fromPeripheral, itemName, amount)
+            if fromPeripheral.isDefaultInventory() then
+                local size = fromPeripheral.size()
+                local totalTransferred = 0
+                for slot = 1, size do
+                    local item = fromPeripheral.getItemDetail(slot)
+                    if item ~= nil and item.name == itemName then
+                        local transferred = peripheral.pullItems(fromPeripheral.getName(), slot, amount)
+                        if transferred == 0 then
+                            return totalTransferred
+                        end
+                        totalTransferred = totalTransferred + transferred
+                        amount = amount - transferred
+                    end
+                    if amount <= 0 then
+                        return totalTransferred
+                    end
+                end
+                return totalTransferred
+            elseif fromPeripheral.isUnlimitedPeripheralInventory() then
+                local totalTransferred = 0
+                while totalTransferred < amount do
+                    local transferred = fromPeripheral.pushItem(peripheral.getName(), itemName, amount - totalTransferred)
+                    if transferred == 0 then
+                        return totalTransferred
+                    end
+                    totalTransferred = totalTransferred + transferred
+                end
+                return totalTransferred
+            end
+        end
+        -- for UNLIMITED_PERIPHERAL_INVENTORY
+    elseif peripheral.isUnlimitedPeripheralInventory() then
+        if string.find(peripheral.getName(), "crafting_storage") or peripheral.getPatternsFor ~= nil then
+            peripheral.getItems = function()
+                local items = peripheral.items()
+                for _, item in ipairs(items) do
+                    item.displayName = item.name
+                    item.name = item.technicalName
+                end
+                return items
+            end
+
+            peripheral.getItemFinder = function(item_name)
+                local cacheIndex = nil
+                return function()
+                    local items = peripheral.items()
+                    if not items or #items == 0 then
+                        return nil -- No items in the container
+                    end
+                    if cacheIndex ~= nil and items[cacheIndex] and items[cacheIndex].technicalName == item_name then
+                        local item, index = items[cacheIndex], cacheIndex
+                        item.displayName = item.name
+                        item.name = item.technicalName
+                        return item, index
+                    end
+                    -- If cache is invalid or not set, find the item in the list again
+                    for index, item in ipairs(items) do
+                        if item.technicalName == item_name then
+                            cacheIndex = index -- Cache the index for future calls
+                            item.displayName = item.name
+                            item.name = item.technicalName
+                            return item, cacheIndex -- Return the found item
+                        end
+                    end
+                    return nil
+                end
+            end
+        else
+            peripheral.getItems = function()
+                return peripheral.items()
+            end
+
+            peripheral.getItemFinder = function(item_name)
+                local cacheIndex = nil
+                return function()
+                    local items = peripheral.items()
+                    if not items or #items == 0 then
+                        return nil -- No items in the container
+                    end
+                    if cacheIndex ~= nil and items[cacheIndex] and items[cacheIndex].name == item_name then
+                        local item, index = items[cacheIndex], cacheIndex
+                        return item, index
+                    end
+                    -- If cache is invalid or not set, find the item in the list again
+                    for index, item in ipairs(items) do
+                        if item.name == item_name then
+                            cacheIndex = index      -- Cache the index for future calls
+                            return item, cacheIndex -- Return the found item
+                        end
+                    end
+                    return nil
+                end
+            end
+        end
+
+        peripheral._itemFinders = {}
+        peripheral.getItem = function(item_name)
+            if peripheral._itemFinders[item_name] == nil then
+                peripheral._itemFinders[item_name] = peripheral.getItemFinder(item_name)
+            end
+            return peripheral._itemFinders[item_name]()
+        end
+
+        peripheral.transferItemTo = function(toPeripheral, itemName, amount)
+            local totalTransferred = 0
+            while totalTransferred < amount do
+                local transferred = peripheral.pushItem(toPeripheral.getName(), itemName, amount - totalTransferred)
+                if transferred == 0 then
+                    return totalTransferred
+                end
+                totalTransferred = totalTransferred + transferred
+            end
+            return totalTransferred
+        end
+
+        peripheral.transferItemFrom = function(fromPeripheral, itemName, amount)
+            local totalTransferred = 0
+            while totalTransferred < amount do
+                local transferred = peripheral.pullItem(fromPeripheral.getName(), itemName, amount - totalTransferred)
+                if transferred == 0 then
+                    return totalTransferred
+                end
+                totalTransferred = totalTransferred + transferred
+            end
+            return totalTransferred
+        end
+    else
+        error("Peripheral " ..
+            peripheral.getName() ..
+            " types " .. table.concat(PeripheralWrapper.getTypes(peripheral), ", ") .. " is not an inventory")
+    end
+end
+
+PeripheralWrapper.addTankMethods = function(peripheral)
+    if peripheral == nil then
+        error("Peripheral cannot be nil")
+    end
+
+    if not PeripheralWrapper.isTank(peripheral) then
+        error("Peripheral is not a tank")
+    end
+
+    peripheral.getFluids = function()
+        local fluidTable = {}
+        local fluids = {}
+        for _, tank in pairs(peripheral.tanks()) do
+            if fluidTable[tank.name] == nil then
+                fluidTable[tank.name] = {
+                    name = tank.name,
+                    amount = 0,
+                }
+                table.insert(fluids, fluidTable[tank.name])
+            end
+            fluidTable[tank.name].amount = fluidTable[tank.name].amount + tank.amount
+        end
+        return fluids
+    end
+
+    peripheral.getFluidFinder = function(fluid_name)
+        local cacheIndex = nil
+        return function()
+            local fluids = peripheral.tanks()
+            if not fluids or #fluids == 0 then
+                return nil -- No items in the container
+            end
+            if cacheIndex ~= nil and fluids[cacheIndex] and fluids[cacheIndex].name == fluid_name then
+                return fluids[cacheIndex], cacheIndex
+            end
+            -- If cache is invalid or not set, find the item in the list again
+            for index, fluid in ipairs(fluids) do
+                if fluid.name == fluid_name then
+                    cacheIndex = index    -- Cache the index for future calls
+                    return fluid, cacheIndex -- Return the found item
+                end
+            end
+            return nil
+        end
+    end
+
+    peripheral._fluidFinders = {}
+    peripheral.getFluid = function(fluidName)
+        if peripheral._fluidFinders[fluidName] == nil then
+            peripheral._fluidFinders[fluidName] = peripheral.getFluidFinder(fluidName)
+        end
+        return peripheral._fluidFinders[fluidName]()
+    end
+
+    peripheral.transferFluidTo = function(toPeripheral, fluidName, amount)
+        if toPeripheral.isTank() == false then
+            error(string.format("Peripheral '%s' is not a tank", toPeripheral.getName()))
+        end
+        local totalTransferred = 0
+        while totalTransferred < amount do
+            local transferred = peripheral.pushFluid(toPeripheral.getName(), amount - totalTransferred, fluidName)
+            if transferred == 0 then
+                return totalTransferred
+            end
+            totalTransferred = totalTransferred + transferred
+        end
+        return totalTransferred
+    end
+
+    peripheral.transferFluidFrom = function(fromPeripheral, fluidName, amount)
+        if fromPeripheral.isTank() == false then
+            error(string.format("Peripheral '%s' is not a tank", fromPeripheral.getName()))
+        end
+        local totalTransferred = 0
+        while totalTransferred < amount do
+            local transferred = peripheral.pullFluid(fromPeripheral.getName(), amount - totalTransferred, fluidName)
+            if transferred == 0 then
+                return totalTransferred
+            end
+            totalTransferred = totalTransferred + transferred
+        end
+        return totalTransferred
+    end
+end
+
+PeripheralWrapper.addRedstoneMethods = function(peripheral)
+    if peripheral == nil then
+        error("Peripheral cannot be nil")
+    end
+
+    if not PeripheralWrapper.isRedstone(peripheral) then
+        error("Peripheral is not a redstone peripheral")
+    end
+
+    peripheral.setOutputSignals = function(isEmited, ...)
+        local sides = {...}
+         if not sides or #sides == 0 then
+            sides = PeripheralWrapper.SIDES
+        end
+        for _, side in ipairs(sides) do
+            if peripheral.getOutput(side) ~= isEmited then
+                peripheral.setOutput(side, isEmited)
+            end
+        end
+    end
+
+    peripheral.getInputSignals = function(...)
+        local sides = {...}
+        if not sides or #sides == 0 then
+            sides = PeripheralWrapper.SIDES
+        end
+        for _, side in ipairs(sides) do
+            if peripheral.getInput(side) then
+                return true
+            end
+        end
+        return false
+    end
+
+    peripheral.getOutputSignals = function(...)
+        local sides = {...}
+        if not sides or #sides == 0 then
+            sides = PeripheralWrapper.SIDES
+        end
+        local signals = {}
+        for _, side in ipairs(sides) do
+            signals[side] = peripheral.getOutput(side)
+        end
+        return signals
+    end
+
+
+end
+
+PeripheralWrapper.getTypes = function(peripheral)
+    if peripheral._types ~= nil then
+        return peripheral._types
+    end
+    local types = {}
+    if peripheral.list ~= nil then
+        table.insert(types, TYPES.DEFAULT_INVENTORY)
+    end
+    if peripheral.items ~= nil then
+        table.insert(types, TYPES.UNLIMITED_PERIPHERAL_INVENTORY)
+    end
+    if peripheral.tanks ~= nil then
+        table.insert(types, TYPES.TANK)
+    end
+    if peripheral.getInput ~= nil then
+        table.insert(types, TYPES.REDSTONE)
+    end
+    peripheral._types = types
+    return types
+end
+
+PeripheralWrapper.isInventory = function(peripheral)
+    local types = PeripheralWrapper.getTypes(peripheral)
+    if peripheral._isInventory ~= nil then
+        return peripheral._isInventory
+    end
+    for _, t in ipairs(types) do
+        if t == TYPES.DEFAULT_INVENTORY or t == TYPES.UNLIMITED_PERIPHERAL_INVENTORY then
+            peripheral._isInventory = true
+            return true
+        end
+    end
+    peripheral._isInventory = false
+    return false
+end
+
+PeripheralWrapper.isTank = function(peripheral)
+    local types = PeripheralWrapper.getTypes(peripheral)
+    if peripheral._isTank ~= nil then
+        return peripheral._isTank
+    end
+    for _, t in ipairs(types) do
+        if t == TYPES.TANK then
+            peripheral._isTank = true
+            return true
+        end
+    end
+    peripheral._isTank = false
+    return false
+end
+
+PeripheralWrapper.isRedstone = function(peripheral)
+    local types = PeripheralWrapper.getTypes(peripheral)
+    if peripheral._isRedstone ~= nil then
+        return peripheral._isRedstone
+    end
+    for _, t in ipairs(types) do
+        if t == TYPES.REDSTONE then
+            peripheral._isRedstone = true
+            return true
+        end
+    end
+    peripheral._isRedstone = false
+    return false
+end
+
+PeripheralWrapper.isTypeOf = function(peripheral, type)
+    if peripheral == nil then
+        error("Peripheral cannot be nil")
+    end
+    if type == nil then
+        error("Type cannot be nil")
+    end
+    local types = PeripheralWrapper.getTypes(peripheral)
+    for _, t in ipairs(types) do
+        if t == type then
+            return true
+        end
+    end
+    return false
+end
+
+PeripheralWrapper.addPeripherals = function(peripheralName)
+    if peripheralName == nil then
+        error("Peripheral name cannot be nil")
+    end
+    local p = PeripheralWrapper.wrap(peripheralName)
+    if p ~= nil then
+        PeripheralWrapper.loadedPeripherals[peripheralName] = p
+    end
+end
+
+PeripheralWrapper.reloadAll = function()
+    PeripheralWrapper.loadedPeripherals = {}
+    for _, name in ipairs(peripheral.getNames()) do
+        Logger.debug("Loading peripheral: {}", name)
+        PeripheralWrapper.addPeripherals(name)
+    end
+end
+
+PeripheralWrapper.getAll = function()
+    if PeripheralWrapper.loadedPeripherals == nil then
+        PeripheralWrapper.reloadAll()
+    end
+    return PeripheralWrapper.loadedPeripherals
+end
+
+PeripheralWrapper.getByName = function(peripheralName)
+    if peripheralName == nil then
+        error("Peripheral name cannot be nil")
+    end
+    if PeripheralWrapper.loadedPeripherals[peripheralName] == nil then
+        PeripheralWrapper.addPeripherals(peripheralName)
+    end
+    return PeripheralWrapper.loadedPeripherals[peripheralName]
+end
+
+PeripheralWrapper.getByTypes = function(types)
+    if types == nil or #types == 0 then
+        error("Types cannot be nil or empty")
+    end
+    local matchedPeripherals = {}
+    for name, peripheral in pairs(PeripheralWrapper.getAll()) do
+        for _, t in ipairs(types) do
+            if PeripheralWrapper.isTypeOf(peripheral, t) then
+                matchedPeripherals[name] = peripheral
+                break
+            end
+        end
+    end
+    return matchedPeripherals
+end
+
+PeripheralWrapper.getAllPeripheralsNameContains = function(partOfName)
+    if partOfName == nil or partOfName == "" then
+        error("Part of name input cannot be nil or empty")
+    end
+    local matchedPeripherals = {}
+    for name, peripheral in pairs(PeripheralWrapper.getAll()) do
+        if string.find(name, partOfName) then
+            matchedPeripherals[name] = peripheral
+        end
+    end
+    return matchedPeripherals
+end
+
+return PeripheralWrapper
+ end
+modules["utils.TableUtils"] = function(...) local TableUtils = {}
+
+
+TableUtils.findInArray = function(array, predicate)
+    if array == nil or predicate == nil then
+        return nil
+    end
+    for i, v in ipairs(array) do
+        if predicate(v) then
+            return i  -- return index
+        end
+    end
+    return nil  -- not found
+end
+
+
+TableUtils.getLength = function(t)
+    if t == nil then
+        return 0
+    end
+    local count = 0
+    for _ in pairs(t) do
+        count = count + 1
+    end
+    return count
+end
+
+TableUtils.getAllKeyValueAsTreeString = function(t, indent, visited)
+    indent = indent or ""
+    visited = visited or {}
+
+    if visited[t] then
+        return indent .. "<circular reference>\n"
+    end
+    visited[t] = true
+
+    local result = indent .. "{\n"
+    for k, v in pairs(t) do
+        result = result .. indent .. "  [" .. tostring(k) .. "] = "
+        if type(v) == "table" then
+            result = result .. TableUtils.getAllKeyValueAsTreeString(v, indent .. "  ", visited)
+        elseif type(v) == "function" then
+            result = result .. "function\n"
+        else
+            result = result .. tostring(v) .. "\n"
+        end
+    end
+    result = result .. indent .. "}\n"
+    return result
+end
+
+
+return TableUtils
+ end
 return modules["programs.CaDepot"](...)
