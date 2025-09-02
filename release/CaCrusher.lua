@@ -2,182 +2,196 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CaCrusher"] = function(...) local _aa=require("utils.Logger")
-local aaa=require("programs.common.Communicator")local baa=require("programs.command.CommandLine")
-local caa=require("utils.OSUtils")local daa=require("programs.common.Trigger")
-local _ba=require("wrapper.PeripheralWrapper")local aba=require("utils.TableUtils")_aa.useDefault()
-_aa.currentLevel=_aa.levels.ERROR;local bba={...}local cba={}local dba={}
-local function _ca()
-local dab=caa.loadTable("cacrusher_recipes")if dab~=nil then cba=dab end end
-local function aca()caa.saveTable("cacrusher_recipes",cba)end
-local function bca()return caa.loadTable("cacrusher_communicator_config")end;local function cca(dab,_bb,abb)local bbb={side=dab,channel=_bb,secret=abb}
-caa.saveTable("cacrusher_communicator_config",bbb)end
-local function dca(dab)for _bb,abb in ipairs(cba)do if
-abb.name==dab then return abb end end;return nil end
-local function _da(dab)for _bb,abb in ipairs(cba)do
-if abb.name==dab then table.remove(cba,_bb)return true end end;return false end
-local function ada(dab,_bb,abb)_bb=_bb or 1;abb=abb or 5;if#dab==0 then print("No recipes found.")
-return end;local bbb=math.ceil(#dab/abb)local cbb=
-(_bb-1)*abb+1;local dbb=math.min(cbb+abb-1,#dab)
-print(string.format("=== Crusher Recipes (Page %d/%d) ===",_bb,bbb))for i=cbb,dbb do local _cb=dab[i]
-print(string.format("%d. %s",i,_cb.name or"Unnamed"))end
-if bbb>1 then
-print(string.format("Showing %d-%d of %d recipes",cbb,dbb,
-#dab))if _bb<bbb then
-print(string.format("Use 'list recipe local %d' for next page",_bb+1))end;if _bb>1 then
-print(string.format("Use 'list recipe local %d' for previous page",
-_bb-1))end end end;_ca()
-local function bda()local dab=baa:new("cacrusher> ")
-dab:addCommand("list","List recipes",function(_bb)local abb={}for _cb in
-_bb:gmatch("%S+")do table.insert(abb,_cb)end;if#abb<3 then
-print("Usage: list recipe [remote|local] [page]")return end;local bbb=abb[2]local cbb=abb[3]local dbb=
-tonumber(abb[4])or 1;if bbb~="recipe"then
-print("Usage: list recipe [remote|local] [page]")return end
-if cbb=="local"then ada(cba,dbb)elseif cbb==
-"remote"then
-if#dba==0 then print("No remote recipes available.")return end;ada(dba,dbb)else
-print("Usage: list recipe [remote|local] [page]")end end,function(_bb)
-local abb={}
-for bbb in _bb:gmatch("%S+")do table.insert(abb,bbb)end
-if#abb==1 then local bbb=_bb:match("%S+$")or""local cbb={}if
-("recipe"):find(bbb,1,true)==1 then
-table.insert(cbb,("recipe"):sub(#bbb+1))end;return cbb elseif#abb==2 then
-local bbb=_bb:match("%S+$")or""local cbb={}local dbb={"remote","local"}for _cb,acb in ipairs(dbb)do
+modules["programs.CaCrusher"] = function(...) local aaa=require("utils.Logger")
+local baa=require("programs.common.Communicator")local caa=require("programs.command.CommandLine")
+local daa=require("utils.OSUtils")local _ba=require("programs.common.Trigger")
+local aba=require("wrapper.PeripheralWrapper")local bba=require("utils.TableUtils")aaa.useDefault()
+aaa.currentLevel=aaa.levels.ERROR;local cba={...}local dba={}local _ca={}
+local function aca()
+local abb=daa.loadTable("cacrusher_recipes")if abb~=nil then dba=abb end end
+local function bca()daa.saveTable("cacrusher_recipes",dba)end
+local function cca()return daa.loadTable("cacrusher_communicator_config")end;local function dca(abb,bbb,cbb)local dbb={side=abb,channel=bbb,secret=cbb}
+daa.saveTable("cacrusher_communicator_config",dbb)end
+local function _da(abb)local bbb={}
+for cbb,dbb in
+ipairs(dba)do if dbb.id then bbb[dbb.id]=cbb end end;for cbb,dbb in ipairs(abb)do
+if dbb.id then local _cb=bbb[dbb.id]if _cb then dba[_cb]=dbb end end end;bca()
+marker:init()end;local function ada(abb)
+for bbb,cbb in ipairs(dba)do if cbb.name==abb then return cbb end end;return nil end
+local function bda(abb)for bbb,cbb in ipairs(dba)do
 if
-acb:find(bbb,1,true)==1 then table.insert(cbb,acb:sub(#bbb+1))end end;return cbb end;return{}end)
-dab:addCommand("add","Add recipe(s) from remote",function(_bb)local abb={}for cbb in _bb:gmatch("%S+")do
-table.insert(abb,cbb)end
-if#abb<2 then
+cbb.name==abb then table.remove(dba,bbb)return true end end;return false end
+local function cda(abb,bbb,cbb)bbb=bbb or 1;cbb=cbb or 5;if#abb==0 then print("No recipes found.")
+return end;local dbb=math.ceil(#abb/cbb)local _cb=
+(bbb-1)*cbb+1;local acb=math.min(_cb+cbb-1,#abb)
+print(string.format("=== Crusher Recipes (Page %d/%d) ===",bbb,dbb))for i=_cb,acb do local bcb=abb[i]
+print(string.format("%d. %s",i,bcb.name or"Unnamed"))end
+if dbb>1 then
+print(string.format("Showing %d-%d of %d recipes",_cb,acb,
+#abb))if bbb<dbb then
+print(string.format("Use 'list recipe local %d' for next page",bbb+1))end;if bbb>1 then
+print(string.format("Use 'list recipe local %d' for previous page",
+bbb-1))end end end;aca()
+local function dda()local abb=caa:new("cacrusher> ")
+abb:addCommand("list","List recipes",function(bbb)local cbb={}for bcb in
+bbb:gmatch("%S+")do table.insert(cbb,bcb)end;if#cbb<3 then
+print("Usage: list recipe [remote|local] [page]")return end;local dbb=cbb[2]local _cb=cbb[3]local acb=
+tonumber(cbb[4])or 1;if dbb~="recipe"then
+print("Usage: list recipe [remote|local] [page]")return end
+if _cb=="local"then cda(dba,acb)elseif _cb==
+"remote"then
+if#_ca==0 then print("No remote recipes available.")return end;cda(_ca,acb)else
+print("Usage: list recipe [remote|local] [page]")end end,function(bbb)
+local cbb={}
+for dbb in bbb:gmatch("%S+")do table.insert(cbb,dbb)end
+if#cbb==1 then local dbb=bbb:match("%S+$")or""local _cb={}if
+("recipe"):find(dbb,1,true)==1 then
+table.insert(_cb,("recipe"):sub(#dbb+1))end;return _cb elseif#cbb==2 then
+local dbb=bbb:match("%S+$")or""local _cb={}local acb={"remote","local"}for bcb,ccb in ipairs(acb)do
+if
+ccb:find(dbb,1,true)==1 then table.insert(_cb,ccb:sub(#dbb+1))end end;return _cb end;return{}end)
+abb:addCommand("add","Add recipe(s) from remote",function(bbb)local cbb={}for _cb in bbb:gmatch("%S+")do
+table.insert(cbb,_cb)end
+if#cbb<2 then
 print("Usage: add [recipe_name] or add all")print("Examples:")
 print("  add 'Iron Ore Crushing'    - Add specific recipe")
 print("  add all                     - Add all remote recipes")
-print("Use 'list recipe remote' to see available recipes")return end;local bbb=table.concat(abb," ",2)
-if bbb=="all"then if#dba==0 then
+print("Use 'list recipe remote' to see available recipes")return end;local dbb=table.concat(cbb," ",2)
+if dbb=="all"then if#_ca==0 then
 print("No remote recipes available.")
-print("Use 'list recipe remote' to see available remote recipes")return end;local cbb=0
-local dbb=0
-for _cb,acb in ipairs(dba)do
-if not dca(acb.name)then
-local bcb={id=acb.id,name=acb.name,input=acb.input,output=acb.output,trigger=acb.trigger,maxMachine=acb.maxMachine or-1,inputItemRate=
-acb.inputItemRate or 1,inputFluidRate=acb.inputFluidRate or 1}table.insert(cba,bcb)cbb=cbb+1 else dbb=dbb+1 end end;aca()print("Batch add completed:")
-print("  Added: "..cbb.." recipes")if dbb>0 then
-print("  Skipped: "..dbb.." recipes (already exist)")end else local cbb=nil;for bcb,ccb in ipairs(dba)do if ccb.name==bbb then cbb=ccb
-break end end;if not cbb then print("Remote recipe '"..bbb..
+print("Use 'list recipe remote' to see available remote recipes")return end;local _cb=0
+local acb=0
+for bcb,ccb in ipairs(_ca)do
+if not ada(ccb.name)then
+local dcb={id=ccb.id,name=ccb.name,input=ccb.input,output=ccb.output,trigger=ccb.trigger}table.insert(dba,dcb)_cb=_cb+1 else acb=acb+1 end end;bca()print("Batch add completed:")
+print("  Added: ".._cb.." recipes")if acb>0 then
+print("  Skipped: "..acb.." recipes (already exist)")end else local _cb=nil;for dcb,_db in ipairs(_ca)do if _db.name==dbb then _cb=_db
+break end end;if not _cb then print("Remote recipe '"..dbb..
 "' not found")
 print("Use 'list recipe remote' to see available remote recipes")return end;if
-dca(bbb)then
-print("Recipe '"..bbb.."' already exists locally")return end
-local dbb={id=cbb.id,name=cbb.name,input=cbb.input,output=cbb.output,trigger=cbb.trigger,maxMachine=
-cbb.maxMachine or-1,inputItemRate=cbb.inputItemRate or 1,inputFluidRate=cbb.inputFluidRate or 1}table.insert(cba,dbb)aca()
-print("Recipe added from remote successfully:")print("  Name: "..dbb.name)
-local _cb=
+ada(dbb)then
+print("Recipe '"..dbb.."' already exists locally")return end
+local acb={id=_cb.id,name=_cb.name,input=_cb.input,output=_cb.output,trigger=_cb.trigger}table.insert(dba,acb)bca()
+print("Recipe added from remote successfully:")print("  Name: "..acb.name)
+local bcb=
 
-dbb.input and dbb.input.items and table.concat(dbb.input.items,", ")or"No input"
-local acb=dbb.output and dbb.output.items and
-table.concat(dbb.output.items,", ")or"No output"print("  Input: ".._cb)
-print("  Output: "..acb)end end,function(_bb)
-local abb={}
-for bbb in _bb:gmatch("%S+")do table.insert(abb,bbb)end
-if#abb>=1 then local bbb=_bb:match("%S+$")or""local cbb={}if
-("all"):find(bbb,1,true)==1 then
-table.insert(cbb,("all"):sub(#bbb+1))end;for dbb,_cb in ipairs(dba)do
-if _cb.name and
-_cb.name:lower():find(bbb:lower(),1,true)==1 then table.insert(cbb,_cb.name:sub(
-#bbb+1))end end
-return cbb end;return{}end)
-dab:addCommand("rm","Remove recipe",function(_bb)local abb={}
-for _cb in _bb:gmatch("%S+")do table.insert(abb,_cb)end
-if#abb<2 then print("Usage: rm [recipe_name]")return end;local bbb=table.concat(abb," ",2)local cbb=false;local dbb=nil;for _cb,acb in ipairs(cba)do
+acb.input and acb.input.items and table.concat(acb.input.items,", ")or"No input"
+local ccb=acb.output and acb.output.items and
+table.concat(acb.output.items,", ")or"No output"print("  Input: "..bcb)
+print("  Output: "..ccb)end end,function(bbb)
+local cbb={}
+for dbb in bbb:gmatch("%S+")do table.insert(cbb,dbb)end
+if#cbb>=1 then local dbb=bbb:match("%S+$")or""local _cb={}if
+("all"):find(dbb,1,true)==1 then
+table.insert(_cb,("all"):sub(#dbb+1))end;for acb,bcb in ipairs(_ca)do
+if bcb.name and
+bcb.name:lower():find(dbb:lower(),1,true)==1 then table.insert(_cb,bcb.name:sub(
+#dbb+1))end end
+return _cb end;return{}end)
+abb:addCommand("rm","Remove recipe",function(bbb)local cbb={}
+for bcb in bbb:gmatch("%S+")do table.insert(cbb,bcb)end
+if#cbb<2 then print("Usage: rm [recipe_name]")return end;local dbb=table.concat(cbb," ",2)local _cb=false;local acb=nil;for bcb,ccb in ipairs(dba)do
 if
-acb.name==bbb then dbb=acb;table.remove(cba,_cb)cbb=true;break end end;if cbb and dbb then aca()
+ccb.name==dbb then acb=ccb;table.remove(dba,bcb)_cb=true;break end end;if _cb and acb then bca()
 print(
-"Recipe removed: ".. (dbb.name or"Unknown"))else
-print("Recipe '"..bbb.."' not found")end end,function(_bb)
-local abb={}local bbb=_bb:match("%S+$")or""for cbb,dbb in ipairs(cba)do
-if dbb.name and
-dbb.name:lower():find(bbb:lower(),1,true)==1 then table.insert(abb,dbb.name:sub(
-#bbb+1))end end
-return abb end)
-dab:addCommand("reboot","Exit the program",function(_bb)print("Goodbye!")os.reboot()end)return dab end
-if bba~=nil and#bba>0 then local dab=bba[1]local _bb=tonumber(bba[2])
-local abb=bba[3]
-if dab and _bb and abb then cca(dab,_bb,abb)
-aaa.open(dab,_bb,"recipe",abb)
-local bbb=aaa.communicationChannels[dab][_bb]["recipe"]
-bbb.addMessageHandler("getRecipesRes",function(cbb,dbb,_cb)local acb=dbb or{}dba={}for bcb,ccb in ipairs(acb)do
-if ccb.name and
-ccb.name:lower():find("^crush")then table.insert(dba,ccb)end end end)
-parallel.waitForAll(aaa.listen,function()while next(dba)==nil do
-bbb.send("getRecipesReq","common")sleep(1)end end,function()
-local cbb=bda()while true do local dbb,_cb=pcall(function()cbb:run()end)
-if not dbb then print(
-"Error: "..tostring(_cb))end end end)end end;_ba.reloadAll()
-local cda=_ba.getAllPeripheralsNameContains("create:crushing_wheel")
-local dda=_ba.getAllPeripheralsNameContains("crafting_storage")local __b=dda[next(dda)]
-local a_b=_ba.getAllPeripheralsNameContains("redrouter")local b_b=a_b[next(a_b)]local c_b=aba.getLength(cda)
-local d_b={recipeOnCrusher={},crusherOnUse={},lostTrackCrushers={},init=function(dab)
-for _bb,abb in ipairs(cba)do if
-dab.recipeOnCrusher[abb.id]==nil then
-dab.recipeOnCrusher[abb.id]={recipe=abb,crushers={}}end end;for _bb,abb in pairs(cda)do
-if dab.crusherOnUse[abb.getId()]==nil then dab.crusherOnUse[abb.getId()]={onUse=false,crusher=abb,recipe=
-nil}end end end,set=function(dab,_bb,abb)
-local bbb=dab.crusherOnUse[abb.getId()]bbb.onUse=true;bbb.recipe=_bb
-local cbb=dab.recipeOnCrusher[_bb.id]cbb.crushers[abb.getId()]=abb
-cbb.count=(cbb.count or 0)+1 end,remove=function(dab,_bb)
-local abb=dab.crusherOnUse[_bb.getId()].recipe
-dab.crusherOnUse[_bb.getId()].onUse=false;dab.crusherOnUse[_bb.getId()].recipe=nil;dab.recipeOnCrusher[abb.id].crushers[_bb.getId()]=
+"Recipe removed: ".. (acb.name or"Unknown"))else
+print("Recipe '"..dbb.."' not found")end end,function(bbb)
+local cbb={}local dbb=bbb:match("%S+$")or""for _cb,acb in ipairs(dba)do
+if acb.name and
+acb.name:lower():find(dbb:lower(),1,true)==1 then table.insert(cbb,acb.name:sub(
+#dbb+1))end end
+return cbb end)
+abb:addCommand("reboot","Exit the program",function(bbb)print("Goodbye!")os.reboot()end)return abb end
+local __b=function()local abb=dda()while true do
+local bbb,cbb=pcall(function()abb:run()end)
+if not bbb then print("Error: "..tostring(cbb))end end end
+if cba~=nil and#cba>0 then local abb=cba[1]local bbb=tonumber(cba[2])
+local cbb=cba[3]
+if abb and bbb and cbb then dca(abb,bbb,cbb)
+baa.open(abb,bbb,"recipe",cbb)
+local dbb=baa.communicationChannels[abb][bbb]["recipe"]
+dbb.addMessageHandler("getRecipesRes",function(_cb,acb,bcb)local ccb=acb or{}_ca={}for dcb,_db in ipairs(ccb)do
+if _db.name and
+_db.name:lower():find("^crush")then table.insert(_ca,_db)end end end)
+parallel.waitForAll(baa.listen,function()while next(_ca)==nil do
+dbb.send("getRecipesReq","common")sleep(1)end end,__b)end end;aba.reloadAll()
+local a_b=aba.getAllPeripheralsNameContains("create:crushing_wheel")
+local b_b=aba.getAllPeripheralsNameContains("minecraft:barrel")
+local c_b=aba.getAllPeripheralsNameContains("crafting_storage")local d_b=next(c_b)local _ab=c_b[d_b]local aab=bba.getLength(a_b)
+local bab={recipeOnCrusher={},crusherOnUse={},lostTrackCrushers={},init=function(abb)
+for bbb,cbb in
+ipairs(dba)do abb.recipeOnCrusher[cbb.id]={recipe=cbb,crushers={}}end;for bbb,cbb in pairs(a_b)do
+abb.crusherOnUse[cbb.getId()]={onUse=false,crusher=cbb,recipe=nil}end end,set=function(abb,bbb,cbb)
+local dbb=abb.crusherOnUse[cbb.getId()]dbb.onUse=true;dbb.recipe=bbb
+local _cb=abb.recipeOnCrusher[bbb.id]_cb.crushers[cbb.getId()]=cbb
+_cb.count=(_cb.count or 0)+1 end,remove=function(abb,bbb)
+local cbb=abb.crusherOnUse[bbb.getId()].recipe
+abb.crusherOnUse[bbb.getId()].onUse=false;abb.crusherOnUse[bbb.getId()].recipe=nil;abb.recipeOnCrusher[cbb.id].crushers[bbb.getId()]=
 nil
-dab.recipeOnCrusher[abb.id].count=math.max(0,(
-dab.recipeOnCrusher[abb.id].count or 0)-1)end,isUsing=function(dab,_bb)return
-dab.crusherOnUse[_bb.getId()].onUse end,getOnUseCrusherCountForRecipe=function(dab,_bb)return
-dab.recipeOnCrusher[_bb.id].count or 0 end}
-local function _ab(dab)local _bb={}
-for abb,bbb in ipairs(cba)do if bbb.id then _bb[bbb.id]=abb end end;for abb,bbb in ipairs(dab)do
-if bbb.id then local cbb=_bb[bbb.id]if cbb then cba[cbb]=bbb end end end;aca()d_b:init()end
-local aab=function(dab)local _bb=__b.getItem(dab.input.items[1])if not _bb then
-return false end;return true end;d_b:init()
-local bab=function()
-while true do local dab={}
-for bbb,cbb in ipairs(cba)do
-if aab(cbb)and cbb.trigger then
-local dbb=daa.eval(cbb.trigger,function(_cb,acb)
-if _cb==
-"item"then return __b.getItem(acb)elseif _cb=="fluid"then return __b.getFluid(acb)end;return nil end)
-if dbb then table.insert(dab,cbb)else
-local _cb=d_b:getOnUseCrusherCountForRecipe(cbb)
-if _cb>0 then for acb,bcb in
-pairs(d_b.recipeOnCrusher[cbb.id].crushers)do d_b:remove(bcb)end end end end end;local _bb=1;local abb=#dab
-if abb>0 then _bb=0.2;b_b.setOutputSignals(true)local bbb=c_b
-local cbb=math.max(1,math.floor(
-bbb/math.max(1,abb)))
-for dbb,_cb in ipairs(dab)do local acb=d_b:getOnUseCrusherCountForRecipe(_cb)
-local bcb;if _cb.maxMachine and _cb.maxMachine>0 then
-bcb=math.min(cbb,_cb.maxMachine)else bcb=cbb end
-if acb>bcb then local ccb=acb-bcb
-for dcb,_db in
-pairs(d_b.recipeOnCrusher[_cb.id].crushers)do if ccb<=0 then break end;d_b:remove(_db)ccb=ccb-1 end;acb=d_b:getOnUseCrusherCountForRecipe(_cb)end
-if acb<bcb then local ccb=bcb-acb
-for dcb,_db in pairs(cda)do if ccb<=0 then break end;if
-not d_b:isUsing(_db)then d_b:set(_cb,_db)ccb=ccb-1 end end end
+abb.recipeOnCrusher[cbb.id].count=math.max(0,(
+abb.recipeOnCrusher[cbb.id].count or 1)-1)end,isUsing=function(abb,bbb)return
+abb.crusherOnUse[bbb.getId()].onUse end,isCompleted=function(abb,bbb)if
+not abb:isUsing(bbb)then return false end
+local cbb=abb.crusherOnUse[bbb.getId()].recipe
+if cbb.input and cbb.input.items then
+for dbb,_cb in ipairs(cbb.input.items)do
+local acb=bbb.getItem(_cb)if acb~=nil and acb.count>0 then return false end end end;return true end,isLoseTrack=function(abb,bbb)if
+
+not abb:isUsing(bbb)and#bbb.getItems()>0 then return true end;return false end,getOnUseCrusherCountForRecipe=function(abb,bbb)return
+abb.recipeOnCrusher[bbb.id].count or 0 end}bab:init()
+local cab=function()
+while true do local abb={}
+for cbb,dbb in ipairs(dba)do
+if dbb.trigger then
+local _cb=_ba.eval(dbb.trigger,function(acb,bcb)
+if acb=="item"then return
+_ab.getItem(bcb)elseif acb=="fluid"then return _ab.getFluid(bcb)end;return nil end)if _cb then table.insert(abb,dbb)end end end;local bbb=aab/math.max(1,#abb)
+for cbb,dbb in ipairs(abb)do
+local _cb=bab:getOnUseCrusherCountForRecipe(dbb)
+if _cb<bbb then local acb=bbb-_cb
+aaa.info("Need {} crushers for recipe {}",acb,dbb.name)
+for bcb,ccb in pairs(a_b)do if acb<=0 then break end
+if not bab:isUsing(ccb)then local dcb=0
+if dbb.input and
+dbb.input.items then
+for _db,adb in ipairs(dbb.input.items)do
+local bdb=_ab.transferItemTo(ccb,adb,64)dcb=dcb+bdb
+aaa.info("Transferred {} {} to crusher {}",bdb,adb,ccb.getId())end end
+if dcb<=0 then
+if bab:isLoseTrack(ccb)then
+aaa.info("Lost track of crusher {}",ccb.getId())table.insert(bab.lostTrackCrushers,ccb)end else bab:set(dbb,ccb)acb=acb-1 end else
+aaa.info("Crusher {} is already in use for recipe {}",ccb.getId(),dbb.name)end end end end;sleep(1)end end
+local dab=function()
+while true do
+for abb,bbb in pairs(bab.crusherOnUse)do local cbb=bbb.crusher
+if bab:isUsing(cbb)then
 if
-_cb.input and _cb.input.items and#_cb.input.items>0 then
-for ccb,dcb in pairs(d_b.recipeOnCrusher[_cb.id].crushers)do for _db,adb in
-ipairs(_cb.input.items)do local bdb=math.min(64,_cb.inputItemRate or 64)
-__b.transferItemTo(dcb,adb,bdb)end end end;bbb=bbb-bcb;abb=abb-1
-cbb=math.max(1,math.floor(bbb/math.max(1,abb)))end else b_b.setOutputSignals(false)end;sleep(_bb)end end
-local cab=function()local dab=bca()
+bab:isCompleted(cbb)then local dbb=bbb.recipe;local _cb=cbb.getItems()
+for acb,bcb in ipairs(_cb)do
+local ccb=_ab.transferItemFrom(cbb,bcb.name,bcb.count)
+if ccb>0 then
+aaa.error("Transferred completed item {} from crusher {}",bcb.name,cbb.getId())else
+aaa.error("Failed to transfer completed item {} from crusher {}",bcb.name,cbb.getId())end end;bab:remove(cbb)end end end
+for abb,bbb in ipairs(bab.lostTrackCrushers)do
+for cbb,dbb in ipairs(bbb.getItems())do
+local _cb=_ab.transferItemFrom(bbb,dbb.name,dbb.count)
+if _cb>0 then
+aaa.debug("Transferred lost item {} from crusher {}",dbb.name,bbb.getId())else
+aaa.error("Failed to transfer lost item {} from crusher {}",dbb.name,bbb.getId())end end end;sleep(1)end end
+local _bb=function()local abb=cca()
 if
-dab and dab.side and dab.channel and dab.secret then
-aaa.open(dab.side,dab.channel,"recipe",dab.secret)
-local _bb=aaa.communicationChannels[dab.side][dab.channel]["recipe"]
-_bb.addMessageHandler("getRecipesRes",function(abb,bbb,cbb)local dbb=bbb or{}dba={}for _cb,acb in ipairs(dbb)do
-if acb.name and
-acb.name:lower():find("^crush")then table.insert(dba,acb)end end end)
-_bb.addMessageHandler("update",function(abb,bbb,cbb)
-if bbb and type(bbb)=="table"then local dbb={}for _cb,acb in ipairs(bbb)do
-if acb.name and
-acb.name:lower():find("^crush")then table.insert(dbb,acb)end end
-if#dbb>0 then _ab(dbb)end end end)aaa.listen()end end;parallel.waitForAll(cab,bab) end
+abb and abb.side and abb.channel and abb.secret then
+print("Found saved communicator config, attempting to connect...")
+baa.open(abb.side,abb.channel,"recipe",abb.secret)
+local bbb=baa.communicationChannels[abb.side][abb.channel]["recipe"]
+bbb.addMessageHandler("getRecipesRes",function(cbb,dbb,_cb)local acb=dbb or{}_ca={}for bcb,ccb in ipairs(acb)do
+if ccb.name and
+ccb.name:lower():find("^crush")then table.insert(_ca,ccb)end end end)
+bbb.addMessageHandler("update",function(cbb,dbb,_cb)
+if dbb and type(dbb)=="table"then local acb={}for bcb,ccb in ipairs(dbb)do
+if ccb.name and
+ccb.name:lower():find("^crush")then table.insert(acb,ccb)end end
+if#acb>0 then _da(acb)end;bbb.send("getRecipesReq","common")end end)baa.listen()end end;parallel.waitForAll(_bb,cab,dab,__b) end
 modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
 b.useDefault=function()
 b.addPrintFunction(function(c,d,_a,aa)

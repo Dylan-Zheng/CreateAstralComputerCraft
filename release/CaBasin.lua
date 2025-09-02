@@ -2,276 +2,270 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CaBasin"] = function(...) local _ca=require("utils.Logger")
-local aca=require("programs.common.Communicator")local bca=require("programs.command.CommandLine")
-local cca=require("utils.OSUtils")local dca=require("programs.common.Trigger")
-local _da=require("wrapper.PeripheralWrapper")local ada=require("utils.TableUtils")
-local bda=require("programs.common.BlazeBurnerFeederFactory")local cda=require("programs.recipe.manager.StoreManager")
-_ca.useDefault()_ca.currentLevel=_ca.levels.ERROR;local dda={...}local __b={}local a_b={}local b_b={}
-local c_b={}local function d_b()local d_c=cca.loadTable("cabasin_groups")
-if d_c~=nil then __b=d_c end end;local function _ab()
-cca.saveTable("cabasin_groups",__b)end
-local function aab()
-local d_c=cca.loadTable("cabasin_recipe_links")if d_c~=nil then c_b=d_c end end
-local function bab()cca.saveTable("cabasin_recipe_links",c_b)end;d_b()aab()local function cab()local d_c=cca.loadTable("cabasin_recipes")if d_c~=nil then
-a_b=d_c end end;local function dab()
-cca.saveTable("cabasin_recipes",a_b)end;local function _bb()
-return cca.loadTable("cabasin_communicator_config")end
-local function abb(d_c,_ac,aac)
-local bac={side=d_c,channel=_ac,secret=aac}cca.saveTable("cabasin_communicator_config",bac)end
-local function bbb(d_c)local _ac={}local aac={}
-for bac,cac in ipairs(a_b)do if cac.id then _ac[cac.id]=bac end end
-for bac,cac in ipairs(d_c)do if cac.id then local dac=_ac[cac.id]
-if dac then local _bc=a_b[dac].name
-local abc=cac.name;if _bc~=abc then aac[_bc]=abc end;a_b[dac]=cac end end end;for bac,cac in pairs(aac)do
-if c_b[bac]then local dac=c_b[bac]c_b[bac]=nil;c_b[cac]=dac end end;dab()bab()end
-local cbb=function(d_c)local _ac={}
-for aac,bac in pairs(d_c)do
-for cac,dac in ipairs(bac.basins)do _ac[dac]=true end;for cac,dac in ipairs(bac.blazeBurners)do _ac[dac]=true end;for cac,dac in ipairs(
-bac.redstones or{})do _ac[dac]=true end end;return _ac end
-local dbb=function(d_c)local _ac=peripheral.getNames()local aac={}local bac={}local cac={}
-for dac,_bc in pairs(_ac)do
+modules["programs.CaBasin"] = function(...) local aca=require("utils.Logger")
+local bca=require("programs.common.Communicator")local cca=require("programs.command.CommandLine")
+local dca=require("utils.OSUtils")local _da=require("programs.common.Trigger")
+local ada=require("wrapper.PeripheralWrapper")local bda=require("utils.TableUtils")
+local cda=require("programs.common.BlazeBurnerFeederFactory")local dda=require("programs.recipe.manager.StoreManager")
+aca.useDefault()aca.currentLevel=aca.levels.ERROR;local __b={...}local a_b={}local b_b={}local c_b={}
+local d_b={}local function _ab()local aac=dca.loadTable("cabasin_groups")
+if aac~=nil then a_b=aac end end;local function aab()
+dca.saveTable("cabasin_groups",a_b)end
+local function bab()
+local aac=dca.loadTable("cabasin_recipe_links")if aac~=nil then d_b=aac end end
+local function cab()dca.saveTable("cabasin_recipe_links",d_b)end;_ab()bab()local function dab()local aac=dca.loadTable("cabasin_recipes")if aac~=nil then
+b_b=aac end end;local function _bb()
+dca.saveTable("cabasin_recipes",b_b)end;local function abb()
+return dca.loadTable("cabasin_communicator_config")end
+local function bbb(aac,bac,cac)
+local dac={side=aac,channel=bac,secret=cac}dca.saveTable("cabasin_communicator_config",dac)end
+local function cbb(aac)local bac={}
+for cac,dac in ipairs(b_b)do if dac.id then bac[dac.id]=cac end end;for cac,dac in ipairs(aac)do
+if dac.id then local _bc=bac[dac.id]if _bc then b_b[_bc]=dac end end end;_bb()end
+local dbb=function(aac)local bac={}
+for cac,dac in pairs(aac)do
+for _bc,abc in ipairs(dac.basins)do bac[abc]=true end;for _bc,abc in ipairs(dac.blazeBurners)do bac[abc]=true end;for _bc,abc in ipairs(
+dac.redstones or{})do bac[abc]=true end end;return bac end
+local _cb=function(aac)local bac=peripheral.getNames()local cac={}local dac={}local _bc={}
+for abc,bbc in pairs(bac)do
 if not
-d_c[_bc]then
-if _bc:find("basin")then table.insert(aac,_bc)end
-if _bc:find("blaze_burner")then table.insert(bac,_bc)end
-if _bc:find("redrouter")then table.insert(cac,_bc)end end end;return{basins=aac,blazeBurners=bac,redstones=cac}end
-local function _cb(d_c,_ac,aac,bac)_ac=_ac or 1;aac=aac or 5;bac=bac or"local"if#d_c==0 then
-print("No recipes found.")return end;local cac=math.ceil(#d_c/aac)local dac=
-(_ac-1)*aac+1;local _bc=math.min(dac+aac-1,#d_c)
-print(string.format("=== Basin Recipes (Page %d/%d) ===",_ac,cac))
-for i=dac,_bc do local abc=d_c[i]local bbc=abc.name or"Unnamed Recipe"
-local cbc=c_b[bbc]
-if cbc then
-print(string.format("%d. %s -> [%s]",i,bbc,cbc))else print(string.format("%d. %s",i,bbc))end end
-if cac>1 then
-print(string.format("Showing %d-%d of %d recipes",dac,_bc,#d_c))if _ac<cac then
-print(string.format("Use 'list recipe %s %d' for next page",bac,_ac+1))end;if _ac>1 then
-print(string.format("Use 'list recipe %s %d' for previous page",bac,
-_ac-1))end end end
-local function acb()
-if ada.getLength(__b)==0 then print("No groups found.")return end;print("=== Basin Groups ===")local d_c=0;for _ac,aac in pairs(__b)do d_c=d_c+1
-print(string.format("%d. %s - Basins: %d, Burners: %d",d_c,_ac,
-#aac.basins,#aac.blazeBurners))end end
-local function bcb()local d_c=0;for _ac,aac in pairs(c_b)do d_c=d_c+1 end;if d_c==0 then
+aac[bbc]then
+if bbc:find("basin")then table.insert(cac,bbc)end
+if bbc:find("blaze_burner")then table.insert(dac,bbc)end
+if bbc:find("redrouter")then table.insert(_bc,bbc)end end end;return{basins=cac,blazeBurners=dac,redstones=_bc}end
+local function acb(aac,bac,cac,dac)bac=bac or 1;cac=cac or 5;dac=dac or"local"if#aac==0 then
+print("No recipes found.")return end;local _bc=math.ceil(#aac/cac)local abc=
+(bac-1)*cac+1;local bbc=math.min(abc+cac-1,#aac)
+print(string.format("=== Basin Recipes (Page %d/%d) ===",bac,_bc))
+for i=abc,bbc do local cbc=aac[i]local dbc=cbc.name or"Unnamed Recipe"
+local _cc=d_b[dbc]
+if _cc then
+print(string.format("%d. %s -> [%s]",i,dbc,_cc))else print(string.format("%d. %s",i,dbc))end end
+if _bc>1 then
+print(string.format("Showing %d-%d of %d recipes",abc,bbc,#aac))if bac<_bc then
+print(string.format("Use 'list recipe %s %d' for next page",dac,bac+1))end;if bac>1 then
+print(string.format("Use 'list recipe %s %d' for previous page",dac,
+bac-1))end end end
+local function bcb()
+if bda.getLength(a_b)==0 then print("No groups found.")return end;print("=== Basin Groups ===")local aac=0;for bac,cac in pairs(a_b)do aac=aac+1
+print(string.format("%d. %s - Basins: %d, Burners: %d",aac,bac,
+#cac.basins,#cac.blazeBurners))end end
+local function ccb()local aac=0;for bac,cac in pairs(d_b)do aac=aac+1 end;if aac==0 then
 print("No recipe-group links found.")return end
-print("=== Recipe-Group Links ===")for _ac,aac in pairs(c_b)do
-print(string.format("%s -> %s",_ac,aac))end end
-local function ccb()local d_c=bca:new("cabasin> ")
-d_c:addCommand("group","Manage basin groups",function(_ac)local aac={}for dac in
-_ac:gmatch("%S+")do table.insert(aac,dac)end;if#aac<2 then
+print("=== Recipe-Group Links ===")for bac,cac in pairs(d_b)do
+print(string.format("%s -> %s",bac,cac))end end
+local function dcb()local aac=cca:new("cabasin> ")
+aac:addCommand("group","Manage basin groups",function(bac)local cac={}for abc in
+bac:gmatch("%S+")do table.insert(cac,abc)end;if#cac<2 then
 print("Usage: group [name]")
 print("Creates a new group with the given name using current basins and blaze burners")return end
-local bac=aac[2]local cac=dbb(cbb(__b))__b[bac]=cac;_ab()print("Group '"..
-bac.."' created successfully:")print(
-"  Name: "..bac)
-print("  Basins: "..#cac.basins.." found")for dac,_bc in ipairs(cac.basins)do
-print("    "..dac..". ".._bc)end
+local dac=cac[2]local _bc=_cb(dbb(a_b))a_b[dac]=_bc;aab()print("Group '"..
+dac.."' created successfully:")print(
+"  Name: "..dac)
+print("  Basins: "..#_bc.basins.." found")for abc,bbc in ipairs(_bc.basins)do
+print("    "..abc..". "..bbc)end
 print("  Blaze Burners: "..
-#cac.blazeBurners.." found")for dac,_bc in ipairs(cac.blazeBurners)do
-print("    "..dac..". ".._bc)end
+#_bc.blazeBurners.." found")for abc,bbc in ipairs(_bc.blazeBurners)do
+print("    "..abc..". "..bbc)end
 print("  Redstone Routers: "..
-#cac.redstones.." found")for dac,_bc in ipairs(cac.redstones)do
-print("    "..dac..". ".._bc)end end,function(_ac)return
+#_bc.redstones.." found")for abc,bbc in ipairs(_bc.redstones)do
+print("    "..abc..". "..bbc)end end,function(bac)return
 {}end)
-d_c:addCommand("list","List recipes or groups",function(_ac)local aac={}for cac in _ac:gmatch("%S+")do
-table.insert(aac,cac)end
-if#aac<2 then
+aac:addCommand("list","List recipes or groups",function(bac)local cac={}for _bc in bac:gmatch("%S+")do
+table.insert(cac,_bc)end
+if#cac<2 then
 print("Usage: list [recipe|group|link] [remote|local] [page]")print("Examples:")
 print("  list group              - List all groups")
 print("  list link               - List recipe-group links")
 print("  list recipe remote      - List remote recipes")
 print("  list recipe local       - List local recipes")
-print("  list recipe local 2     - List local recipes page 2")return end;local bac=aac[2]
-if bac=="group"then acb()elseif bac=="link"then bcb()elseif bac=="recipe"then if#aac<3 then
-print("Usage: list recipe [remote|local] [page]")return end;local cac=aac[3]
-local dac=tonumber(aac[4])or 1
-if cac=="local"then _cb(a_b,dac,nil,"local")elseif cac=="remote"then if#b_b==0 then
-print("No remote recipes available.")return end;_cb(b_b,dac,nil,"remote")else
-print("Usage: list recipe [remote|local] [page]")end elseif bac=="link"then bcb()else
-print("Usage: list [recipe|group] [remote|local] [page]")print("Available list types: recipe, group")end end,function(_ac)
-local aac={}
-for cac in _ac:gmatch("%S+")do table.insert(aac,cac)end;local bac=#aac
-if(bac==0 or bac==1)and _ac:sub(-1)~=" "then local cac=
-_ac:match("%S+$")or""local dac={}
-local _bc={"recipe","group","link"}
-for abc,bbc in ipairs(_bc)do if bbc:find(cac,1,true)==1 then
-table.insert(dac,bbc:sub(#cac+1))end end;return dac elseif(bac==1 and _ac:sub(-1)==" ")or bac==2 then
+print("  list recipe local 2     - List local recipes page 2")return end;local dac=cac[2]
+if dac=="group"then bcb()elseif dac=="link"then ccb()elseif dac=="recipe"then if#cac<3 then
+print("Usage: list recipe [remote|local] [page]")return end;local _bc=cac[3]
+local abc=tonumber(cac[4])or 1
+if _bc=="local"then acb(b_b,abc,nil,"local")elseif _bc=="remote"then if#c_b==0 then
+print("No remote recipes available.")return end;acb(c_b,abc,nil,"remote")else
+print("Usage: list recipe [remote|local] [page]")end elseif dac=="link"then ccb()else
+print("Usage: list [recipe|group] [remote|local] [page]")print("Available list types: recipe, group")end end,function(bac)
+local cac={}
+for _bc in bac:gmatch("%S+")do table.insert(cac,_bc)end;local dac=#cac
+if(dac==0 or dac==1)and bac:sub(-1)~=" "then local _bc=
+bac:match("%S+$")or""local abc={}
+local bbc={"recipe","group","link"}
+for cbc,dbc in ipairs(bbc)do if dbc:find(_bc,1,true)==1 then
+table.insert(abc,dbc:sub(#_bc+1))end end;return abc elseif(dac==1 and bac:sub(-1)==" ")or dac==2 then
 if
-aac[1]=="recipe"then local cac=_ac:match("%S+$")or""local dac={}
-local _bc={"remote","local"}
-for abc,bbc in ipairs(_bc)do if bbc:find(cac,1,true)==1 then
-table.insert(dac,bbc:sub(#cac+1))end end;return dac end end;return{}end)
-d_c:addCommand("add","Add recipe from remote by name",function(_ac)local aac={}for _bc in _ac:gmatch("%S+")do
-table.insert(aac,_bc)end
-if#aac<2 then
+cac[1]=="recipe"then local _bc=bac:match("%S+$")or""local abc={}
+local bbc={"remote","local"}
+for cbc,dbc in ipairs(bbc)do if dbc:find(_bc,1,true)==1 then
+table.insert(abc,dbc:sub(#_bc+1))end end;return abc end end;return{}end)
+aac:addCommand("add","Add recipe from remote by name",function(bac)local cac={}for bbc in bac:gmatch("%S+")do
+table.insert(cac,bbc)end
+if#cac<2 then
 print("Usage: add [recipe_name]")print("Examples:")
 print("  add SteelRecipe            - Add recipe by name")
-print("Use 'list recipe remote' to see available recipes")return end;local bac=aac[2]if#b_b==0 then
-print("No remote recipes available. Use network mode to connect first.")return end;local cac=nil;for _bc,abc in ipairs(b_b)do if abc.name==
-bac then cac=abc;break end end;if
-not cac then
-print("Remote recipe '"..bac.."' not found")
+print("Use 'list recipe remote' to see available recipes")return end;local dac=cac[2]if#c_b==0 then
+print("No remote recipes available. Use network mode to connect first.")return end;local _bc=nil;for bbc,cbc in ipairs(c_b)do if cbc.name==
+dac then _bc=cbc;break end end;if
+not _bc then
+print("Remote recipe '"..dac.."' not found")
 print("Use 'list recipe remote' to see available recipes")return end
-for _bc,abc in
-ipairs(a_b)do if abc.name==bac then
-print("Recipe '"..bac.."' already exists locally")return end end;local dac={}
-for _bc,abc in pairs(cac)do
-if type(abc)=="table"then dac[_bc]={}
-for bbc,cbc in pairs(abc)do
+for bbc,cbc in
+ipairs(b_b)do if cbc.name==dac then
+print("Recipe '"..dac.."' already exists locally")return end end;local abc={}
+for bbc,cbc in pairs(_bc)do
+if type(cbc)=="table"then abc[bbc]={}
+for dbc,_cc in pairs(cbc)do
 if
-type(cbc)=="table"then dac[_bc][bbc]={}
-for dbc,_cc in ipairs(cbc)do dac[_bc][bbc][dbc]=_cc end else dac[_bc][bbc]=cbc end end else dac[_bc]=abc end end;table.insert(a_b,dac)dab()
-print("Recipe '"..bac.."' added successfully")end,function(_ac)
-local aac={}local bac=_ac:match("%S+$")or""for cac,dac in ipairs(b_b)do
-if dac.name and
-dac.name:find(bac,1,true)==1 then
-local _bc=dac.name:sub(#bac+1)table.insert(aac,_bc)end end;return aac end)
-d_c:addCommand("link","Link recipe to group",function(_ac)local aac={}for _bc in _ac:gmatch("%S+")do
-table.insert(aac,_bc)end
-if#aac<3 then
+type(_cc)=="table"then abc[bbc][dbc]={}
+for acc,bcc in ipairs(_cc)do abc[bbc][dbc][acc]=bcc end else abc[bbc][dbc]=_cc end end else abc[bbc]=cbc end end;table.insert(b_b,abc)_bb()
+print("Recipe '"..dac.."' added successfully")end,function(bac)
+local cac={}local dac=bac:match("%S+$")or""for _bc,abc in ipairs(c_b)do
+if abc.name and
+abc.name:find(dac,1,true)==1 then
+local bbc=abc.name:sub(#dac+1)table.insert(cac,bbc)end end;return cac end)
+aac:addCommand("link","Link recipe to group",function(bac)local cac={}for bbc in bac:gmatch("%S+")do
+table.insert(cac,bbc)end
+if#cac<3 then
 print("Usage: link [recipe_name] [group_name]")print("Examples:")
-print("  link SteelRecipe production      - Link recipe to group")return end;local bac=aac[2]local cac=aac[3]local dac=false;for _bc,abc in ipairs(a_b)do
-if abc.name==bac then dac=true;break end end;if not dac then
+print("  link SteelRecipe production      - Link recipe to group")return end;local dac=cac[2]local _bc=cac[3]local abc=false;for bbc,cbc in ipairs(b_b)do
+if cbc.name==dac then abc=true;break end end;if not abc then
 print("Recipe '"..
-bac.."' not found in local recipes")
+dac.."' not found in local recipes")
 print("Use 'list recipe local' to see available recipes")return end;if not
-__b[cac]then
-print("Group '"..cac.."' not found")print("Use 'list group' to see available groups")
-return end;c_b[bac]=cac
-bab()
+a_b[_bc]then
+print("Group '".._bc.."' not found")print("Use 'list group' to see available groups")
+return end;d_b[dac]=_bc
+cab()
 print("Recipe '"..
-bac.."' linked to group '"..cac.."' successfully")end,function(_ac)
-local aac={}
-for bac in _ac:gmatch("%S+")do table.insert(aac,bac)end
-if#aac==1 then local bac={}local cac=_ac:match("%S+$")or""for dac,_bc in ipairs(a_b)do
-if _bc.name and
-_bc.name:find(cac,1,true)==1 then
-local abc=_bc.name:sub(#cac+1)table.insert(bac,abc)end end;return bac elseif#
-aac==2 then local bac={}local cac=_ac:match("%S+$")or""for dac,_bc in pairs(__b)do
+dac.."' linked to group '".._bc.."' successfully")end,function(bac)
+local cac={}
+for dac in bac:gmatch("%S+")do table.insert(cac,dac)end
+if#cac==1 then local dac={}local _bc=bac:match("%S+$")or""for abc,bbc in ipairs(b_b)do
+if bbc.name and
+bbc.name:find(_bc,1,true)==1 then
+local cbc=bbc.name:sub(#_bc+1)table.insert(dac,cbc)end end;return dac elseif#
+cac==2 then local dac={}local _bc=bac:match("%S+$")or""for abc,bbc in pairs(a_b)do
 if
-dac:find(cac,1,true)==1 then table.insert(bac,dac:sub(#cac+1))end end;return bac end;return{}end)
-d_c:addCommand("unlink","Unlink recipe from group",function(_ac)local aac={}for dac in _ac:gmatch("%S+")do
-table.insert(aac,dac)end;if#aac<2 then
+abc:find(_bc,1,true)==1 then table.insert(dac,abc:sub(#_bc+1))end end;return dac end;return{}end)
+aac:addCommand("unlink","Unlink recipe from group",function(bac)local cac={}for abc in bac:gmatch("%S+")do
+table.insert(cac,abc)end;if#cac<2 then
 print("Usage: unlink [recipe_name]")print("Examples:")
 print("  unlink SteelRecipe     - Unlink recipe from group")return end
-local bac=aac[2]if not c_b[bac]then
-print("Recipe '"..bac.."' is not linked to any group")return end;local cac=c_b[bac]
-c_b[bac]=nil;bab()
+local dac=cac[2]if not d_b[dac]then
+print("Recipe '"..dac.."' is not linked to any group")return end;local _bc=d_b[dac]
+d_b[dac]=nil;cab()
 print("Recipe '"..
-bac.."' unlinked from group '"..cac.."' successfully")end,function(_ac)
-local aac={}local bac=_ac:match("%S+$")or""for cac,dac in pairs(c_b)do
+dac.."' unlinked from group '".._bc.."' successfully")end,function(bac)
+local cac={}local dac=bac:match("%S+$")or""for _bc,abc in pairs(d_b)do
 if
-cac:find(bac,1,true)==1 then local _bc=cac:sub(#bac+1)table.insert(aac,_bc)end end;return aac end)
-d_c:addCommand("delete","Delete group or recipe",function(_ac)local aac={}for dac in _ac:gmatch("%S+")do
-table.insert(aac,dac)end
-if#aac<3 then
+_bc:find(dac,1,true)==1 then local bbc=_bc:sub(#dac+1)table.insert(cac,bbc)end end;return cac end)
+aac:addCommand("delete","Delete group or recipe",function(bac)local cac={}for abc in bac:gmatch("%S+")do
+table.insert(cac,abc)end
+if#cac<3 then
 print("Usage: delete [group|recipe] [name]")print("Examples:")
 print("  delete group production     - Delete group by name")
-print("  delete recipe SteelRecipe   - Delete recipe by name")return end;local bac=aac[2]local cac=aac[3]
-if bac=="group"then if not __b[cac]then
-print("Group '"..cac.."' not found")print("Use 'list group' to see available groups")
-return end;local dac={}
-for _bc,abc in pairs(c_b)do if
-abc==cac then table.insert(dac,_bc)end end
-if#dac>0 then
-print("Cannot delete group '"..cac.."' - it has linked recipes:")
-for _bc,abc in ipairs(dac)do print("  ".._bc..". "..abc)end
-print("Use 'unlink [recipe_name]' to unlink recipes first")return end;__b[cac]=nil;_ab()
-print("Group '"..cac.."' deleted successfully")elseif bac=="recipe"then local dac=nil
-for _bc,abc in ipairs(a_b)do if abc.name==cac then dac=_bc;break end end;if not dac then
-print("Recipe '"..cac.."' not found in local recipes")
+print("  delete recipe SteelRecipe   - Delete recipe by name")return end;local dac=cac[2]local _bc=cac[3]
+if dac=="group"then if not a_b[_bc]then
+print("Group '".._bc.."' not found")print("Use 'list group' to see available groups")
+return end;local abc={}
+for bbc,cbc in pairs(d_b)do if
+cbc==_bc then table.insert(abc,bbc)end end
+if#abc>0 then
+print("Cannot delete group '".._bc.."' - it has linked recipes:")
+for bbc,cbc in ipairs(abc)do print("  "..bbc..". "..cbc)end
+print("Use 'unlink [recipe_name]' to unlink recipes first")return end;a_b[_bc]=nil;aab()
+print("Group '".._bc.."' deleted successfully")elseif dac=="recipe"then local abc=nil
+for bbc,cbc in ipairs(b_b)do if cbc.name==_bc then abc=bbc;break end end;if not abc then
+print("Recipe '".._bc.."' not found in local recipes")
 print("Use 'list recipe local' to see available recipes")return end
 if
-c_b[cac]then
+d_b[_bc]then
 print("Cannot delete recipe '"..
-cac.."' - it is linked to group '"..c_b[cac].."'")
-print("Use 'unlink "..cac.."' to unlink the recipe first")return end;table.remove(a_b,dac)dab()
-print("Recipe '"..cac.."' deleted successfully")else print("Usage: delete [group|recipe] [name]")
-print("Available delete types: group, recipe")end end,function(_ac)
-local aac={}
-for cac in _ac:gmatch("%S+")do table.insert(aac,cac)end;local bac=#aac
-if(bac==0 or bac==1)and _ac:sub(-1)~=" "then
-local cac={}local dac=_ac:match("%S+$")or""local _bc={"group","recipe"}
-for abc,bbc in
-ipairs(_bc)do if bbc:find(dac,1,true)==1 then
-table.insert(cac,bbc:sub(#dac+1))end end;return cac elseif(bac==1 and _ac:sub(-1)==" ")or bac==2 then
-local cac=aac[1]local dac=_ac:match("%S+$")or""local _bc={}
-if cac=="group"then for abc,bbc in pairs(__b)do
+_bc.."' - it is linked to group '"..d_b[_bc].."'")
+print("Use 'unlink ".._bc.."' to unlink the recipe first")return end;table.remove(b_b,abc)_bb()
+print("Recipe '".._bc.."' deleted successfully")else print("Usage: delete [group|recipe] [name]")
+print("Available delete types: group, recipe")end end,function(bac)
+local cac={}
+for _bc in bac:gmatch("%S+")do table.insert(cac,_bc)end;local dac=#cac
+if(dac==0 or dac==1)and bac:sub(-1)~=" "then
+local _bc={}local abc=bac:match("%S+$")or""local bbc={"group","recipe"}
+for cbc,dbc in
+ipairs(bbc)do if dbc:find(abc,1,true)==1 then
+table.insert(_bc,dbc:sub(#abc+1))end end;return _bc elseif(dac==1 and bac:sub(-1)==" ")or dac==2 then
+local _bc=cac[1]local abc=bac:match("%S+$")or""local bbc={}
+if _bc=="group"then for cbc,dbc in pairs(a_b)do
 if
-abc:find(dac,1,true)==1 then table.insert(_bc,abc:sub(#dac+1))end end elseif cac=="recipe"then for abc,bbc in ipairs(a_b)do
+cbc:find(abc,1,true)==1 then table.insert(bbc,cbc:sub(#abc+1))end end elseif _bc=="recipe"then for cbc,dbc in ipairs(b_b)do
 if
-bbc.name and bbc.name:find(dac,1,true)==1 then local cbc=bbc.name:sub(
-#dac+1)table.insert(_bc,cbc)end end end;return _bc end;return{}end)
-d_c:addCommand("reboot","Reboot the program",function(_ac)print("Rebooting...")os.reboot()end)return d_c end;cab()
-if dda~=nil and#dda>0 then local d_c=dda[1]local _ac=tonumber(dda[2])
-local aac=dda[3]
-if d_c and _ac and aac then abb(d_c,_ac,aac)
-aca.open(d_c,_ac,"recipe",aac)
-local bac=aca.communicationChannels[d_c][_ac]["recipe"]
-bac.addMessageHandler("getRecipesRes",function(cac,dac,_bc)b_b=dac or{}end)
-parallel.waitForAll(aca.listen,function()while next(b_b)==nil do
-bac.send("getRecipesReq","basin")os.sleep(1)end end,function()
-local cac=ccb()print("CaBasin Manager - Network Mode")
-print("Connected to channel ".._ac..
-" on "..d_c)
-print("Type 'help' for available commands or 'exit' to quit")while true do local dac,_bc=pcall(function()cac:run()end)
-if not dac then print(
-"Error: "..tostring(_bc))end end end)end end;_da.reloadAll()
-local dcb=_da.getAllPeripheralsNameContains("crafting_storage")local _db=next(dcb)local adb=dcb[_db]local bdb={}
-local cdb=function()local d_c={}for _ac,aac in pairs(a_b)do
-d_c[aac.name]=aac end
-for _ac,aac in pairs(c_b)do bdb[_ac]={recipe=d_c[_ac]}
-local bac={name=aac,basins={},blazeBurnerFeeders={},redstones={}}
-for cac,dac in ipairs(__b[aac].basins)do
-print("Wrapping basin: "..dac)table.insert(bac.basins,_da.wrap(dac))end
-for cac,dac in ipairs(__b[aac].blazeBurners)do
-print("Wrapping blaze burner: "..dac)local _bc=_da.wrap(dac)local abc=nil
+dbc.name and dbc.name:find(abc,1,true)==1 then local _cc=dbc.name:sub(
+#abc+1)table.insert(bbc,_cc)end end end;return bbc end;return{}end)
+aac:addCommand("reboot","Reboot the program",function(bac)print("Rebooting...")os.reboot()end)return aac end;dab()
+local _db=function()local aac=dcb()while true do
+local bac,cac=pcall(function()aac:run()end)
+if not bac then print("Error: "..tostring(cac))end end end
+if __b~=nil and#__b>0 then local aac=__b[1]local bac=tonumber(__b[2])
+local cac=__b[3]
+if aac and bac and cac then bbb(aac,bac,cac)
+bca.open(aac,bac,"recipe",cac)
+local dac=bca.communicationChannels[aac][bac]["recipe"]
+dac.addMessageHandler("getRecipesRes",function(_bc,abc,bbc)c_b=abc or{}end)
+parallel.waitForAll(bca.listen,function()while next(c_b)==nil do
+dac.send("getRecipesReq","basin")os.sleep(1)end end,_db)end end;ada.reloadAll()
+local adb=ada.getAllPeripheralsNameContains("crafting_storage")local bdb=next(adb)local cdb=adb[bdb]local ddb={}
+local __c=function()local aac={}for bac,cac in pairs(b_b)do
+aac[cac.name]=cac end
+for bac,cac in pairs(d_b)do ddb[bac]={recipe=aac[bac]}
+local dac={name=cac,basins={},blazeBurnerFeeders={},redstones={}}
+for _bc,abc in ipairs(a_b[cac].basins)do
+print("Wrapping basin: "..abc)table.insert(dac.basins,ada.wrap(abc))end
+for _bc,abc in ipairs(a_b[cac].blazeBurners)do
+print("Wrapping blaze burner: "..abc)local bbc=ada.wrap(abc)local cbc=nil
 if
-d_c[_ac].blazeBurner==cda.BLAZE_BURN_TYPE.LAVA then abc=bda.Types.LAVA elseif
-d_c[_ac].blazeBurner==cda.BLAZE_BURN_TYPE.HELLFIRE then abc=bda.Types.HELLFIRE end;local bbc=bda.getFeeder(adb,_bc,abc)
-table.insert(bac.blazeBurnerFeeders,bbc)end
-for cac,dac in ipairs(__b[aac].redstones)do
-print("Wrapping redstone: "..dac)table.insert(bac.redstones,_da.wrap(dac))end;bdb[_ac].group=bac end end
-local ddb=function(d_c,_ac)if d_c=="item"then return adb.getItem(_ac)elseif d_c=="fluid"then
-return adb.getFluid(_ac)end;return nil end
-local __c=function(d_c)local _ac=d_c.recipe;local aac=d_c.group
-for bac,cac in ipairs(aac.basins)do local dac=_ac.input
+aac[bac].blazeBurner==dda.BLAZE_BURN_TYPE.LAVA then cbc=cda.Types.LAVA elseif
+aac[bac].blazeBurner==dda.BLAZE_BURN_TYPE.HELLFIRE then cbc=cda.Types.HELLFIRE end;local dbc=cda.getFeeder(cdb,bbc,cbc)
+table.insert(dac.blazeBurnerFeeders,dbc)end
+for _bc,abc in ipairs(a_b[cac].redstones)do
+print("Wrapping redstone: "..abc)table.insert(dac.redstones,ada.wrap(abc))end;ddb[bac].group=dac end end
+local a_c=function(aac,bac)if aac=="item"then return cdb.getItem(bac)elseif aac=="fluid"then
+return cdb.getFluid(bac)end;return nil end
+local b_c=function(aac)local bac=aac.recipe;local cac=aac.group
+for dac,_bc in ipairs(cac.basins)do local abc=bac.input
 if
-dac.items~=nil then
-for abc,bbc in ipairs(dac.items)do local cbc=cac.getItem(bbc)
-local dbc=cbc and cbc.count or 0
-if dbc<16 then adb.transferItemTo(cac,bbc,16 -dbc)end end end
-if dac.fluids~=nil then
-for abc,bbc in ipairs(dac.fluids)do local cbc=cac.getFluid(bbc)local dbc=
-cbc and cbc.amount or 0;if dbc<1000 then
-adb.transferFluidTo(cac,bbc,1000 -dbc)end end end;local _bc=_ac.output
-if _bc.items~=nil then
-for abc,bbc in ipairs(_bc.items)do
-local cbc=_ac.output.keepItemsAmount or 0;local dbc=cac.getItem(bbc)
-if dbc~=nil and dbc.count>cbc then adb.transferItemFrom(cac,bbc,
-dbc.count-cbc)end end end
-if _bc.fluids~=nil then
-for abc,bbc in ipairs(_bc.fluids)do
-local cbc=_ac.output.keepFluidsAmount or 0;local dbc=cac.getFluid(bbc)
-if dbc~=nil and dbc.amount>cbc then adb.transferFluidFrom(cac,bbc,
-dbc.amount-cbc)end end end end end
-local a_c=function(d_c)for _ac,aac in ipairs(d_c)do aac:feed()end end
-local b_c=function()
+abc.items~=nil then
+for cbc,dbc in ipairs(abc.items)do local _cc=_bc.getItem(dbc)
+local acc=_cc and _cc.count or 0
+if acc<16 then cdb.transferItemTo(_bc,dbc,16 -acc)end end end
+if abc.fluids~=nil then
+for cbc,dbc in ipairs(abc.fluids)do local _cc=_bc.getFluid(dbc)local acc=
+_cc and _cc.amount or 0;if acc<1000 then
+cdb.transferFluidTo(_bc,dbc,1000 -acc)end end end;local bbc=bac.output
+if bbc.items~=nil then
+for cbc,dbc in ipairs(bbc.items)do
+local _cc=bac.output.keepItemsAmount or 0;local acc=_bc.getItem(dbc)
+if acc~=nil and acc.count>_cc then cdb.transferItemFrom(_bc,dbc,
+acc.count-_cc)end end end
+if bbc.fluids~=nil then
+for cbc,dbc in ipairs(bbc.fluids)do
+local _cc=bac.output.keepFluidsAmount or 0;local acc=_bc.getFluid(dbc)
+if acc~=nil and acc.amount>_cc then cdb.transferFluidFrom(_bc,dbc,
+acc.amount-_cc)end end end end end
+local c_c=function(aac)for bac,cac in ipairs(aac)do cac:feed()end end
+local d_c=function()
 while true do
-for d_c,_ac in pairs(bdb)do local aac=dca.eval(_ac.recipe.trigger,ddb)
-local bac=_ac.group.redstones;if bac~=nil then
-for cac,dac in ipairs(bac)do dac.setOutputSignals(not aac)end end;if(aac)then __c(_ac)
-a_c(_ac.group.blazeBurnerFeeders)end end;os.sleep(1)end end;cdb()
-local c_c=function()local d_c=_bb()
+for aac,bac in pairs(ddb)do local cac=_da.eval(bac.recipe.trigger,a_c)
+local dac=bac.group.redstones;if dac~=nil then
+for _bc,abc in ipairs(dac)do abc.setOutputSignals(not cac)end end;if(cac)then b_c(bac)
+c_c(bac.group.blazeBurnerFeeders)end end;os.sleep(1)end end;__c()
+local _ac=function()local aac=abb()
 if
-d_c and d_c.side and d_c.channel and d_c.secret then
+aac and aac.side and aac.channel and aac.secret then
 print("Found saved communicator config, attempting to connect...")
-aca.open(d_c.side,d_c.channel,"recipe",d_c.secret)
-local _ac=aca.communicationChannels[d_c.side][d_c.channel]["recipe"]
-_ac.addMessageHandler("getRecipesRes",function(aac,bac,cac)b_b=bac or{}end)
-_ac.addMessageHandler("update",function(aac,bac,cac)
-if bac and type(bac)=="table"then bbb(bac)cdb()end end)aca.listen()end end;parallel.waitForAny(c_c,b_c) end
+bca.open(aac.side,aac.channel,"recipe",aac.secret)
+local bac=bca.communicationChannels[aac.side][aac.channel]["recipe"]
+bac.addMessageHandler("getRecipesRes",function(cac,dac,_bc)c_b=dac or{}end)
+bac.addMessageHandler("update",function(cac,dac,_bc)if dac and type(dac)=="table"then cbb(dac)__c()
+bac.send("getRecipesReq","basin")end end)bca.listen()end end;parallel.waitForAny(_ac,d_c,_db) end
 modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
 b.useDefault=function()
 b.addPrintFunction(function(c,d,_a,aa)

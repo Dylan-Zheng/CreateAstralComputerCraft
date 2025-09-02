@@ -53,7 +53,7 @@ local function updateRecipesByID(newRecipes)
             recipeMap[recipe.id] = i
         end
     end
-    
+
     -- Update existing recipes or add new ones
     for _, newRecipe in ipairs(newRecipes) do
         if newRecipe.id then
@@ -63,7 +63,7 @@ local function updateRecipesByID(newRecipes)
             end
         end
     end
-    
+
     -- Save updated recipes
     saveRecipes()
 end
@@ -92,7 +92,7 @@ end
 -- Display recipes with pagination
 local function displayRecipes(recipeList, page, pageSize)
     page = page or 1
-    pageSize = pageSize or 5    
+    pageSize = pageSize or 5
 
     if #recipeList == 0 then
         print("No recipes found.")
@@ -124,6 +124,27 @@ end
 
 -- Initialize recipes
 loadRecipes()
+
+local runChannel = function()
+    local config = loadCommunicatorConfig()
+    if config and config.side and config.channel and config.secret then
+        Logger.info("Found saved communicator config, attempting to connect...")
+        Communicator.open(config.side, config.channel, "recipe", config.secret)
+        local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
+        openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
+            remoteRecipes = payload or {}
+        end)
+
+        -- Add update event handler
+        openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
+            if payload and type(payload) == "table" then
+                updateRecipesByID(payload)
+            end
+        end)
+
+        Communicator.listen()
+    end
+end
 
 -- Command line interface
 local function createCommandLine()
@@ -425,6 +446,30 @@ local function createCommandLine()
     return cli
 end
 
+local setMesssageHandler = function(openChannel)
+    openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
+        remoteRecipes = payload or {}
+    end)
+
+    -- Add update event handler
+    openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
+        if payload and type(payload) == "table" then
+            updateRecipesByID(payload)
+            openChannel.send("getRecipesReq", "depot")
+        end
+    end)
+end
+
+local runCommandLine = function()
+    local cli = createCommandLine()
+    while true do
+        local success, result = pcall(function() cli:run() end)
+        if not success then
+            print("Error: " .. tostring(result))
+        end
+    end
+end
+
 -- Main execution
 if args ~= nil and #args > 0 then
     local side = args[1]
@@ -434,20 +479,11 @@ if args ~= nil and #args > 0 then
     if side and channel and secret then
         -- Save communicator config
         saveCommunicatorConfig(side, channel, secret)
-        
+
         -- Network mode
         Communicator.open(side, channel, "recipe", secret)
         local openChannel = Communicator.communicationChannels[side][channel]["recipe"]
-        openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
-            remoteRecipes = payload or {}
-        end)
-        
-        -- Add update event handler
-        openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
-            if payload and type(payload) == "table" then
-                updateRecipesByID(payload)
-            end
-        end)
+        setMesssageHandler(openChannel)
 
         parallel.waitForAll(Communicator.listen,
             function()
@@ -456,15 +492,7 @@ if args ~= nil and #args > 0 then
                     sleep(1) -- Wait for response
                 end
             end,
-            function()
-                local cli = createCommandLine()
-                while true do
-                    local success, result = pcall(function() cli:run() end)
-                    if not success then
-                        print("Error: " .. tostring(result))
-                    end
-                end
-            end
+            runCommandLine
         )
     end
 end
@@ -576,16 +604,17 @@ local checkAndRunRecipe = function()
                 end
             end
         end
-        
+
         local currentTotalDepots = totalDepots
         local currentTriggeredRecipeCount = #triggeredRecipes
 
-        local numOfDepotsForEachRecipe = math.max(1, math.floor(currentTotalDepots / math.max(1, currentTriggeredRecipeCount)))
+        local numOfDepotsForEachRecipe = math.max(1,
+            math.floor(currentTotalDepots / math.max(1, currentTriggeredRecipeCount)))
 
         for _, recipe in ipairs(triggeredRecipes) do
             local usedDepotsCount = marker:getOnUseDepotCountForRecipe(recipe)
             local maxMachineForRecipe
-            
+
             if recipe.maxMachine and recipe.maxMachine > 0 then
                 -- If average allocation exceeds maxMachine limit, use maxMachine
                 -- Otherwise use average allocation
@@ -595,9 +624,11 @@ local checkAndRunRecipe = function()
                 maxMachineForRecipe = numOfDepotsForEachRecipe
             end
 
-            print("recipe " .. (recipe.input or "Unnamed") .. " usedDepotsCount: " .. usedDepotsCount .. ", maxMachineForRecipe: " .. maxMachineForRecipe)
+            Logger.debug("recipe " ..
+            (recipe.input or "Unnamed") ..
+            " usedDepotsCount: " .. usedDepotsCount .. ", maxMachineForRecipe: " .. maxMachineForRecipe)
             if usedDepotsCount > maxMachineForRecipe then
-                print("Releasing depots for recipe: " .. (recipe.input or "Unnamed"))
+                Logger.info("Releasing depots for recipe: " .. (recipe.input or "Unnamed"))
                 local toRemove = usedDepotsCount - maxMachineForRecipe
                 for _, depot in pairs(marker.recipeOnDepot[recipe.id].depots) do
                     if toRemove <= 0 then
@@ -628,17 +659,17 @@ local checkAndRunRecipe = function()
                             marker:set(recipe, depot)
                             depotNeeded = depotNeeded - 1
                         end
-                    else 
+                    else
                         Logger.info("Depot {} is already in use for recipe {}", depot.getId(), recipe.input)
                     end
                 end
             end
-            
+
             -- Subtract the allocated depots for this recipe (not just the ones currently in use)
             currentTotalDepots = currentTotalDepots - maxMachineForRecipe
-            print("currentTotalDepots: " .. currentTotalDepots .. " (allocated " .. maxMachineForRecipe .. " to " .. (recipe.input or "Unnamed") .. ")")
             currentTriggeredRecipeCount = currentTriggeredRecipeCount - 1
-            numOfDepotsForEachRecipe = math.max(1, math.floor(currentTotalDepots / math.max(1, currentTriggeredRecipeCount)))
+            numOfDepotsForEachRecipe = math.max(1,
+                math.floor(currentTotalDepots / math.max(1, currentTriggeredRecipeCount)))
         end
         os.sleep(1)
     end
@@ -655,10 +686,11 @@ local checkAndMoveCompletedRecipe = function()
                     for _, item in ipairs(items) do
                         local transferred = storage.transferItemFrom(depot, item.name, item.count)
                         if transferred == item.count then
-                            Logger.debug("Transferred completed recipe " .. recipe.input .. " from depot " .. depot.getId())
-                            
+                            Logger.debug("Transferred completed recipe " ..
+                            recipe.input .. " from depot " .. depot.getId())
                         else
-                            Logger.error("Failed to transfer completed recipe {} from depot {}", recipe.input, depot.getId())
+                            Logger.error("Failed to transfer completed recipe {} from depot {}", recipe.input,
+                                depot.getId())
                         end
                     end
                     marker:remove(depot)
@@ -684,26 +716,18 @@ end
 local runChannel = function()
     local config = loadCommunicatorConfig()
     if config and config.side and config.channel and config.secret then
-        print("Found saved communicator config, attempting to connect...")
+        Logger.info("Found saved communicator config, attempting to connect...")
         Communicator.open(config.side, config.channel, "recipe", config.secret)
         local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
-        openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
-            remoteRecipes = payload or {}
-        end)
-        
-        -- Add update event handler
-        openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
-            if payload and type(payload) == "table" then
-                updateRecipesByID(payload)
-            end
-        end)
-        
+        setMesssageHandler(openChannel)
         Communicator.listen()
     end
-end 
+end
+
 
 parallel.waitForAll(
     runChannel,
     checkAndRunRecipe,
-    checkAndMoveCompletedRecipe
+    checkAndMoveCompletedRecipe,
+    runCommandLine
 )

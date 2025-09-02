@@ -283,22 +283,39 @@ local drawer = drawers[key]
 
 local recipe = recipes[1] -- Assuming only one recipe is set for the belt
 
+local setMessageHandler = function(openChannel)
+    openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
+        remoteRecipes = payload or {}
+    end)
+
+    -- Add update event handler
+    openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
+        if payload and type(payload) == "table" then
+            updateRecipesByID(payload)
+            openChannel.send("getRecipesReq", "belt")
+        end
+    end)
+end
+
+local runCommandLine = function()
+    local cli = createCommandLine()
+    print("CaBelt Manager - Standalone Mode")
+    print("Type 'help' for available commands or 'exit' to quit")
+    while true do
+        local success, result = pcall(function() cli:run() end)
+        if not success then
+            print("Error: " .. tostring(result))
+        end
+    end
+end
+
 local runChannel = function()
     local config = loadCommunicatorConfig()
     if config and config.side and config.channel and config.secret then
         print("Found saved communicator config, attempting to connect...")
         Communicator.open(config.side, config.channel, "recipe", config.secret)
         local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
-        openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
-            remoteRecipes = payload or {}
-        end)
-
-        -- Add update event handler
-        openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
-            if payload and type(payload) == "table" then
-                updateRecipesByID(payload)
-            end
-        end)
+        setMessageHandler(openChannel)
         Communicator.listen()
     end
 end
@@ -343,5 +360,6 @@ end
 parallel.waitForAll(
     runChannel,
     checkAndRun,
-    moveToStorage
+    moveToStorage,
+    runCommandLine
 )

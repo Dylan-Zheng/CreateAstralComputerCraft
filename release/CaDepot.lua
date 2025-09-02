@@ -2,225 +2,229 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CaDepot"] = function(...) local _aa=require("utils.Logger")
-local aaa=require("programs.common.Communicator")local baa=require("programs.command.CommandLine")
-local caa=require("utils.OSUtils")local daa=require("programs.common.Trigger")
-local _ba=require("wrapper.PeripheralWrapper")local aba=require("utils.TableUtils")_aa.useDefault()
-_aa.currentLevel=_aa.levels.ERROR;local bba={...}local cba={}local dba={}local function _ca()
-local dab=caa.loadTable("cadepot_recipes")if dab~=nil then cba=dab end end;local function aca()
-caa.saveTable("cadepot_recipes",cba)end;local function bca()
-return caa.loadTable("cadepot_communicator_config")end
-local function cca(dab,_bb,abb)
-local bbb={side=dab,channel=_bb,secret=abb}caa.saveTable("cadepot_communicator_config",bbb)end
-local function dca(dab)local _bb={}
-for abb,bbb in ipairs(cba)do if bbb.id then _bb[bbb.id]=abb end end;for abb,bbb in ipairs(dab)do
-if bbb.id then local cbb=_bb[bbb.id]if cbb then cba[cbb]=bbb end end end;aca()end;local function _da(dab)
-for _bb,abb in ipairs(cba)do if abb.input==dab then return abb end end;return nil end
-local function ada(dab)for _bb,abb in ipairs(cba)do
+modules["programs.CaDepot"] = function(...) local caa=require("utils.Logger")
+local daa=require("programs.common.Communicator")local _ba=require("programs.command.CommandLine")
+local aba=require("utils.OSUtils")local bba=require("programs.common.Trigger")
+local cba=require("wrapper.PeripheralWrapper")local dba=require("utils.TableUtils")caa.useDefault()
+caa.currentLevel=caa.levels.ERROR;local _ca={...}local aca={}local bca={}local function cca()
+local _cb=aba.loadTable("cadepot_recipes")if _cb~=nil then aca=_cb end end;local function dca()
+aba.saveTable("cadepot_recipes",aca)end;local function _da()
+return aba.loadTable("cadepot_communicator_config")end
+local function ada(_cb,acb,bcb)
+local ccb={side=_cb,channel=acb,secret=bcb}aba.saveTable("cadepot_communicator_config",ccb)end
+local function bda(_cb)local acb={}
+for bcb,ccb in ipairs(aca)do if ccb.id then acb[ccb.id]=bcb end end;for bcb,ccb in ipairs(_cb)do
+if ccb.id then local dcb=acb[ccb.id]if dcb then aca[dcb]=ccb end end end;dca()end;local function cda(_cb)
+for acb,bcb in ipairs(aca)do if bcb.input==_cb then return bcb end end;return nil end
+local function dda(_cb)for acb,bcb in ipairs(aca)do
 if
-abb.input==dab then table.remove(cba,_bb)return true end end;return false end
-local function bda(dab,_bb,abb)_bb=_bb or 1;abb=abb or 5;if#dab==0 then print("No recipes found.")
-return end;local bbb=math.ceil(#dab/abb)local cbb=
-(_bb-1)*abb+1;local dbb=math.min(cbb+abb-1,#dab)
-print(string.format("=== Recipes (Page %d/%d) ===",_bb,bbb))
-for i=cbb,dbb do local _cb=dab[i]
-local acb=
-({"none","fire","soul_fire","lava","water"})[_cb.depotType+1]or"unknown"local bcb=table.concat(_cb.output,", ")
-print(string.format("%d. [%s] %s -> %s",i,acb,_cb.input,bcb))end
-if bbb>1 then
-print(string.format("Showing %d-%d of %d recipes",cbb,dbb,#dab))if _bb<bbb then
-print(string.format("Use 'list recipe local %d' for next page",_bb+1))end;if _bb>1 then
+bcb.input==_cb then table.remove(aca,acb)return true end end;return false end
+local function __b(_cb,acb,bcb)acb=acb or 1;bcb=bcb or 5;if#_cb==0 then print("No recipes found.")
+return end;local ccb=math.ceil(#_cb/bcb)local dcb=
+(acb-1)*bcb+1;local _db=math.min(dcb+bcb-1,#_cb)
+print(string.format("=== Recipes (Page %d/%d) ===",acb,ccb))
+for i=dcb,_db do local adb=_cb[i]
+local bdb=
+({"none","fire","soul_fire","lava","water"})[adb.depotType+1]or"unknown"local cdb=table.concat(adb.output,", ")
+print(string.format("%d. [%s] %s -> %s",i,bdb,adb.input,cdb))end
+if ccb>1 then
+print(string.format("Showing %d-%d of %d recipes",dcb,_db,#_cb))if acb<ccb then
+print(string.format("Use 'list recipe local %d' for next page",acb+1))end;if acb>1 then
 print(string.format("Use 'list recipe local %d' for previous page",
-_bb-1))end end end;_ca()
-local function cda()local dab=baa:new("cadepot> ")
-dab:addCommand("list","List recipes",function(_bb)local abb={}for _cb in
-_bb:gmatch("%S+")do table.insert(abb,_cb)end;if#abb<3 then
-print("Usage: list recipe [remote|local] [page]")return end;local bbb=abb[2]local cbb=abb[3]local dbb=
-tonumber(abb[4])or 1;if bbb~="recipe"then
-print("Usage: list recipe [remote|local] [page]")return end
-if cbb=="local"then bda(cba,dbb)elseif cbb==
-"remote"then
-if#dba==0 then print("No remote recipes available.")return end;bda(dba,dbb)else
-print("Usage: list recipe [remote|local] [page]")end end,function(_bb)
-local abb={}
-for bbb in _bb:gmatch("%S+")do table.insert(abb,bbb)end
-if#abb==1 then local bbb=_bb:match("%S+$")or""local cbb={}if
-("recipe"):find(bbb,1,true)==1 then
-table.insert(cbb,("recipe"):sub(#bbb+1))end;return cbb elseif#abb==2 then
-local bbb=_bb:match("%S+$")or""local cbb={}local dbb={"remote","local"}for _cb,acb in ipairs(dbb)do
+acb-1))end end end;cca()
+local a_b=function()local _cb=_da()
 if
-acb:find(bbb,1,true)==1 then table.insert(cbb,acb:sub(#bbb+1))end end;return cbb end;return{}end)
-dab:addCommand("add","Add recipe(s) from remote by depotType",function(_bb)local abb={}for _cb in _bb:gmatch("%S+")do
-table.insert(abb,_cb)end
-if#abb<2 then
+_cb and _cb.side and _cb.channel and _cb.secret then
+caa.info("Found saved communicator config, attempting to connect...")
+daa.open(_cb.side,_cb.channel,"recipe",_cb.secret)
+local acb=daa.communicationChannels[_cb.side][_cb.channel]["recipe"]
+acb.addMessageHandler("getRecipesRes",function(bcb,ccb,dcb)bca=ccb or{}end)
+acb.addMessageHandler("update",function(bcb,ccb,dcb)
+if ccb and type(ccb)=="table"then bda(ccb)end end)daa.listen()end end
+local function b_b()local _cb=_ba:new("cadepot> ")
+_cb:addCommand("list","List recipes",function(acb)local bcb={}for adb in
+acb:gmatch("%S+")do table.insert(bcb,adb)end;if#bcb<3 then
+print("Usage: list recipe [remote|local] [page]")return end;local ccb=bcb[2]local dcb=bcb[3]local _db=
+tonumber(bcb[4])or 1;if ccb~="recipe"then
+print("Usage: list recipe [remote|local] [page]")return end
+if dcb=="local"then __b(aca,_db)elseif dcb==
+"remote"then
+if#bca==0 then print("No remote recipes available.")return end;__b(bca,_db)else
+print("Usage: list recipe [remote|local] [page]")end end,function(acb)
+local bcb={}
+for ccb in acb:gmatch("%S+")do table.insert(bcb,ccb)end
+if#bcb==1 then local ccb=acb:match("%S+$")or""local dcb={}if
+("recipe"):find(ccb,1,true)==1 then
+table.insert(dcb,("recipe"):sub(#ccb+1))end;return dcb elseif#bcb==2 then
+local ccb=acb:match("%S+$")or""local dcb={}local _db={"remote","local"}for adb,bdb in ipairs(_db)do
+if
+bdb:find(ccb,1,true)==1 then table.insert(dcb,bdb:sub(#ccb+1))end end;return dcb end;return{}end)
+_cb:addCommand("add","Add recipe(s) from remote by depotType",function(acb)local bcb={}for adb in acb:gmatch("%S+")do
+table.insert(bcb,adb)end
+if#bcb<2 then
 print("Usage: add [depotType] [input_name]")
 print("DepotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4)")print("Examples:")
 print("  add fire minecraft:iron_ore    - Add specific recipe")
 print("  add fire                       - Add all fire-type recipes")
-print("Use 'list recipe remote' to see available recipes")return end;local bbb=abb[2]local cbb=abb[3]local dbb=nil
-if bbb=="none"or bbb=="0"then dbb=0 elseif
-bbb=="fire"or bbb=="1"then dbb=1 elseif bbb=="soul_fire"or bbb=="2"then dbb=2 elseif bbb=="lava"or bbb==
-"3"then dbb=3 elseif bbb=="water"or bbb=="4"then dbb=4 elseif tonumber(bbb)and
-tonumber(bbb)>=0 and tonumber(bbb)<=4 then
-dbb=tonumber(bbb)else print("Invalid depotType: "..bbb)
+print("Use 'list recipe remote' to see available recipes")return end;local ccb=bcb[2]local dcb=bcb[3]local _db=nil
+if ccb=="none"or ccb=="0"then _db=0 elseif
+ccb=="fire"or ccb=="1"then _db=1 elseif ccb=="soul_fire"or ccb=="2"then _db=2 elseif ccb=="lava"or ccb==
+"3"then _db=3 elseif ccb=="water"or ccb=="4"then _db=4 elseif tonumber(ccb)and
+tonumber(ccb)>=0 and tonumber(ccb)<=4 then
+_db=tonumber(ccb)else print("Invalid depotType: "..ccb)
 print("Valid depotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4)")return end
-if cbb then local _cb=nil
-for ccb,dcb in ipairs(dba)do if dcb.input==cbb and dcb.depotType==dbb then
-_cb=dcb;break end end
-if not _cb then
+if dcb then local adb=nil
+for ddb,__c in ipairs(bca)do if __c.input==dcb and __c.depotType==_db then
+adb=__c;break end end
+if not adb then
 print("Remote recipe '"..
-cbb.."' with depotType "..dbb.." not found")
-print("Use 'list recipe remote' to see available remote recipes")return end;if _da(cbb)then
-print("Recipe with input '"..cbb.."' already exists locally")return end
-local acb={id=_cb.id,input=_cb.input,output=_cb.output,depotType=_cb.depotType,trigger=_cb.trigger,maxMachine=
-_cb.maxMachine or-1}table.insert(cba,acb)aca()
-print("Recipe added from remote successfully:")print("  Input: "..acb.input)print("  Output: "..
-table.concat(acb.output,", "))
-local bcb=({"none","fire","soul_fire","lava","water"})[
-acb.depotType+1]or"unknown"
-print("  DepotType: "..acb.depotType.." ("..bcb..")")else local _cb={}for dcb,_db in ipairs(dba)do
-if _db.depotType==dbb then table.insert(_cb,_db)end end
-if#_cb==0 then
-local dcb=({"none","fire","soul_fire","lava","water"})[
-dbb+1]or"unknown"
-print("No remote recipes found with depotType "..dbb.." ("..dcb..")")
-print("Use 'list recipe remote' to see available remote recipes")return end;local acb=0;local bcb=0
-for dcb,_db in ipairs(_cb)do
-if not _da(_db.input)then
-local adb={id=_db.id,input=_db.input,output=_db.output,depotType=_db.depotType,trigger=_db.trigger,maxMachine=
-_db.maxMachine or-1}table.insert(cba,adb)acb=acb+1 else bcb=bcb+1 end end;aca()local ccb=
-({"none","fire","soul_fire","lava","water"})[dbb+1]or"unknown"
+dcb.."' with depotType ".._db.." not found")
+print("Use 'list recipe remote' to see available remote recipes")return end;if cda(dcb)then
+print("Recipe with input '"..dcb.."' already exists locally")return end
+local bdb={id=adb.id,input=adb.input,output=adb.output,depotType=adb.depotType,trigger=adb.trigger,maxMachine=
+adb.maxMachine or-1}table.insert(aca,bdb)dca()
+print("Recipe added from remote successfully:")print("  Input: "..bdb.input)print("  Output: "..
+table.concat(bdb.output,", "))
+local cdb=({"none","fire","soul_fire","lava","water"})[
+bdb.depotType+1]or"unknown"
+print("  DepotType: "..bdb.depotType.." ("..cdb..")")else local adb={}for __c,a_c in ipairs(bca)do
+if a_c.depotType==_db then table.insert(adb,a_c)end end
+if#adb==0 then
+local __c=({"none","fire","soul_fire","lava","water"})[
+_db+1]or"unknown"
+print("No remote recipes found with depotType ".._db.." ("..__c..")")
+print("Use 'list recipe remote' to see available remote recipes")return end;local bdb=0;local cdb=0
+for __c,a_c in ipairs(adb)do
+if not cda(a_c.input)then
+local b_c={id=a_c.id,input=a_c.input,output=a_c.output,depotType=a_c.depotType,trigger=a_c.trigger,maxMachine=
+a_c.maxMachine or-1}table.insert(aca,b_c)bdb=bdb+1 else cdb=cdb+1 end end;dca()local ddb=
+({"none","fire","soul_fire","lava","water"})[_db+1]or"unknown"
 print(
-"Batch add completed for depotType "..dbb.." ("..ccb.."):")print("  Added: "..acb.." recipes")if
-bcb>0 then
-print("  Skipped: "..bcb.." recipes (already exist)")end end end,function(_bb)
-local abb={}
-for bbb in _bb:gmatch("%S+")do table.insert(abb,bbb)end
-if#abb==1 and _bb:sub(-1)~=" "then
-local bbb=_bb:match("%S+$")or""local cbb={}
-local dbb={"none","fire","soul_fire","lava","water","0","1","2","3","4"}
-for _cb,acb in ipairs(dbb)do if acb:find(bbb,1,true)==1 then
-table.insert(cbb,acb:sub(#bbb+1))end end;return cbb elseif#abb==2 then local bbb=abb[2]local cbb=nil
-if bbb=="none"or bbb=="0"then cbb=0 elseif
-bbb=="fire"or bbb=="1"then cbb=1 elseif bbb=="soul_fire"or bbb=="2"then cbb=2 elseif bbb=="lava"or bbb==
-"3"then cbb=3 elseif bbb=="water"or bbb=="4"then cbb=4 elseif tonumber(bbb)and
-tonumber(bbb)>=0 and tonumber(bbb)<=4 then
-cbb=tonumber(bbb)end
-if cbb~=nil then local dbb={}local _cb=_bb:match("%S+$")or""
-for acb,bcb in ipairs(dba)do if
+"Batch add completed for depotType ".._db.." ("..ddb.."):")print("  Added: "..bdb.." recipes")if
+cdb>0 then
+print("  Skipped: "..cdb.." recipes (already exist)")end end end,function(acb)
+local bcb={}
+for ccb in acb:gmatch("%S+")do table.insert(bcb,ccb)end
+if#bcb==1 and acb:sub(-1)~=" "then
+local ccb=acb:match("%S+$")or""local dcb={}
+local _db={"none","fire","soul_fire","lava","water","0","1","2","3","4"}
+for adb,bdb in ipairs(_db)do if bdb:find(ccb,1,true)==1 then
+table.insert(dcb,bdb:sub(#ccb+1))end end;return dcb elseif#bcb==2 then local ccb=bcb[2]local dcb=nil
+if ccb=="none"or ccb=="0"then dcb=0 elseif
+ccb=="fire"or ccb=="1"then dcb=1 elseif ccb=="soul_fire"or ccb=="2"then dcb=2 elseif ccb=="lava"or ccb==
+"3"then dcb=3 elseif ccb=="water"or ccb=="4"then dcb=4 elseif tonumber(ccb)and
+tonumber(ccb)>=0 and tonumber(ccb)<=4 then
+dcb=tonumber(ccb)end
+if dcb~=nil then local _db={}local adb=acb:match("%S+$")or""
+for bdb,cdb in ipairs(bca)do if
 
-bcb.depotType==cbb and bcb.input:find(_cb,1,true)==1 then
-table.insert(dbb,bcb.input:sub(#_cb+1))end end;return dbb end end;return{}end)
-dab:addCommand("rm","Remove recipe",function(_bb)local abb={}
-for _cb in _bb:gmatch("%S+")do table.insert(abb,_cb)end;if#abb<2 then print("Usage: rm [input]")return end
-local bbb=abb[2]local cbb=false;local dbb=nil
-for _cb,acb in ipairs(cba)do if acb.input==bbb then dbb=acb
-table.remove(cba,_cb)cbb=true;break end end
-if cbb then aca()
-local _cb=
-({"none","fire","soul_fire","lava","water"})[dbb.depotType+1]or"unknown"
-print("Recipe removed: [".._cb.."] "..dbb.input)else
-print("Recipe '"..bbb.."' not found")end end,function(_bb)
-local abb={}local bbb=_bb:match("%S+$")or""
-for cbb,dbb in ipairs(cba)do if
-dbb.input:find(bbb,1,true)==1 then
-table.insert(abb,dbb.input:sub(#bbb+1))end end;return abb end)
-dab:addCommand("reboot","Exit the program",function(_bb)print("Goodbye!")os.reboot()end)return dab end
-if bba~=nil and#bba>0 then local dab=bba[1]local _bb=tonumber(bba[2])
-local abb=bba[3]
-if dab and _bb and abb then cca(dab,_bb,abb)
-aaa.open(dab,_bb,"recipe",abb)
-local bbb=aaa.communicationChannels[dab][_bb]["recipe"]
-bbb.addMessageHandler("getRecipesRes",function(cbb,dbb,_cb)dba=dbb or{}end)
-bbb.addMessageHandler("update",function(cbb,dbb,_cb)
-if dbb and type(dbb)=="table"then dca(dbb)end end)
-parallel.waitForAll(aaa.listen,function()while next(dba)==nil do
-bbb.send("getRecipesReq","depot")sleep(1)end end,function()
-local cbb=cda()while true do local dbb,_cb=pcall(function()cbb:run()end)
-if not dbb then print(
-"Error: "..tostring(_cb))end end end)end end;_ba.reloadAll()
-local dda=_ba.getAllPeripheralsNameContains("depot")
-local __b=_ba.getAllPeripheralsNameContains("crafting_storage")local a_b=next(__b)local b_b=__b[a_b]local c_b=aba.getLength(dda)
-local d_b={recipeOnDepot={},depotOnUse={},lostTrackDepots={},init=function(dab)
-for _bb,abb in
-ipairs(cba)do dab.recipeOnDepot[abb.id]={recipe=abb,depots={}}end;for _bb,abb in pairs(dda)do
-dab.depotOnUse[abb.getId()]={onUse=false,depot=abb,recipe=nil}end end,set=function(dab,_bb,abb)
-local bbb=dab.depotOnUse[abb.getId()]bbb.onUse=true;bbb.recipe=_bb;local cbb=dab.recipeOnDepot[_bb.id]
-cbb.depots[abb.getId()]=abb;cbb.count=(cbb.count or 0)+1 end,remove=function(dab,_bb)if
-_bb==nil then return end
-local abb=dab.depotOnUse[_bb.getId()].recipe;dab.depotOnUse[_bb.getId()].onUse=false;dab.depotOnUse[_bb.getId()].recipe=
-nil;dab.recipeOnDepot[abb.id].depots[_bb.getId()]=
+cdb.depotType==dcb and cdb.input:find(adb,1,true)==1 then
+table.insert(_db,cdb.input:sub(#adb+1))end end;return _db end end;return{}end)
+_cb:addCommand("rm","Remove recipe",function(acb)local bcb={}
+for adb in acb:gmatch("%S+")do table.insert(bcb,adb)end;if#bcb<2 then print("Usage: rm [input]")return end
+local ccb=bcb[2]local dcb=false;local _db=nil
+for adb,bdb in ipairs(aca)do if bdb.input==ccb then _db=bdb
+table.remove(aca,adb)dcb=true;break end end
+if dcb then dca()
+local adb=
+({"none","fire","soul_fire","lava","water"})[_db.depotType+1]or"unknown"
+print("Recipe removed: ["..adb.."] ".._db.input)else
+print("Recipe '"..ccb.."' not found")end end,function(acb)
+local bcb={}local ccb=acb:match("%S+$")or""
+for dcb,_db in ipairs(aca)do if
+_db.input:find(ccb,1,true)==1 then
+table.insert(bcb,_db.input:sub(#ccb+1))end end;return bcb end)
+_cb:addCommand("reboot","Exit the program",function(acb)print("Goodbye!")os.reboot()end)return _cb end
+local c_b=function(_cb)
+_cb.addMessageHandler("getRecipesRes",function(acb,bcb,ccb)bca=bcb or{}end)
+_cb.addMessageHandler("update",function(acb,bcb,ccb)if bcb and type(bcb)=="table"then bda(bcb)
+_cb.send("getRecipesReq","depot")end end)end
+local d_b=function()local _cb=b_b()while true do
+local acb,bcb=pcall(function()_cb:run()end)
+if not acb then print("Error: "..tostring(bcb))end end end
+if _ca~=nil and#_ca>0 then local _cb=_ca[1]local acb=tonumber(_ca[2])
+local bcb=_ca[3]
+if _cb and acb and bcb then ada(_cb,acb,bcb)
+daa.open(_cb,acb,"recipe",bcb)
+local ccb=daa.communicationChannels[_cb][acb]["recipe"]c_b(ccb)
+parallel.waitForAll(daa.listen,function()while next(bca)==nil do
+ccb.send("getRecipesReq","depot")sleep(1)end end,d_b)end end;cba.reloadAll()
+local _ab=cba.getAllPeripheralsNameContains("depot")
+local aab=cba.getAllPeripheralsNameContains("crafting_storage")local bab=next(aab)local cab=aab[bab]local dab=dba.getLength(_ab)
+local _bb={recipeOnDepot={},depotOnUse={},lostTrackDepots={},init=function(_cb)
+for acb,bcb in
+ipairs(aca)do _cb.recipeOnDepot[bcb.id]={recipe=bcb,depots={}}end;for acb,bcb in pairs(_ab)do
+_cb.depotOnUse[bcb.getId()]={onUse=false,depot=bcb,recipe=nil}end end,set=function(_cb,acb,bcb)
+local ccb=_cb.depotOnUse[bcb.getId()]ccb.onUse=true;ccb.recipe=acb;local dcb=_cb.recipeOnDepot[acb.id]
+dcb.depots[bcb.getId()]=bcb;dcb.count=(dcb.count or 0)+1 end,remove=function(_cb,acb)if
+acb==nil then return end
+local bcb=_cb.depotOnUse[acb.getId()].recipe;_cb.depotOnUse[acb.getId()].onUse=false;_cb.depotOnUse[acb.getId()].recipe=
+nil;_cb.recipeOnDepot[bcb.id].depots[acb.getId()]=
 nil
-dab.recipeOnDepot[abb.id].count=math.max(0,(
-dab.recipeOnDepot[abb.id].count or 1)-1)end,isUsing=function(dab,_bb)return
-dab.depotOnUse[_bb.getId()].onUse end,isCompleted=function(dab,_bb)if
-not dab:isUsing(_bb)then return false end
-local abb=dab.depotOnUse[_bb.getId()].recipe;local bbb=_bb.getItem(abb.input)if bbb==nil or bbb.count==0 then
-return true end end,isLoseTrack=function(dab,_bb)if
+_cb.recipeOnDepot[bcb.id].count=math.max(0,(
+_cb.recipeOnDepot[bcb.id].count or 1)-1)end,isUsing=function(_cb,acb)return
+_cb.depotOnUse[acb.getId()].onUse end,isCompleted=function(_cb,acb)if
+not _cb:isUsing(acb)then return false end
+local bcb=_cb.depotOnUse[acb.getId()].recipe;local ccb=acb.getItem(bcb.input)if ccb==nil or ccb.count==0 then
+return true end end,isLoseTrack=function(_cb,acb)if
 
-not dab:isUsing(_bb)and#_bb.getItems()>0 then return true end;return false end,getOnUseDepotCountForRecipe=function(dab,_bb)return
-dab.recipeOnDepot[_bb.id].count or 0 end}d_b:init()
-local _ab=function(dab)local _bb=b_b.getItem(dab.input)
-if not _bb then return false end;return true end
-local aab=function()
-while true do local dab={}
-for cbb,dbb in ipairs(cba)do
-if _ab(dbb)and dbb.trigger then
-local _cb=daa.eval(dbb.trigger,function(acb,bcb)
-if acb=="item"then return
-b_b.getItem(bcb)elseif acb=="fluid"then return b_b.getFluid(bcb)end;return nil end)if _cb then table.insert(dab,dbb)end end end;local _bb=c_b;local abb=#dab
-local bbb=math.max(1,math.floor(_bb/math.max(1,abb)))
-for cbb,dbb in ipairs(dab)do local _cb=d_b:getOnUseDepotCountForRecipe(dbb)local acb;if
-dbb.maxMachine and dbb.maxMachine>0 then
-acb=math.min(bbb,dbb.maxMachine)else acb=bbb end
-print("recipe "..
-(dbb.input or"Unnamed")..
-" usedDepotsCount: ".._cb..", maxMachineForRecipe: "..acb)
-if _cb>acb then
-print("Releasing depots for recipe: ".. (dbb.input or"Unnamed"))local bcb=_cb-acb
-for ccb,dcb in
-pairs(d_b.recipeOnDepot[dbb.id].depots)do if bcb<=0 then break end;d_b:remove(dcb)bcb=bcb-1 end;_cb=d_b:getOnUseDepotCountForRecipe(dbb)end
-if _cb<acb then local bcb=acb-_cb
-_aa.info("Need {} depots for recipe {} (max: {})",bcb,dbb.input,acb)
-for ccb,dcb in pairs(dda)do if bcb<=0 then break end
-if not d_b:isUsing(dcb)then
-local _db=b_b.transferItemTo(dcb,dbb.input,64)
-_aa.info("Transferred {} items to depot {}",_db,dcb.getId())
-if _db<=0 then
-if d_b:isLoseTrack(dcb)then
-_aa.info("Lost track of depot {}",dcb.getId())table.insert(d_b.lostTrackDepots,dcb)end else d_b:set(dbb,dcb)bcb=bcb-1 end else
-_aa.info("Depot {} is already in use for recipe {}",dcb.getId(),dbb.input)end end end;_bb=_bb-acb
-print("currentTotalDepots: "..
-_bb.." (allocated "..acb.." to "..
-(dbb.input or"Unnamed")..")")abb=abb-1
-bbb=math.max(1,math.floor(_bb/math.max(1,abb)))end;os.sleep(1)end end
-local bab=function()
+not _cb:isUsing(acb)and#acb.getItems()>0 then return true end;return false end,getOnUseDepotCountForRecipe=function(_cb,acb)return
+_cb.recipeOnDepot[acb.id].count or 0 end}_bb:init()
+local abb=function(_cb)local acb=cab.getItem(_cb.input)
+if not acb then return false end;return true end
+local bbb=function()
+while true do local _cb={}
+for dcb,_db in ipairs(aca)do
+if abb(_db)and _db.trigger then
+local adb=bba.eval(_db.trigger,function(bdb,cdb)
+if bdb=="item"then return
+cab.getItem(cdb)elseif bdb=="fluid"then return cab.getFluid(cdb)end;return nil end)if adb then table.insert(_cb,_db)end end end;local acb=dab;local bcb=#_cb
+local ccb=math.max(1,math.floor(acb/math.max(1,bcb)))
+for dcb,_db in ipairs(_cb)do local adb=_bb:getOnUseDepotCountForRecipe(_db)local bdb;if
+_db.maxMachine and _db.maxMachine>0 then
+bdb=math.min(ccb,_db.maxMachine)else bdb=ccb end
+caa.debug("recipe "..
+(_db.input or"Unnamed")..
+" usedDepotsCount: "..adb..", maxMachineForRecipe: "..bdb)
+if adb>bdb then
+caa.info("Releasing depots for recipe: ".. (_db.input or"Unnamed"))local cdb=adb-bdb
+for ddb,__c in
+pairs(_bb.recipeOnDepot[_db.id].depots)do if cdb<=0 then break end;_bb:remove(__c)cdb=cdb-1 end;adb=_bb:getOnUseDepotCountForRecipe(_db)end
+if adb<bdb then local cdb=bdb-adb
+caa.info("Need {} depots for recipe {} (max: {})",cdb,_db.input,bdb)
+for ddb,__c in pairs(_ab)do if cdb<=0 then break end
+if not _bb:isUsing(__c)then
+local a_c=cab.transferItemTo(__c,_db.input,64)
+caa.info("Transferred {} items to depot {}",a_c,__c.getId())
+if a_c<=0 then
+if _bb:isLoseTrack(__c)then
+caa.info("Lost track of depot {}",__c.getId())table.insert(_bb.lostTrackDepots,__c)end else _bb:set(_db,__c)cdb=cdb-1 end else
+caa.info("Depot {} is already in use for recipe {}",__c.getId(),_db.input)end end end;acb=acb-bdb;bcb=bcb-1
+ccb=math.max(1,math.floor(acb/math.max(1,bcb)))end;os.sleep(1)end end
+local cbb=function()
 while true do
-for dab,_bb in pairs(d_b.depotOnUse)do local abb=_bb.depot
-if d_b:isUsing(abb)then
+for _cb,acb in pairs(_bb.depotOnUse)do local bcb=acb.depot
+if _bb:isUsing(bcb)then
 if
-d_b:isCompleted(abb)then local bbb=_bb.recipe;local cbb=abb.getItems(bbb.input)
-for dbb,_cb in ipairs(cbb)do
-local acb=b_b.transferItemFrom(abb,_cb.name,_cb.count)
-if acb==_cb.count then
-_aa.debug("Transferred completed recipe "..
-bbb.input.." from depot "..abb.getId())else
-_aa.error("Failed to transfer completed recipe {} from depot {}",bbb.input,abb.getId())end end;d_b:remove(abb)end end end
-for dab,_bb in ipairs(d_b.lostTrackDepots)do
-for abb,bbb in ipairs(_bb.getItems())do
-local cbb=b_b.transferItemFrom(_bb,bbb.name,bbb.count)
-if cbb>0 then
-_aa.debug("Transferred lost item {} from depot {}",bbb.name,_bb.getId())else
-_aa.error("Failed to transfer lost item {} from depot {}",bbb.name,_bb.getId())end end end;os.sleep(1)end end
-local cab=function()local dab=bca()
+_bb:isCompleted(bcb)then local ccb=acb.recipe;local dcb=bcb.getItems(ccb.input)
+for _db,adb in ipairs(dcb)do
+local bdb=cab.transferItemFrom(bcb,adb.name,adb.count)
+if bdb==adb.count then
+caa.debug("Transferred completed recipe "..
+ccb.input.." from depot "..bcb.getId())else
+caa.error("Failed to transfer completed recipe {} from depot {}",ccb.input,bcb.getId())end end;_bb:remove(bcb)end end end
+for _cb,acb in ipairs(_bb.lostTrackDepots)do
+for bcb,ccb in ipairs(acb.getItems())do
+local dcb=cab.transferItemFrom(acb,ccb.name,ccb.count)
+if dcb>0 then
+caa.debug("Transferred lost item {} from depot {}",ccb.name,acb.getId())else
+caa.error("Failed to transfer lost item {} from depot {}",ccb.name,acb.getId())end end end;os.sleep(1)end end
+local dbb=function()local _cb=_da()
 if
-dab and dab.side and dab.channel and dab.secret then
-print("Found saved communicator config, attempting to connect...")
-aaa.open(dab.side,dab.channel,"recipe",dab.secret)
-local _bb=aaa.communicationChannels[dab.side][dab.channel]["recipe"]
-_bb.addMessageHandler("getRecipesRes",function(abb,bbb,cbb)dba=bbb or{}end)
-_bb.addMessageHandler("update",function(abb,bbb,cbb)
-if bbb and type(bbb)=="table"then dca(bbb)end end)aaa.listen()end end;parallel.waitForAll(cab,aab,bab) end
+_cb and _cb.side and _cb.channel and _cb.secret then
+caa.info("Found saved communicator config, attempting to connect...")
+daa.open(_cb.side,_cb.channel,"recipe",_cb.secret)
+local acb=daa.communicationChannels[_cb.side][_cb.channel]["recipe"]c_b(acb)daa.listen()end end;parallel.waitForAll(dbb,bbb,cbb,d_b) end
 modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
 b.useDefault=function()
 b.addPrintFunction(function(c,d,_a,aa)
