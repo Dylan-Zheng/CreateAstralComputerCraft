@@ -84,6 +84,8 @@ end
 -- Update recipes by ID
 local function updateRecipesByID(newRecipes)
     local recipeMap = {}
+    local nameChangeMap = {} -- Track recipe name changes
+    
     -- Create a map of existing recipes by ID
     for i, recipe in ipairs(recipes) do
         if recipe.id then
@@ -96,14 +98,31 @@ local function updateRecipesByID(newRecipes)
         if newRecipe.id then
             local existingIndex = recipeMap[newRecipe.id]
             if existingIndex then
+                -- Track name changes for link updates
+                local oldName = recipes[existingIndex].name
+                local newName = newRecipe.name
+                if oldName ~= newName then
+                    nameChangeMap[oldName] = newName
+                end
+                
                 -- Update existing recipe
                 recipes[existingIndex] = newRecipe
             end
         end
     end
 
-    -- Save updated recipes
+    -- Update recipe links based on name changes
+    for oldName, newName in pairs(nameChangeMap) do
+        if recipeLinks[oldName] then
+            local groupName = recipeLinks[oldName]
+            recipeLinks[oldName] = nil -- Remove old link
+            recipeLinks[newName] = groupName -- Add new link with updated name
+        end
+    end
+
+    -- Save updated recipes and links
     saveRecipes()
+    saveRecipeLinks()
 end
 
 local getflattedGroupMachineNames = function(groups)
@@ -686,7 +705,6 @@ end
 
 -- Initialize recipes
 loadRecipes()
-
 local runCommandLine = function()
     local cli = createCommandLine()
     while true do

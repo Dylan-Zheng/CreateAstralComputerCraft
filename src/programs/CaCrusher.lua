@@ -44,33 +44,6 @@ local function saveCommunicatorConfig(side, channel, secret)
     OSUtils.saveTable("cacrusher_communicator_config", config)
 end
 
--- Update recipes by ID
-local function updateRecipesByID(newRecipes)
-    local recipeMap = {}
-    -- Create a map of existing recipes by ID
-    for i, recipe in ipairs(recipes) do
-        if recipe.id then
-            recipeMap[recipe.id] = i
-        end
-    end
-
-    -- Update existing recipes or add new ones
-    for _, newRecipe in ipairs(newRecipes) do
-        if newRecipe.id then
-            local existingIndex = recipeMap[newRecipe.id]
-            if existingIndex then
-                -- Update existing recipe
-                recipes[existingIndex] = newRecipe
-            end
-        end
-    end
-
-    -- Save updated recipes
-    saveRecipes()
-    -- Reinitialize marker after recipe update
-    marker:init()
-end
-
 -- Get recipe by name
 local function getRecipeByName(recipeName)
     for _, recipe in ipairs(recipes) do
@@ -228,7 +201,10 @@ local function createCommandLine()
                         name = remoteRecipe.name,
                         input = remoteRecipe.input,
                         output = remoteRecipe.output,
-                        trigger = remoteRecipe.trigger
+                        trigger = remoteRecipe.trigger,
+                        maxMachine = remoteRecipe.maxMachine or -1,
+                        inputItemRate = remoteRecipe.inputItemRate or 1,
+                        inputFluidRate = remoteRecipe.inputFluidRate or 1
                     }
                     table.insert(recipes, newRecipe)
                     addedCount = addedCount + 1
@@ -271,7 +247,10 @@ local function createCommandLine()
                 name = remoteRecipe.name,
                 input = remoteRecipe.input,
                 output = remoteRecipe.output,
-                trigger = remoteRecipe.trigger
+                trigger = remoteRecipe.trigger,
+                maxMachine = remoteRecipe.maxMachine or -1,
+                inputItemRate = remoteRecipe.inputItemRate or 1,
+                inputFluidRate = remoteRecipe.inputFluidRate or 1
             }
 
             table.insert(recipes, newRecipe)
@@ -415,11 +394,13 @@ if args ~= nil and #args > 0 then
 end
 
 PeripheralWrapper.reloadAll()
+
 local crushers = PeripheralWrapper.getAllPeripheralsNameContains("create:crushing_wheel")
-local barrels = PeripheralWrapper.getAllPeripheralsNameContains("minecraft:barrel")
 local storages = PeripheralWrapper.getAllPeripheralsNameContains("crafting_storage")
-local key = next(storages) -- Assuming only one storage is available
-local storage = storages[key]
+local storage = storages[next(storages)]
+
+local redrouters = PeripheralWrapper.getAllPeripheralsNameContains("redrouter")
+local redrouter = redrouters[next(redrouters)]
 
 local totalCrushers = TableUtils.getLength(crushers)
 
@@ -430,17 +411,21 @@ local marker = {
 
     init = function(self)
         for _, recipe in ipairs(recipes) do
-            self.recipeOnCrusher[recipe.id] = {
-                recipe = recipe,
-                crushers = {}
-            }
+            if self.recipeOnCrusher[recipe.id] == nil then
+                self.recipeOnCrusher[recipe.id] = {
+                    recipe = recipe,
+                    crushers = {}
+                }
+            end
         end
         for _, crusher in pairs(crushers) do
-            self.crusherOnUse[crusher.getId()] = {
-                onUse = false,
-                crusher = crusher,
-                recipe = nil
-            }
+            if self.crusherOnUse[crusher.getId()] == nil then
+                self.crusherOnUse[crusher.getId()] = {
+                    onUse = false,
+                    crusher = crusher,
+                    recipe = nil
+                }
+            end
         end
     end,
 
@@ -459,34 +444,11 @@ local marker = {
         self.crusherOnUse[crusher.getId()].onUse = false
         self.crusherOnUse[crusher.getId()].recipe = nil
         self.recipeOnCrusher[recipe.id].crushers[crusher.getId()] = nil
-        self.recipeOnCrusher[recipe.id].count = math.max(0, (self.recipeOnCrusher[recipe.id].count or 1) - 1)
+        self.recipeOnCrusher[recipe.id].count = math.max(0, (self.recipeOnCrusher[recipe.id].count or 0) - 1)
     end,
 
     isUsing = function(self, crusher)
         return self.crusherOnUse[crusher.getId()].onUse
-    end,
-
-    isCompleted = function(self, crusher)
-        if not self:isUsing(crusher) then
-            return false
-        end
-        local recipe = self.crusherOnUse[crusher.getId()].recipe
-        if recipe.input and recipe.input.items then
-            for _, inputItem in ipairs(recipe.input.items) do
-                local input = crusher.getItem(inputItem)
-                if input ~= nil and input.count > 0 then
-                    return false -- Still has input items
-                end
-            end
-        end
-        return true -- No input items left
-    end,
-
-    isLoseTrack = function(self, crusher)
-        if not self:isUsing(crusher) and #crusher.getItems() > 0 then
-            return true
-        end
-        return false
     end,
 
     getOnUseCrusherCountForRecipe = function(self, recipe)
@@ -494,13 +456,48 @@ local marker = {
     end,
 }
 
+-- Update recipes by ID
+local function updateRecipesByID(newRecipes)
+    local recipeMap = {}
+    -- Create a map of existing recipes by ID
+    for i, recipe in ipairs(recipes) do
+        if recipe.id then
+            recipeMap[recipe.id] = i
+        end
+    end
+
+    -- Update existing recipes or add new ones
+    for _, newRecipe in ipairs(newRecipes) do
+        if newRecipe.id then
+            local existingIndex = recipeMap[newRecipe.id]
+            if existingIndex then
+                -- Update existing recipe
+                recipes[existingIndex] = newRecipe
+            end
+        end
+    end
+
+    -- Save updated recipes
+    saveRecipes()
+    -- Reinitialize marker after recipe update
+    marker:init()
+end
+
+local checkInputItem = function(recipe)
+    local item = storage.getItem(recipe.input.items[1])
+    if not item then
+        return false
+    end
+    return true
+end
+
 marker:init()
 
 local checkAndRunRecipe = function()
     while true do
         local triggeredRecipes = {}
         for _, recipe in ipairs(recipes) do
-            if recipe.trigger then
+            if checkInputItem(recipe) and recipe.trigger  then
                 local triggered = Trigger.eval(recipe.trigger, function(type, itemName)
                     if type == "item" then
                         return storage.getItem(itemName)
@@ -511,92 +508,88 @@ local checkAndRunRecipe = function()
                 end)
                 if triggered then
                     table.insert(triggeredRecipes, recipe)
+                else
+                    local count = marker:getOnUseCrusherCountForRecipe(recipe)
+                    if count > 0 then
+                        for _, crusher in pairs(marker.recipeOnCrusher[recipe.id].crushers) do
+                            marker:remove(crusher)
+                        end
+                    end
                 end
             end
         end
 
-        local numOfCrushersForEachRecipe = totalCrushers / math.max(1, #triggeredRecipes)
+        local waitTime = 1
 
-        for _, recipe in ipairs(triggeredRecipes) do
-            local onUseCrusherCount = marker:getOnUseCrusherCountForRecipe(recipe)
-            if onUseCrusherCount < numOfCrushersForEachRecipe then
-                local crusherNeeded = numOfCrushersForEachRecipe - onUseCrusherCount
-                Logger.info("Need {} crushers for recipe {}", crusherNeeded, recipe.name)
-                for _, crusher in pairs(crushers) do
-                    if crusherNeeded <= 0 then
-                        break
-                    end
-                    if not marker:isUsing(crusher) then
-                        local totalTransferred = 0
-                        if recipe.input and recipe.input.items then
-                            for _, inputItem in ipairs(recipe.input.items) do
-                                local transferred = storage.transferItemTo(crusher, inputItem, 64)
-                                totalTransferred = totalTransferred + transferred
-                                Logger.info("Transferred {} {} to crusher {}", transferred, inputItem, crusher.getId())
-                            end
+        local currentTriggeredRecipeCount = #triggeredRecipes
+        if currentTriggeredRecipeCount > 0 then
+            waitTime = 0.2
+            redrouter.setOutputSignals(true)
+            local currentTotalCrushers = totalCrushers
+
+            local numOfCrushersForEachRecipe = math.max(1,
+                math.floor(currentTotalCrushers / math.max(1, currentTriggeredRecipeCount)))
+
+            for _, recipe in ipairs(triggeredRecipes) do
+                local usedCrushersCount = marker:getOnUseCrusherCountForRecipe(recipe)
+                local maxMachineForRecipe
+
+                if recipe.maxMachine and recipe.maxMachine > 0 then
+                    maxMachineForRecipe = math.min(numOfCrushersForEachRecipe, recipe.maxMachine)
+                else
+                    maxMachineForRecipe = numOfCrushersForEachRecipe
+                end
+
+                if usedCrushersCount > maxMachineForRecipe then
+                    local toRemove = usedCrushersCount - maxMachineForRecipe
+                    for _, crusher in pairs(marker.recipeOnCrusher[recipe.id].crushers) do
+                        if toRemove <= 0 then
+                            break
                         end
+                        marker:remove(crusher)
+                        toRemove = toRemove - 1
+                    end
+                    usedCrushersCount = marker:getOnUseCrusherCountForRecipe(recipe) -- Update count after removal
+                end
 
-                        if totalTransferred <= 0 then
-                            if marker:isLoseTrack(crusher) then
-                                Logger.info("Lost track of crusher {}", crusher.getId())
-                                table.insert(marker.lostTrackCrushers, crusher)
-                            end
-                        else
+                if usedCrushersCount < maxMachineForRecipe then
+                    local crusherNeeded = maxMachineForRecipe - usedCrushersCount
+                    for _, crusher in pairs(crushers) do
+                        if crusherNeeded <= 0 then
+                            break
+                        end
+                        if not marker:isUsing(crusher) then
                             marker:set(recipe, crusher)
                             crusherNeeded = crusherNeeded - 1
                         end
-                    else
-                        Logger.info("Crusher {} is already in use for recipe {}", crusher.getId(), recipe.name)
                     end
                 end
-            end
-        end
-        sleep(1)
-    end
-end
 
-local checkAndMoveCompletedRecipe = function()
-    while true do
-        for key, onUseCrusherInfo in pairs(marker.crusherOnUse) do
-            local crusher = onUseCrusherInfo.crusher
-            if marker:isUsing(crusher) then
-                if marker:isCompleted(crusher) then
-                    local recipe = onUseCrusherInfo.recipe
-                    local items = crusher.getItems()
-
-                    for _, item in ipairs(items) do
-                        local transferred = storage.transferItemFrom(crusher, item.name, item.count)
-                        if transferred > 0 then
-                            Logger.error("Transferred completed item {} from crusher {}", item.name, crusher.getId())
-                        else
-                            Logger.error("Failed to transfer completed item {} from crusher {}", item.name,
-                                crusher.getId())
+                -- Transfer items to all crushers assigned to this recipe
+                if recipe.input and recipe.input.items and #recipe.input.items > 0 then
+                    for _, crusher in pairs(marker.recipeOnCrusher[recipe.id].crushers) do
+                        for _, inputItem in ipairs(recipe.input.items) do
+                            local transferAmount = math.min(64, recipe.inputItemRate or 64)
+                            storage.transferItemTo(crusher, inputItem, transferAmount)
                         end
                     end
-                    marker:remove(crusher)
                 end
+                -- Subtract the allocated crushers for this recipe (not just the ones currently in use)
+                currentTotalCrushers = currentTotalCrushers - maxMachineForRecipe
+                currentTriggeredRecipeCount = currentTriggeredRecipeCount - 1
+                numOfCrushersForEachRecipe = math.max(1,
+                    math.floor(currentTotalCrushers / math.max(1, currentTriggeredRecipeCount)))
             end
+        else
+            redrouter.setOutputSignals(false)
         end
-
-        -- Handle lost track crushers
-        for _, crusher in ipairs(marker.lostTrackCrushers) do
-            for _, item in ipairs(crusher.getItems()) do
-                local transferred = storage.transferItemFrom(crusher, item.name, item.count)
-                if transferred > 0 then
-                    Logger.debug("Transferred lost item {} from crusher {}", item.name, crusher.getId())
-                else
-                    Logger.error("Failed to transfer lost item {} from crusher {}", item.name, crusher.getId())
-                end
-            end
-        end
-        sleep(1)
+        sleep(waitTime)
     end
 end
 
 local runChannel = function()
     local config = loadCommunicatorConfig()
     if config and config.side and config.channel and config.secret then
-        print("Found saved communicator config, attempting to connect...")
         Communicator.open(config.side, config.channel, "recipe", config.secret)
         local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
         openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
@@ -633,6 +626,5 @@ end
 parallel.waitForAll(
     runChannel,
     checkAndRunRecipe,
-    checkAndMoveCompletedRecipe,
     runCommandLine
 )

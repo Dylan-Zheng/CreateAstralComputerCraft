@@ -19,9 +19,12 @@ dca.saveTable("cabasin_recipes",b_b)end;local function abb()
 return dca.loadTable("cabasin_communicator_config")end
 local function bbb(aac,bac,cac)
 local dac={side=aac,channel=bac,secret=cac}dca.saveTable("cabasin_communicator_config",dac)end
-local function cbb(aac)local bac={}
-for cac,dac in ipairs(b_b)do if dac.id then bac[dac.id]=cac end end;for cac,dac in ipairs(aac)do
-if dac.id then local _bc=bac[dac.id]if _bc then b_b[_bc]=dac end end end;_bb()end
+local function cbb(aac)local bac={}local cac={}
+for dac,_bc in ipairs(b_b)do if _bc.id then bac[_bc.id]=dac end end
+for dac,_bc in ipairs(aac)do if _bc.id then local abc=bac[_bc.id]
+if abc then local bbc=b_b[abc].name
+local cbc=_bc.name;if bbc~=cbc then cac[bbc]=cbc end;b_b[abc]=_bc end end end;for dac,_bc in pairs(cac)do
+if d_b[dac]then local abc=d_b[dac]d_b[dac]=nil;d_b[_bc]=abc end end;_bb()cab()end
 local dbb=function(aac)local bac={}
 for cac,dac in pairs(aac)do
 for _bc,abc in ipairs(dac.basins)do bac[abc]=true end;for _bc,abc in ipairs(dac.blazeBurners)do bac[abc]=true end;for _bc,abc in ipairs(
