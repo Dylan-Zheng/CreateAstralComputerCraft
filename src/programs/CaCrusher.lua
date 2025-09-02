@@ -433,7 +433,13 @@ local marker = {
         local crusherOnUseInfo = self.crusherOnUse[crusher.getId()]
         crusherOnUseInfo.onUse = true
         crusherOnUseInfo.recipe = recipe
-
+        if self.recipeOnCrusher[recipe.id] == nil then
+            self.recipeOnCrusher[recipe.id] = {
+                recipe = recipe,
+                crushers = {},
+                count = 0
+            }
+        end
         local recipeOnCrusherInfo = self.recipeOnCrusher[recipe.id]
         recipeOnCrusherInfo.crushers[crusher.getId()] = crusher
         recipeOnCrusherInfo.count = (recipeOnCrusherInfo.count or 0) + 1
@@ -443,6 +449,13 @@ local marker = {
         local recipe = self.crusherOnUse[crusher.getId()].recipe
         self.crusherOnUse[crusher.getId()].onUse = false
         self.crusherOnUse[crusher.getId()].recipe = nil
+        if self.recipeOnCrusher[recipe.id] == nil then
+            self.recipeOnCrusher[recipe.id] = {
+                recipe = recipe,
+                crushers = {},
+                count = 0
+            }
+        end
         self.recipeOnCrusher[recipe.id].crushers[crusher.getId()] = nil
         self.recipeOnCrusher[recipe.id].count = math.max(0, (self.recipeOnCrusher[recipe.id].count or 0) - 1)
     end,
@@ -452,6 +465,13 @@ local marker = {
     end,
 
     getOnUseCrusherCountForRecipe = function(self, recipe)
+        if not self.recipeOnCrusher[recipe.id] then
+            self.recipeOnCrusher[recipe.id] = {
+                recipe = recipe,
+                crushers = {},
+                count = 0
+            }
+        end
         return self.recipeOnCrusher[recipe.id].count or 0
     end,
 }

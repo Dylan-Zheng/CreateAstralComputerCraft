@@ -121,15 +121,21 @@ abb.recipeOnCrusher[cbb.id]==nil then
 abb.recipeOnCrusher[cbb.id]={recipe=cbb,crushers={}}end end;for bbb,cbb in pairs(__b)do
 if abb.crusherOnUse[cbb.getId()]==nil then abb.crusherOnUse[cbb.getId()]={onUse=false,crusher=cbb,recipe=
 nil}end end end,set=function(abb,bbb,cbb)
-local dbb=abb.crusherOnUse[cbb.getId()]dbb.onUse=true;dbb.recipe=bbb
+local dbb=abb.crusherOnUse[cbb.getId()]dbb.onUse=true;dbb.recipe=bbb;if
+abb.recipeOnCrusher[bbb.id]==nil then
+abb.recipeOnCrusher[bbb.id]={recipe=bbb,crushers={},count=0}end
 local _cb=abb.recipeOnCrusher[bbb.id]_cb.crushers[cbb.getId()]=cbb
 _cb.count=(_cb.count or 0)+1 end,remove=function(abb,bbb)
 local cbb=abb.crusherOnUse[bbb.getId()].recipe
-abb.crusherOnUse[bbb.getId()].onUse=false;abb.crusherOnUse[bbb.getId()].recipe=nil;abb.recipeOnCrusher[cbb.id].crushers[bbb.getId()]=
+abb.crusherOnUse[bbb.getId()].onUse=false;abb.crusherOnUse[bbb.getId()].recipe=nil;if
+abb.recipeOnCrusher[cbb.id]==nil then
+abb.recipeOnCrusher[cbb.id]={recipe=cbb,crushers={},count=0}end;abb.recipeOnCrusher[cbb.id].crushers[bbb.getId()]=
 nil
 abb.recipeOnCrusher[cbb.id].count=math.max(0,(
 abb.recipeOnCrusher[cbb.id].count or 0)-1)end,isUsing=function(abb,bbb)return
-abb.crusherOnUse[bbb.getId()].onUse end,getOnUseCrusherCountForRecipe=function(abb,bbb)return
+abb.crusherOnUse[bbb.getId()].onUse end,getOnUseCrusherCountForRecipe=function(abb,bbb)if not
+abb.recipeOnCrusher[bbb.id]then
+abb.recipeOnCrusher[bbb.id]={recipe=bbb,crushers={},count=0}end;return
 abb.recipeOnCrusher[bbb.id].count or 0 end}
 local function bab(abb)local bbb={}
 for cbb,dbb in ipairs(dba)do if dbb.id then bbb[dbb.id]=cbb end end;for cbb,dbb in ipairs(abb)do
