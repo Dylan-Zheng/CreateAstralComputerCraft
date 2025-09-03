@@ -90,7 +90,7 @@ local transferFluids = function(inputTanks, outputTanks, fluidFilter, isBlacklis
                 for outputName, outputPeripheral in pairs(outputTanks) do
                     -- Attempt to transfer the fluid
                     while true do
-                        local transferred = inputPeripheral.transferFluidTo(outputPeripheral, fluid.name, fluid.amount)
+                        local transferred = inputPeripheral.transferFluidTo(outputPeripheral, fluid.name, fluid.amount, 500)
                         if transferred == 0 then
                             break -- Move to next fluid after no more can be transferred
                         end

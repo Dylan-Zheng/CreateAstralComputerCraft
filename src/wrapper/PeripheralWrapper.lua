@@ -355,13 +355,14 @@ PeripheralWrapper.addTankMethods = function(peripheral)
         return peripheral._fluidFinders[fluidName]()
     end
 
-    peripheral.transferFluidTo = function(toPeripheral, fluidName, amount)
+    peripheral.transferFluidTo = function(toPeripheral, fluidName, amount, rateLimit)
         if toPeripheral.isTank() == false then
             error(string.format("Peripheral '%s' is not a tank", toPeripheral.getName()))
         end
         local totalTransferred = 0
         while totalTransferred < amount do
-            local transferred = peripheral.pushFluid(toPeripheral.getName(), amount - totalTransferred, fluidName)
+            local transferAmount = rateLimit ~= nil and rateLimit or (amount - totalTransferred)
+            local transferred = peripheral.pushFluid(toPeripheral.getName(), transferAmount, fluidName)
             if transferred == 0 then
                 return totalTransferred
             end

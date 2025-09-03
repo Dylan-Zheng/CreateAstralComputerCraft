@@ -131,10 +131,11 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getFluid=function(ca)if ba._fluidFinders[ca]==nil then
 ba._fluidFinders[ca]=ba.getFluidFinder(ca)end
 return ba._fluidFinders[ca]()end
-ba.transferFluidTo=function(ca,da,_b)if ca.isTank()==false then
-error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pushFluid(ca.getName(),
-_b-ab,da)if bb==0 then return ab end
-ab=ab+bb end;return ab end
+ba.transferFluidTo=function(ca,da,_b,ab)if ca.isTank()==false then
+error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local bb=0
+while bb<_b do local cb=ab~=nil and ab or
+(_b-bb)
+local db=ba.pushFluid(ca.getName(),cb,da)if db==0 then return bb end;bb=bb+db end;return bb end
 ba.transferFluidFrom=function(ca,da,_b)if ca.isTank()==false then
 error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pullFluid(ca.getName(),
 _b-ab,da)if bb==0 then return ab end
@@ -485,7 +486,7 @@ for ad,bd in pairs(bc)do local cd=bd.getFluids()
 for dd,__a in ipairs(cd)do
 if db(__a.name,dc,_d)then
 for a_a,b_a in pairs(cc)do while true do
-local c_a=bd.transferFluidTo(b_a,__a.name,__a.amount)if c_a==0 then break end end end end end end end
+local c_a=bd.transferFluidTo(b_a,__a.name,__a.amount,500)if c_a==0 then break end end end end end end end
 function ab.load(bc)if not bc then return end;da.reloadAll()local cc=da.getAll()
 for dc,_d in pairs(bc)do
 if
