@@ -343,7 +343,7 @@ local checkAndRun = function()
                 end
                 return nil
             end) then
-            redrouter.setOutputSignals(false)
+            redrouter.setOutputSignals(true)
             local item = drawer.getItem(recipe.incomplete)
             if item then
                 drawer.transferItemTo(belt, item.name, item.count)
@@ -351,7 +351,7 @@ local checkAndRun = function()
                 storage.transferItemTo(belt, recipe.input, 4)
             end
         else
-            redrouter.setOutputSignals(true)
+            redrouter.setOutputSignals(false)
             waitTime = 1
         end
 

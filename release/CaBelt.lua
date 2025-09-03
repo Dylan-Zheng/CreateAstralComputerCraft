@@ -109,10 +109,10 @@ if
 dab(cab.input)and
 bba.eval(cab.trigger,function(acb,bcb)
 if acb=="item"then return a_b.getItem(bcb)elseif
-acb=="fluid"then return a_b.getFluid(bcb)end;return nil end)then bab.setOutputSignals(false)
+acb=="fluid"then return a_b.getFluid(bcb)end;return nil end)then bab.setOutputSignals(true)
 local acb=_ab.getItem(cab.incomplete)if acb then _ab.transferItemTo(c_b,acb.name,acb.count)else
 a_b.transferItemTo(c_b,cab.input,4)end else
-bab.setOutputSignals(true)_cb=1 end;os.sleep(_cb)end end
+bab.setOutputSignals(false)_cb=1 end;os.sleep(_cb)end end
 local dbb=function()
 while true do
 for _cb,acb in ipairs(_ab.getItems())do if acb.name~=cab.incomplete and
