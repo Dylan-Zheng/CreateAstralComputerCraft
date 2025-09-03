@@ -283,6 +283,11 @@ local drawer = drawers[next(drawers)]
 local redrouters = PeripheralWrapper.getAllPeripheralsNameContains("redrouter")
 local redrouter = redrouters[next(redrouters)]
 
+print("Using storage: " .. storage.getName())
+print("Using belt: " .. belt.getName())
+print("Using drawer: " .. drawer.getName())
+print("Using redrouter: " .. redrouter.getName())
+
 local recipe = recipes[1] -- Assuming only one recipe is set for the belt
 
 local hasInputItem = function(name)
@@ -306,7 +311,6 @@ end
 
 local runCommandLine = function()
     local cli = createCommandLine()
-    print("CaBelt Manager - Standalone Mode")
     print("Type 'help' for available commands or 'exit' to quit")
     while true do
         local success, result = pcall(function() cli:run() end)

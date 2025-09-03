@@ -82,14 +82,18 @@ print("Usage: cabelt [side] [channel] [secret]")print("Example: cabelt top 100 m
 local __b=cba.getAllPeripheralsNameContains("crafting_storage")local a_b=__b[next(__b)]
 local b_b=cba.getAllPeripheralsNameContains("belt")local c_b=b_b[next(b_b)]
 local d_b=cba.getAllPeripheralsNameContains("drawer")local _ab=d_b[next(d_b)]
-local aab=cba.getAllPeripheralsNameContains("redrouter")local bab=aab[next(aab)]local cab=aca[1]
-local dab=function(_cb)local acb=a_b.getItem(_cb)return
-acb~=nil and acb.count>0 end
+local aab=cba.getAllPeripheralsNameContains("redrouter")local bab=aab[next(aab)]
+print("Using storage: "..a_b.getName())print("Using belt: "..c_b.getName())print(
+"Using drawer: ".._ab.getName())print(
+"Using redrouter: "..bab.getName())
+local cab=aca[1]
+local dab=function(_cb)local acb=a_b.getItem(_cb)
+return acb~=nil and acb.count>0 end
 local _bb=function(_cb)
 _cb.addMessageHandler("getRecipesRes",function(acb,bcb,ccb)bca=bcb or{}end)
 _cb.addMessageHandler("update",function(acb,bcb,ccb)if bcb and type(bcb)=="table"then bda(bcb)
 _cb.send("getRecipesReq","belt")end end)end
-local abb=function()local _cb=dda()print("CaBelt Manager - Standalone Mode")
+local abb=function()local _cb=dda()
 print("Type 'help' for available commands or 'exit' to quit")while true do local acb,bcb=pcall(function()_cb:run()end)
 if not acb then print(
 "Error: "..tostring(bcb))end end end
@@ -377,10 +381,11 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getFluid=function(ca)if ba._fluidFinders[ca]==nil then
 ba._fluidFinders[ca]=ba.getFluidFinder(ca)end
 return ba._fluidFinders[ca]()end
-ba.transferFluidTo=function(ca,da,_b)if ca.isTank()==false then
-error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pushFluid(ca.getName(),
-_b-ab,da)if bb==0 then return ab end
-ab=ab+bb end;return ab end
+ba.transferFluidTo=function(ca,da,_b,ab)if ca.isTank()==false then
+error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local bb=0
+while bb<_b do local cb=ab~=nil and ab or
+(_b-bb)
+local db=ba.pushFluid(ca.getName(),cb,da)if db==0 then return bb end;bb=bb+db end;return bb end
 ba.transferFluidFrom=function(ca,da,_b)if ca.isTank()==false then
 error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pullFluid(ca.getName(),
 _b-ab,da)if bb==0 then return ab end
