@@ -20,6 +20,8 @@ local DepotTypeName = {
     [StoreManager.DEPOT_TYPES.SOUL_FIRE] = "Soul Fire",
     [StoreManager.DEPOT_TYPES.LAVA] = "Lava",
     [StoreManager.DEPOT_TYPES.WATER] = "Water",
+    [StoreManager.DEPOT_TYPES.PRESS] = "Press",
+    [StoreManager.DEPOT_TYPES.SAND_PAPER] = "Sand Paper",
 }
 
 local getDepotTypeDisplayItems = function(selectedValue)

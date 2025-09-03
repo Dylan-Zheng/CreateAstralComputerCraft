@@ -2886,7 +2886,7 @@ local cd=require("programs.common.SnapShot")local dd=require("utils.StringUtils"
 local __a=require("programs.recipe.manager.TriggerView")local a_a=require("elements.MessageBox")
 local b_a=require("elements.ConfirmMessageBox")local c_a=require("programs.recipe.manager.RecipeList")
 local d_a=require("programs.recipe.manager.Utils")local _aa=colors
-local aaa={[ad.DEPOT_TYPES.NONE]="None",[ad.DEPOT_TYPES.FIRE]="Fire",[ad.DEPOT_TYPES.SOUL_FIRE]="Soul Fire",[ad.DEPOT_TYPES.LAVA]="Lava",[ad.DEPOT_TYPES.WATER]="Water"}
+local aaa={[ad.DEPOT_TYPES.NONE]="None",[ad.DEPOT_TYPES.FIRE]="Fire",[ad.DEPOT_TYPES.SOUL_FIRE]="Soul Fire",[ad.DEPOT_TYPES.LAVA]="Lava",[ad.DEPOT_TYPES.WATER]="Water",[ad.DEPOT_TYPES.PRESS]="Press",[ad.DEPOT_TYPES.SAND_PAPER]="Sand Paper"}
 local baa=function(_ba)local aba={}for bba,cba in pairs(ad.DEPOT_TYPES)do
 table.insert(aba,{text=aaa[cba],value=cba,selected=cba==_ba})end;return aba end;DepotRecipeTab={}DepotRecipeTab.__index=DepotRecipeTab;local function caa(_ba)
 if not _ba then return""end;local aba=_ba:find(":")if aba then return _ba:sub(aba+1)end
@@ -3015,11 +3015,11 @@ self.maxMachineInput:setText("-1")end;function DepotRecipeTab:init()
 self.recipeListBox:refreshRecipeList()return self end;return DepotRecipeTab end
 modules["programs.recipe.manager.StoreManager"] = function(...) local aa=require("utils.OSUtils")
 local ba=require("utils.Logger")local ca={machines={depot={},basin={},belt={},common={}}}
-ca.MACHINE_TYPES={depot="depot",basin="basin",belt="belt",common="common"}ca.DEPOT_TYPES={NONE=0,FIRE=1,SOUL_FIRE=2,LAVA=3,WATER=4}
-ca.BLAZE_BURN_TYPE={NONE=0,LAVA=1,HELLFIRE=2}
-ca.saveTable=function(ab)aa.saveTable(ab,ca.machines[ab])end
-ca.loadTable=function(ab)local bb=aa.loadTable(ab)
-if bb~=nil then ca.machines[ab]=bb end end
+ca.MACHINE_TYPES={depot="depot",basin="basin",belt="belt",common="common"}
+ca.DEPOT_TYPES={NONE=0,FIRE=1,SOUL_FIRE=2,LAVA=3,WATER=4,PRESS=5,SAND_PAPER=6}ca.BLAZE_BURN_TYPE={NONE=0,LAVA=1,HELLFIRE=2}ca.saveTable=function(ab)
+aa.saveTable(ab,ca.machines[ab])end
+ca.loadTable=function(ab)
+local bb=aa.loadTable(ab)if bb~=nil then ca.machines[ab]=bb end end
 local da={depot=function(ab)if ab.input==nil or type(ab.input)~="string"then
 return false,
 "Depot recipe input is invalid string: "..tostring(ab.input)end;if
@@ -4385,10 +4385,11 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getFluid=function(ca)if ba._fluidFinders[ca]==nil then
 ba._fluidFinders[ca]=ba.getFluidFinder(ca)end
 return ba._fluidFinders[ca]()end
-ba.transferFluidTo=function(ca,da,_b)if ca.isTank()==false then
-error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pushFluid(ca.getName(),
-_b-ab,da)if bb==0 then return ab end
-ab=ab+bb end;return ab end
+ba.transferFluidTo=function(ca,da,_b,ab)if ca.isTank()==false then
+error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local bb=0
+while bb<_b do local cb=ab~=nil and ab or
+(_b-bb)
+local db=ba.pushFluid(ca.getName(),cb,da)if db==0 then return bb end;bb=bb+db end;return bb end
 ba.transferFluidFrom=function(ca,da,_b)if ca.isTank()==false then
 error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pullFluid(ca.getName(),
 _b-ab,da)if bb==0 then return ab end

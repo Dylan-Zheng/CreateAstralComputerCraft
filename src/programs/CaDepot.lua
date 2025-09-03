@@ -106,7 +106,7 @@ local function displayRecipes(recipeList, page, pageSize)
     print(string.format("=== Recipes (Page %d/%d) ===", page, totalPages))
     for i = startIdx, endIdx do
         local recipe = recipeList[i]
-        local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water" })[recipe.depotType + 1] or "unknown"
+        local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water", "press", "sand_paper" })[recipe.depotType + 1] or "unknown"
         local outputStr = table.concat(recipe.output, ", ")
         print(string.format("%d. [%s] %s -> %s", i, depotTypeName, recipe.input, outputStr))
     end
@@ -220,7 +220,7 @@ local function createCommandLine()
 
         if #parts < 2 then
             print("Usage: add [depotType] [input_name]")
-            print("DepotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4)")
+            print("DepotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4), press(5), sand_paper(6)")
             print("Examples:")
             print("  add fire minecraft:iron_ore    - Add specific recipe")
             print("  add fire                       - Add all fire-type recipes")
@@ -243,11 +243,15 @@ local function createCommandLine()
             targetDepotType = 3
         elseif depotTypeInput == "water" or depotTypeInput == "4" then
             targetDepotType = 4
-        elseif tonumber(depotTypeInput) and tonumber(depotTypeInput) >= 0 and tonumber(depotTypeInput) <= 4 then
+        elseif depotTypeInput == "press" or depotTypeInput == "5" then
+            targetDepotType = 5
+        elseif depotTypeInput == "sand_paper" or depotTypeInput == "6" then
+            targetDepotType = 6
+        elseif tonumber(depotTypeInput) and tonumber(depotTypeInput) >= 0 and tonumber(depotTypeInput) <= 6 then
             targetDepotType = tonumber(depotTypeInput)
         else
             print("Invalid depotType: " .. depotTypeInput)
-            print("Valid depotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4)")
+            print("Valid depotTypes: none(0), fire(1), soul_fire(2), lava(3), water(4), press(5), sand_paper(6)")
             return
         end
 
@@ -417,7 +421,7 @@ local function createCommandLine()
 
         if removed then
             saveRecipes()
-            local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water" })[removedRecipe.depotType + 1] or
+            local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water", "press", "sand_paper" })[removedRecipe.depotType + 1] or
                 "unknown"
             print("Recipe removed: [" .. depotTypeName .. "] " .. removedRecipe.input)
         else

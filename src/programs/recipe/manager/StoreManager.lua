@@ -23,6 +23,8 @@ StoreManager.DEPOT_TYPES = {
     SOUL_FIRE = 2,
     LAVA = 3,
     WATER = 4,
+    PRESS = 5,
+    SAND_PAPER = 6,
 }
 
 StoreManager.BLAZE_BURN_TYPE = {
