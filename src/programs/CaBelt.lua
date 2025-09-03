@@ -270,18 +270,25 @@ if args ~= nil and #args >= 3 then
 end
 
 PeripheralWrapper.reloadAll()
+
 local storages = PeripheralWrapper.getAllPeripheralsNameContains("crafting_storage")
-local key = next(storages) -- Assuming only one storage is available
-local storage = storages[key]
+local storage = storages[next(storages)]
 
 local blets = PeripheralWrapper.getAllPeripheralsNameContains("belt")
-key = next(blets) -- Assuming only one belt is available
-local belt = blets[key]
+local belt = blets[next(blets)]
+
 local drawers = PeripheralWrapper.getAllPeripheralsNameContains("drawer")
-key = next(drawers) -- Assuming only one drawer is available
-local drawer = drawers[key]
+local drawer = drawers[next(drawers)]
+
+local redrouters = PeripheralWrapper.getAllPeripheralsNameContains("redrouter")
+local redrouter = redrouters[next(redrouters)]
 
 local recipe = recipes[1] -- Assuming only one recipe is set for the belt
+
+local hasInputItem = function(name)
+    local item = storage.getItem(name)
+    return item ~= nil and item.count > 0
+end
 
 local setMessageHandler = function(openChannel)
     openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
@@ -323,7 +330,8 @@ end
 local checkAndRun = function()
     while true do
         local waitTime = 0.2
-        if Trigger.eval(recipe.trigger, function(type, name)
+
+        if hasInputItem(recipe.input) and Trigger.eval(recipe.trigger, function(type, name)
                 if type == "item" then
                     return storage.getItem(name)
                 elseif type == "fluid" then
@@ -331,6 +339,7 @@ local checkAndRun = function()
                 end
                 return nil
             end) then
+            redrouter.setOutputSignals(false)
             local item = drawer.getItem(recipe.incomplete)
             if item then
                 drawer.transferItemTo(belt, item.name, item.count)
@@ -338,6 +347,7 @@ local checkAndRun = function()
                 storage.transferItemTo(belt, recipe.input, 4)
             end
         else
+            redrouter.setOutputSignals(true)
             waitTime = 1
         end
 

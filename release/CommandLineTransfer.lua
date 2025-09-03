@@ -83,9 +83,10 @@ local db=ba.pullItems(ca.getName(),slot,_b)if db==0 then return bb end;bb=bb+db;
 while ab<_b do
 local bb=ca.pushItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end end elseif ba.isUnlimitedPeripheralInventory()then
 if
-string.find(ba.getName(),"crafting_storage")then
-ba.getItems=function()local ca=ba.items()for da,_b in ipairs(ca)do _b.displayName=_b.name
-_b.name=_b.technicalName end;return ca end
+string.find(ba.getName(),"crafting_storage")or ba.getPatternsFor~=nil then
+ba.getItems=function()
+local ca=ba.items()
+for da,_b in ipairs(ca)do _b.displayName=_b.name;_b.name=_b.technicalName end;return ca end
 ba.getItemFinder=function(ca)local da=nil
 return
 function()local _b=ba.items()
@@ -171,8 +172,9 @@ local da=_a.getTypes(ba)for _b,ab in ipairs(da)do if ab==ca then return true end
 _a.addPeripherals=function(ba)
 if ba==nil then error("Peripheral name cannot be nil")end;local ca=_a.wrap(ba)
 if ca~=nil then _a.loadedPeripherals[ba]=ca end end
-_a.reloadAll=function()_a.loadedPeripherals={}for ba,ca in ipairs(peripheral.getNames())do
-_a.addPeripherals(ca)end end
+_a.reloadAll=function()_a.loadedPeripherals={}
+for ba,ca in ipairs(peripheral.getNames())do
+d.debug("Loading peripheral: {}",ca)_a.addPeripherals(ca)end end
 _a.getAll=function()
 if _a.loadedPeripherals==nil then _a.reloadAll()end;return _a.loadedPeripherals end
 _a.getByName=function(ba)
@@ -183,9 +185,8 @@ error("Types cannot be nil or empty")end;local ca={}
 for da,_b in pairs(_a.getAll())do for ab,bb in ipairs(ba)do if
 _a.isTypeOf(_b,bb)then ca[da]=_b;break end end end;return ca end
 _a.getAllPeripheralsNameContains=function(ba)if ba==nil or ba==""then
-error("Part of name input cannot be nil or empty")end;local ca={}
-for da,_b in pairs(_a.getAll())do
-d.debug("Checking peripheral: {}",da)if string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
+error("Part of name input cannot be nil or empty")end;local ca={}for da,_b in pairs(_a.getAll())do if
+string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
 modules["programs.command.CommandLine"] = function(...) local ba={}ba.__index=ba
 function ba.filterSuggestions(cb,db)local _c={}db=db or""
 local ac=string.lower(db)for bc,cc in ipairs(cb)do local dc=string.lower(cc)

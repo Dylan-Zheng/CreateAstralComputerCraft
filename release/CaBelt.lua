@@ -2,113 +2,118 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CaBelt"] = function(...) local aaa=require("utils.Logger")
-local baa=require("programs.common.Communicator")local caa=require("programs.command.CommandLine")
-local daa=require("utils.OSUtils")local _ba=require("programs.common.Trigger")
-local aba=require("wrapper.PeripheralWrapper")local bba=require("utils.TableUtils")aaa.useDefault()
-aaa.currentLevel=aaa.levels.ERROR;local cba={...}local dba={}local _ca={}local function aca()
-local abb=daa.loadTable("cabelt_recipes")if abb~=nil then dba=abb end end;local function bca()
-daa.saveTable("cabelt_recipes",dba)end;local function cca()
-return daa.loadTable("cabelt_communicator_config")end
-local function dca(abb,bbb,cbb)
-local dbb={side=abb,channel=bbb,secret=cbb}daa.saveTable("cabelt_communicator_config",dbb)end
-local function _da(abb)local bbb={}
-for cbb,dbb in ipairs(dba)do if dbb.id then bbb[dbb.id]=cbb end end;for cbb,dbb in ipairs(abb)do
-if dbb.id then local _cb=bbb[dbb.id]if _cb then dba[_cb]=dbb end end end;bca()end
-local function ada(abb,bbb,cbb,dbb)bbb=bbb or 1;cbb=cbb or 5;dbb=dbb or"local"if#abb==0 then
-print("No recipes found.")return end;local _cb=math.ceil(#abb/cbb)local acb=
-(bbb-1)*cbb+1;local bcb=math.min(acb+cbb-1,#abb)
-print(string.format("=== Belt Recipes (Page %d/%d) ===",bbb,_cb))for i=acb,bcb do local ccb=abb[i]local dcb=ccb.output or"No Output"
-print(string.format("%d. %s",i,dcb))end
-if _cb>1 then
-print(string.format("Showing %d-%d of %d recipes",acb,bcb,
-#abb))if bbb<_cb then
-print(string.format("Use 'list %s %d' for next page",dbb,bbb+1))end;if bbb>1 then
-print(string.format("Use 'list %s %d' for previous page",dbb,
-bbb-1))end end end
-local function bda()local abb=caa:new("cabelt> ")
-abb:addCommand("list","List recipes",function(bbb)local cbb={}for acb in
-bbb:gmatch("%S+")do table.insert(cbb,acb)end
-if#cbb<2 then
+modules["programs.CaBelt"] = function(...) local caa=require("utils.Logger")
+local daa=require("programs.common.Communicator")local _ba=require("programs.command.CommandLine")
+local aba=require("utils.OSUtils")local bba=require("programs.common.Trigger")
+local cba=require("wrapper.PeripheralWrapper")local dba=require("utils.TableUtils")caa.useDefault()
+caa.currentLevel=caa.levels.ERROR;local _ca={...}local aca={}local bca={}local function cca()
+local _cb=aba.loadTable("cabelt_recipes")if _cb~=nil then aca=_cb end end;local function dca()
+aba.saveTable("cabelt_recipes",aca)end;local function _da()
+return aba.loadTable("cabelt_communicator_config")end
+local function ada(_cb,acb,bcb)
+local ccb={side=_cb,channel=acb,secret=bcb}aba.saveTable("cabelt_communicator_config",ccb)end
+local function bda(_cb)local acb={}
+for bcb,ccb in ipairs(aca)do if ccb.id then acb[ccb.id]=bcb end end;for bcb,ccb in ipairs(_cb)do
+if ccb.id then local dcb=acb[ccb.id]if dcb then aca[dcb]=ccb end end end;dca()end
+local function cda(_cb,acb,bcb,ccb)acb=acb or 1;bcb=bcb or 5;ccb=ccb or"local"if#_cb==0 then
+print("No recipes found.")return end;local dcb=math.ceil(#_cb/bcb)local _db=
+(acb-1)*bcb+1;local adb=math.min(_db+bcb-1,#_cb)
+print(string.format("=== Belt Recipes (Page %d/%d) ===",acb,dcb))for i=_db,adb do local bdb=_cb[i]local cdb=bdb.output or"No Output"
+print(string.format("%d. %s",i,cdb))end
+if dcb>1 then
+print(string.format("Showing %d-%d of %d recipes",_db,adb,
+#_cb))if acb<dcb then
+print(string.format("Use 'list %s %d' for next page",ccb,acb+1))end;if acb>1 then
+print(string.format("Use 'list %s %d' for previous page",ccb,
+acb-1))end end end
+local function dda()local _cb=_ba:new("cabelt> ")
+_cb:addCommand("list","List recipes",function(acb)local bcb={}for _db in
+acb:gmatch("%S+")do table.insert(bcb,_db)end
+if#bcb<2 then
 print("Usage: list [remote|local] [page]")print("Examples:")
 print("  list remote             - List remote recipes")
 print("  list local              - List local recipes")
-print("  list local 2            - List local recipes page 2")return end;local dbb=cbb[2]local _cb=tonumber(cbb[3])or 1
-if dbb=="local"then
-ada(dba,_cb,nil,"local")elseif dbb=="remote"then if#_ca==0 then print("No remote recipes available.")
-return end;ada(_ca,_cb,nil,"remote")else
-print("Usage: list [remote|local] [page]")end end,function(bbb)
-local cbb={}
-for _cb in bbb:gmatch("%S+")do table.insert(cbb,_cb)end;local dbb=#cbb
-if(dbb==0 or dbb==1)and bbb:sub(-1)~=" "then local _cb=
-bbb:match("%S+$")or""local acb={}local bcb={"remote","local"}
-for ccb,dcb in
-ipairs(bcb)do if dcb:find(_cb,1,true)==1 then
-table.insert(acb,dcb:sub(#_cb+1))end end;return acb end;return{}end)
-abb:addCommand("set","Set belt recipe",function(bbb)local cbb={}for acb in bbb:gmatch("%S+")do
-table.insert(cbb,acb)end
-if#cbb<2 then
+print("  list local 2            - List local recipes page 2")return end;local ccb=bcb[2]local dcb=tonumber(bcb[3])or 1
+if ccb=="local"then
+cda(aca,dcb,nil,"local")elseif ccb=="remote"then if#bca==0 then print("No remote recipes available.")
+return end;cda(bca,dcb,nil,"remote")else
+print("Usage: list [remote|local] [page]")end end,function(acb)
+local bcb={}
+for dcb in acb:gmatch("%S+")do table.insert(bcb,dcb)end;local ccb=#bcb
+if(ccb==0 or ccb==1)and acb:sub(-1)~=" "then local dcb=
+acb:match("%S+$")or""local _db={}local adb={"remote","local"}
+for bdb,cdb in
+ipairs(adb)do if cdb:find(dcb,1,true)==1 then
+table.insert(_db,cdb:sub(#dcb+1))end end;return _db end;return{}end)
+_cb:addCommand("set","Set belt recipe",function(acb)local bcb={}for _db in acb:gmatch("%S+")do
+table.insert(bcb,_db)end
+if#bcb<2 then
 print("Usage: set [recipe_output]")print("Examples:")
-print("  set minecraft:iron_ingot    - Set recipe with iron_ingot output")return end;local dbb=cbb[2]local _cb=nil;for acb,bcb in ipairs(_ca)do
-if bcb.output==dbb then _cb=bcb;break end end
-if not _cb then
+print("  set minecraft:iron_ingot    - Set recipe with iron_ingot output")return end;local ccb=bcb[2]local dcb=nil;for _db,adb in ipairs(bca)do
+if adb.output==ccb then dcb=adb;break end end
+if not dcb then
 print("Recipe with output '"..
-dbb.."' not found in remote recipes.")
-print("Use 'list remote' to see available recipes.")return end;dba={_cb}bca()
-print("Recipe set successfully: ".. (_cb.output or"Unknown"))end,function(bbb)
-local cbb={}
-for _cb in bbb:gmatch("%S+")do table.insert(cbb,_cb)end;local dbb=#cbb
-if(dbb==0 or dbb==1)and bbb:sub(-1)~=" "then local _cb=
-bbb:match("%S+$")or""local acb={}
-for bcb,ccb in ipairs(_ca)do if ccb.output and
-ccb.output:find(_cb,1,true)==1 then
-table.insert(acb,ccb.output:sub(#_cb+1))end end;return acb end;return{}end)
-abb:addCommand("reboot","Reboot the program",function(bbb)print("Rebooting...")os.reboot()end)return abb end;aca()
-if cba~=nil and#cba>=3 then local abb=cba[1]local bbb=tonumber(cba[2])
-local cbb=cba[3]
-if abb and bbb and cbb then dca(abb,bbb,cbb)
-baa.open(abb,bbb,"recipe",cbb)
-local dbb=baa.communicationChannels[abb][bbb]["recipe"]
-dbb.addMessageHandler("getRecipesRes",function(_cb,acb,bcb)_ca=acb or{}end)
-parallel.waitForAll(baa.listen,function()while next(_ca)==nil do
-dbb.send("getRecipesReq","belt")os.sleep(1)end end,function()
-local _cb=bda()print("CaBelt Manager - Network Mode")
-print("Connected to channel "..bbb.." on "..
-abb)
+ccb.."' not found in remote recipes.")
+print("Use 'list remote' to see available recipes.")return end;aca={dcb}dca()
+print("Recipe set successfully: ".. (dcb.output or"Unknown"))end,function(acb)
+local bcb={}
+for dcb in acb:gmatch("%S+")do table.insert(bcb,dcb)end;local ccb=#bcb
+if(ccb==0 or ccb==1)and acb:sub(-1)~=" "then local dcb=
+acb:match("%S+$")or""local _db={}
+for adb,bdb in ipairs(bca)do if bdb.output and
+bdb.output:find(dcb,1,true)==1 then
+table.insert(_db,bdb.output:sub(#dcb+1))end end;return _db end;return{}end)
+_cb:addCommand("reboot","Reboot the program",function(acb)print("Rebooting...")os.reboot()end)return _cb end;cca()
+if _ca~=nil and#_ca>=3 then local _cb=_ca[1]local acb=tonumber(_ca[2])
+local bcb=_ca[3]
+if _cb and acb and bcb then ada(_cb,acb,bcb)
+daa.open(_cb,acb,"recipe",bcb)
+local ccb=daa.communicationChannels[_cb][acb]["recipe"]
+ccb.addMessageHandler("getRecipesRes",function(dcb,_db,adb)bca=_db or{}end)
+parallel.waitForAll(daa.listen,function()while next(bca)==nil do
+ccb.send("getRecipesReq","belt")os.sleep(1)end end,function()
+local dcb=dda()print("CaBelt Manager - Network Mode")
+print("Connected to channel "..acb.." on "..
+_cb)
+print("Type 'help' for available commands or 'exit' to quit")while true do local _db,adb=pcall(function()dcb:run()end)
+if not _db then print(
+"Error: "..tostring(adb))end end end)else print("Error: Invalid network parameters")
+print("Usage: cabelt [side] [channel] [secret]")print("Example: cabelt top 100 mySecret")end end;cba.reloadAll()
+local __b=cba.getAllPeripheralsNameContains("crafting_storage")local a_b=__b[next(__b)]
+local b_b=cba.getAllPeripheralsNameContains("belt")local c_b=b_b[next(b_b)]
+local d_b=cba.getAllPeripheralsNameContains("drawer")local _ab=d_b[next(d_b)]
+local aab=cba.getAllPeripheralsNameContains("redrouter")local bab=aab[next(aab)]local cab=aca[1]
+local dab=function(_cb)local acb=a_b.getItem(_cb)return
+acb~=nil and acb.count>0 end
+local _bb=function(_cb)
+_cb.addMessageHandler("getRecipesRes",function(acb,bcb,ccb)bca=bcb or{}end)
+_cb.addMessageHandler("update",function(acb,bcb,ccb)if bcb and type(bcb)=="table"then bda(bcb)
+_cb.send("getRecipesReq","belt")end end)end
+local abb=function()local _cb=dda()print("CaBelt Manager - Standalone Mode")
 print("Type 'help' for available commands or 'exit' to quit")while true do local acb,bcb=pcall(function()_cb:run()end)
 if not acb then print(
-"Error: "..tostring(bcb))end end end)else print("Error: Invalid network parameters")
-print("Usage: cabelt [side] [channel] [secret]")print("Example: cabelt top 100 mySecret")end end;aba.reloadAll()
-local cda=aba.getAllPeripheralsNameContains("crafting_storage")local dda=next(cda)local __b=cda[dda]
-local a_b=aba.getAllPeripheralsNameContains("belt")dda=next(a_b)local b_b=a_b[dda]
-local c_b=aba.getAllPeripheralsNameContains("drawer")dda=next(c_b)local d_b=c_b[dda]local _ab=dba[1]
-local aab=function(abb)
-abb.addMessageHandler("getRecipesRes",function(bbb,cbb,dbb)
-_ca=cbb or{}end)
-abb.addMessageHandler("update",function(bbb,cbb,dbb)if cbb and type(cbb)=="table"then _da(cbb)
-abb.send("getRecipesReq","belt")end end)end
-local bab=function()local abb=bda()print("CaBelt Manager - Standalone Mode")
-print("Type 'help' for available commands or 'exit' to quit")while true do local bbb,cbb=pcall(function()abb:run()end)
-if not bbb then print(
-"Error: "..tostring(cbb))end end end
-local cab=function()local abb=cca()
+"Error: "..tostring(bcb))end end end
+local bbb=function()local _cb=_da()
 if
-abb and abb.side and abb.channel and abb.secret then
+_cb and _cb.side and _cb.channel and _cb.secret then
 print("Found saved communicator config, attempting to connect...")
-baa.open(abb.side,abb.channel,"recipe",abb.secret)
-local bbb=baa.communicationChannels[abb.side][abb.channel]["recipe"]aab(bbb)baa.listen()end end
-local dab=function()
-while true do local abb=0.2
+daa.open(_cb.side,_cb.channel,"recipe",_cb.secret)
+local acb=daa.communicationChannels[_cb.side][_cb.channel]["recipe"]_bb(acb)daa.listen()end end
+local cbb=function()
+while true do local _cb=0.2
 if
-_ba.eval(_ab.trigger,function(bbb,cbb)if bbb=="item"then return __b.getItem(cbb)elseif bbb=="fluid"then return
-__b.getFluid(cbb)end;return nil end)then local bbb=d_b.getItem(_ab.incomplete)
-if bbb then
-d_b.transferItemTo(b_b,bbb.name,bbb.count)else __b.transferItemTo(b_b,_ab.input,4)end else abb=1 end;os.sleep(abb)end end
-local _bb=function()
+dab(cab.input)and
+bba.eval(cab.trigger,function(acb,bcb)
+if acb=="item"then return a_b.getItem(bcb)elseif
+acb=="fluid"then return a_b.getFluid(bcb)end;return nil end)then bab.setOutputSignals(false)
+local acb=_ab.getItem(cab.incomplete)if acb then _ab.transferItemTo(c_b,acb.name,acb.count)else
+a_b.transferItemTo(c_b,cab.input,4)end else
+bab.setOutputSignals(true)_cb=1 end;os.sleep(_cb)end end
+local dbb=function()
 while true do
-for abb,bbb in ipairs(d_b.getItems())do if bbb.name~=_ab.incomplete and
-bbb.name~=_ab.input then
-__b.transferItemFrom(d_b,bbb.name,bbb.count)end end;os.sleep(1)end end;parallel.waitForAll(cab,dab,_bb,bab) end
+for _cb,acb in ipairs(_ab.getItems())do if acb.name~=cab.incomplete and
+acb.name~=cab.input then
+a_b.transferItemFrom(_ab,acb.name,acb.count)end end;os.sleep(1)end end;parallel.waitForAll(bbb,cbb,dbb,abb) end
 modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
 b.useDefault=function()
 b.addPrintFunction(function(c,d,_a,aa)
