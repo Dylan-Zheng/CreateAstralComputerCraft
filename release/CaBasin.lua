@@ -258,7 +258,7 @@ local d_c=function()
 while true do
 for aac,bac in pairs(ddb)do local cac=_da.eval(bac.recipe.trigger,a_c)
 local dac=bac.group.redstones;if dac~=nil then
-for _bc,abc in ipairs(dac)do abc.setOutputSignals(not cac)end end;if(cac)then b_c(bac)
+for _bc,abc in ipairs(dac)do abc.setOutputSignals(cac)end end;if(cac)then b_c(bac)
 c_c(bac.group.blazeBurnerFeeders)end end;os.sleep(1)end end;__c()
 local _ac=function()local aac=abb()
 if
@@ -532,10 +532,11 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getFluid=function(ca)if ba._fluidFinders[ca]==nil then
 ba._fluidFinders[ca]=ba.getFluidFinder(ca)end
 return ba._fluidFinders[ca]()end
-ba.transferFluidTo=function(ca,da,_b)if ca.isTank()==false then
-error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pushFluid(ca.getName(),
-_b-ab,da)if bb==0 then return ab end
-ab=ab+bb end;return ab end
+ba.transferFluidTo=function(ca,da,_b,ab)if ca.isTank()==false then
+error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local bb=0
+while bb<_b do local cb=ab~=nil and ab or
+(_b-bb)
+local db=ba.pushFluid(ca.getName(),cb,da)if db==0 then return bb end;bb=bb+db end;return bb end
 ba.transferFluidFrom=function(ca,da,_b)if ca.isTank()==false then
 error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pullFluid(ca.getName(),
 _b-ab,da)if bb==0 then return ab end
@@ -611,11 +612,11 @@ local ca=os.epoch()if ca-ba.start_timestamp>=aa then c.transferFluidTo(d,_a,49)
 ba:reset()end end}end;return b end
 modules["programs.recipe.manager.StoreManager"] = function(...) local aa=require("utils.OSUtils")
 local ba=require("utils.Logger")local ca={machines={depot={},basin={},belt={},common={}}}
-ca.MACHINE_TYPES={depot="depot",basin="basin",belt="belt",common="common"}ca.DEPOT_TYPES={NONE=0,FIRE=1,SOUL_FIRE=2,LAVA=3,WATER=4}
-ca.BLAZE_BURN_TYPE={NONE=0,LAVA=1,HELLFIRE=2}
-ca.saveTable=function(ab)aa.saveTable(ab,ca.machines[ab])end
-ca.loadTable=function(ab)local bb=aa.loadTable(ab)
-if bb~=nil then ca.machines[ab]=bb end end
+ca.MACHINE_TYPES={depot="depot",basin="basin",belt="belt",common="common"}
+ca.DEPOT_TYPES={NONE=0,FIRE=1,SOUL_FIRE=2,LAVA=3,WATER=4,PRESS=5,SAND_PAPER=6}ca.BLAZE_BURN_TYPE={NONE=0,LAVA=1,HELLFIRE=2}ca.saveTable=function(ab)
+aa.saveTable(ab,ca.machines[ab])end
+ca.loadTable=function(ab)
+local bb=aa.loadTable(ab)if bb~=nil then ca.machines[ab]=bb end end
 local da={depot=function(ab)if ab.input==nil or type(ab.input)~="string"then
 return false,
 "Depot recipe input is invalid string: "..tostring(ab.input)end;if

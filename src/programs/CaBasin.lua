@@ -869,7 +869,7 @@ local checkAndRunRecipes = function()
 
             if redstones ~= nil then
                 for _, red in ipairs(redstones) do
-                    red.setOutputSignals(not isTriggered)
+                    red.setOutputSignals(isTriggered)
                 end
             end
 
