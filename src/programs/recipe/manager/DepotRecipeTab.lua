@@ -33,6 +33,11 @@ local getDepotTypeDisplayItems = function(selectedValue)
             selected = value == selectedValue,
         })
     end
+    table.insert(items, {
+            text = "",
+            value = nil,
+            selected = nil,
+        })
     return items
 end
 

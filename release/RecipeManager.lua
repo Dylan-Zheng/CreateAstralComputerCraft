@@ -2888,7 +2888,8 @@ local b_a=require("elements.ConfirmMessageBox")local c_a=require("programs.recip
 local d_a=require("programs.recipe.manager.Utils")local _aa=colors
 local aaa={[ad.DEPOT_TYPES.NONE]="None",[ad.DEPOT_TYPES.FIRE]="Fire",[ad.DEPOT_TYPES.SOUL_FIRE]="Soul Fire",[ad.DEPOT_TYPES.LAVA]="Lava",[ad.DEPOT_TYPES.WATER]="Water",[ad.DEPOT_TYPES.PRESS]="Press",[ad.DEPOT_TYPES.SAND_PAPER]="Sand Paper"}
 local baa=function(_ba)local aba={}for bba,cba in pairs(ad.DEPOT_TYPES)do
-table.insert(aba,{text=aaa[cba],value=cba,selected=cba==_ba})end;return aba end;DepotRecipeTab={}DepotRecipeTab.__index=DepotRecipeTab;local function caa(_ba)
+table.insert(aba,{text=aaa[cba],value=cba,selected=cba==_ba})end
+table.insert(aba,{text="",value=nil,selected=nil})return aba end;DepotRecipeTab={}DepotRecipeTab.__index=DepotRecipeTab;local function caa(_ba)
 if not _ba then return""end;local aba=_ba:find(":")if aba then return _ba:sub(aba+1)end
 return _ba end
 local daa=function(_ba)
