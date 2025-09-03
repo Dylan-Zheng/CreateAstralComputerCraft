@@ -863,6 +863,7 @@ end
 
 local checkAndRunRecipes = function()
     while true do
+        local waitTime = 1
         for recipeName, link in pairs(linkedRecipes) do
             local isTriggered = Trigger.eval(link.recipe.trigger, getItemFromStorage)
             local redstones = link.group.redstones
@@ -874,11 +875,12 @@ local checkAndRunRecipes = function()
             end
 
             if (isTriggered) then
+                waitTime = 0.2
                 runLink(link)
                 feedBlazeBurners(link.group.blazeBurnerFeeders)
             end
         end
-        os.sleep(1)
+        os.sleep(waitTime)
     end
 end
 

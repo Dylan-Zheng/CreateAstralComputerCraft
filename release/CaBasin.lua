@@ -255,11 +255,12 @@ if acc~=nil and acc.amount>_cc then cdb.transferFluidFrom(_bc,dbc,
 acc.amount-_cc)end end end end end
 local c_c=function(aac)for bac,cac in ipairs(aac)do cac:feed()end end
 local d_c=function()
-while true do
-for aac,bac in pairs(ddb)do local cac=_da.eval(bac.recipe.trigger,a_c)
-local dac=bac.group.redstones;if dac~=nil then
-for _bc,abc in ipairs(dac)do abc.setOutputSignals(cac)end end;if(cac)then b_c(bac)
-c_c(bac.group.blazeBurnerFeeders)end end;os.sleep(1)end end;__c()
+while true do local aac=1
+for bac,cac in pairs(ddb)do
+local dac=_da.eval(cac.recipe.trigger,a_c)local _bc=cac.group.redstones;if _bc~=nil then for abc,bbc in ipairs(_bc)do
+bbc.setOutputSignals(dac)end end
+if(dac)then
+aac=0.2;b_c(cac)c_c(cac.group.blazeBurnerFeeders)end end;os.sleep(aac)end end;__c()
 local _ac=function()local aac=abb()
 if
 aac and aac.side and aac.channel and aac.secret then
