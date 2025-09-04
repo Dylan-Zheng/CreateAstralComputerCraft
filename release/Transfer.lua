@@ -3123,9 +3123,9 @@ while ab<_b do
 local bb=ca.pushItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end end elseif ba.isUnlimitedPeripheralInventory()then
 if
 string.find(ba.getName(),"crafting_storage")or ba.getPatternsFor~=nil then
-ba.getItems=function()
-local ca=ba.items()
-for da,_b in ipairs(ca)do _b.displayName=_b.name;_b.name=_b.technicalName end;return ca end
+ba.isUnlimitedPeripheralSpecificInventory=true
+ba.getItems=function()local ca=ba.items()for da,_b in ipairs(ca)do _b.displayName=_b.name
+_b.name=_b.technicalName end;return ca end
 ba.getItemFinder=function(ca)local da=nil
 return
 function()local _b=ba.items()
@@ -3144,12 +3144,16 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getItem=function(ca)if ba._itemFinders[ca]==nil then
 ba._itemFinders[ca]=ba.getItemFinder(ca)end
 return ba._itemFinders[ca]()end
-ba.transferItemTo=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pushItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end
-ba.transferItemFrom=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end else
+ba.transferItemTo=function(ca,da,_b)
+if ca.isUnlimitedPeripheralSpecificInventory then
+return ca.transferItemFrom(ba,da,_b)else local ab=0
+while ab<_b do local bb=ba.pushItem(ca.getName(),da,_b-ab)if
+bb==0 then return ab end;ab=ab+bb end;return ab end end
+ba.transferItemFrom=function(ca,da,_b)
+if ca.isUnlimitedPeripheralSpecificInventory then return ca.transferItemTo(ba,da,_b)else
+local ab=0;while ab<_b do local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then
+return ab end;ab=ab+bb end
+return ab end end else
 error("Peripheral "..
 ba.getName().." types "..table.concat(_a.getTypes(ba),", ")..
 " is not an inventory")end end

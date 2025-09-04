@@ -201,6 +201,8 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
         -- for UNLIMITED_PERIPHERAL_INVENTORY
     elseif peripheral.isUnlimitedPeripheralInventory() then
         if string.find(peripheral.getName(), "crafting_storage") or peripheral.getPatternsFor ~= nil then
+            peripheral.isUnlimitedPeripheralSpecificInventory = true
+
             peripheral.getItems = function()
                 local items = peripheral.items()
                 for _, item in ipairs(items) do
@@ -272,27 +274,35 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
         end
 
         peripheral.transferItemTo = function(toPeripheral, itemName, amount)
-            local totalTransferred = 0
-            while totalTransferred < amount do
-                local transferred = peripheral.pushItem(toPeripheral.getName(), itemName, amount - totalTransferred)
-                if transferred == 0 then
-                    return totalTransferred
+            if toPeripheral.isUnlimitedPeripheralSpecificInventory then
+                return toPeripheral.transferItemFrom(peripheral, itemName, amount)
+            else
+                local totalTransferred = 0
+                while totalTransferred < amount do
+                    local transferred = peripheral.pushItem(toPeripheral.getName(), itemName, amount - totalTransferred)
+                    if transferred == 0 then
+                        return totalTransferred
+                    end
+                    totalTransferred = totalTransferred + transferred
                 end
-                totalTransferred = totalTransferred + transferred
+                return totalTransferred
             end
-            return totalTransferred
         end
 
         peripheral.transferItemFrom = function(fromPeripheral, itemName, amount)
-            local totalTransferred = 0
-            while totalTransferred < amount do
-                local transferred = peripheral.pullItem(fromPeripheral.getName(), itemName, amount - totalTransferred)
-                if transferred == 0 then
-                    return totalTransferred
+            if fromPeripheral.isUnlimitedPeripheralSpecificInventory then
+                return fromPeripheral.transferItemTo(peripheral, itemName, amount)
+            else
+                local totalTransferred = 0
+                while totalTransferred < amount do
+                    local transferred = peripheral.pullItem(fromPeripheral.getName(), itemName, amount - totalTransferred)
+                    if transferred == 0 then
+                        return totalTransferred
+                    end
+                    totalTransferred = totalTransferred + transferred
                 end
-                totalTransferred = totalTransferred + transferred
+                return totalTransferred
             end
-            return totalTransferred
         end
     else
         error("Peripheral " ..
@@ -339,7 +349,7 @@ PeripheralWrapper.addTankMethods = function(peripheral)
             -- If cache is invalid or not set, find the item in the list again
             for index, fluid in ipairs(fluids) do
                 if fluid.name == fluid_name then
-                    cacheIndex = index    -- Cache the index for future calls
+                    cacheIndex = index       -- Cache the index for future calls
                     return fluid, cacheIndex -- Return the found item
                 end
             end
@@ -397,8 +407,8 @@ PeripheralWrapper.addRedstoneMethods = function(peripheral)
     end
 
     peripheral.setOutputSignals = function(isEmited, ...)
-        local sides = {...}
-         if not sides or #sides == 0 then
+        local sides = { ... }
+        if not sides or #sides == 0 then
             sides = PeripheralWrapper.SIDES
         end
         for _, side in ipairs(sides) do
@@ -409,7 +419,7 @@ PeripheralWrapper.addRedstoneMethods = function(peripheral)
     end
 
     peripheral.getInputSignals = function(...)
-        local sides = {...}
+        local sides = { ... }
         if not sides or #sides == 0 then
             sides = PeripheralWrapper.SIDES
         end
@@ -422,7 +432,7 @@ PeripheralWrapper.addRedstoneMethods = function(peripheral)
     end
 
     peripheral.getOutputSignals = function(...)
-        local sides = {...}
+        local sides = { ... }
         if not sides or #sides == 0 then
             sides = PeripheralWrapper.SIDES
         end
@@ -432,8 +442,6 @@ PeripheralWrapper.addRedstoneMethods = function(peripheral)
         end
         return signals
     end
-
-
 end
 
 PeripheralWrapper.getTypes = function(peripheral)
