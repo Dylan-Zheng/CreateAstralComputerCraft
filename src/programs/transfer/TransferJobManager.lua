@@ -391,10 +391,10 @@ TransferJobManager.evalItemCountTrigger = function(data)
         return false
     end
     
-    local items, itemsTable = peripheral.getItems()
+    local item = peripheral.getItem(data.itemName)
     local currentCount = 0
-    if itemsTable and itemsTable[data.itemName] then
-        currentCount = itemsTable[data.itemName].count
+    if item and item then
+        currentCount = item.count
     end
     
     return TransferJobManager.evalCondition(currentCount, data.amount, data.triggerConditionType)

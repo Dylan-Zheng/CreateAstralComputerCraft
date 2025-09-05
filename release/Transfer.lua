@@ -3337,9 +3337,8 @@ if not bc.targetPeripheralId or not bc.itemName then
 bb.warn("Invalid ITEM_COUNT trigger data: missing targetPeripheralId or itemName")return false end;local cc=_b.getByName(bc.targetPeripheralId)if not cc or not
 cc.isInventory()then
 bb.warn("Peripheral not found or not an inventory: {}",bc.targetPeripheralId)return false end
-local dc,_d=cc.getItems()local ad=0
-if _d and _d[bc.itemName]then ad=_d[bc.itemName].count end
-return ab.evalCondition(ad,bc.amount,bc.triggerConditionType)end
+local dc=cc.getItem(bc.itemName)local _d=0;if dc and dc then _d=dc.count end;return
+ab.evalCondition(_d,bc.amount,bc.triggerConditionType)end
 ab.evalFluidCountTrigger=function(bc)
 if not bc.targetPeripheralId or not bc.itemName then
 bb.warn("Invalid FLUID_COUNT trigger data: missing targetPeripheralId or itemName")return false end;local cc=_b.getByName(bc.targetPeripheralId)if not cc or
