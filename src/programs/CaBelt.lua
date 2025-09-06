@@ -286,7 +286,7 @@ local redrouter = redrouters[next(redrouters)]
 print("Using storage: " .. storage.getName())
 print("Using belt: " .. belt.getName())
 print("Using drawer: " .. drawer.getName())
-print("Using redrouter: " .. redrouter.getName())
+print("Using redrouter: " .. (redrouter and redrouter.getName() or "Not found"))
 
 local recipe = recipes[1] -- Assuming only one recipe is set for the belt
 
@@ -331,6 +331,12 @@ local runChannel = function()
     end
 end
 
+local setRedrouterOutput = function(state)
+    if redrouter then
+        redrouter.setOutputSignals(state)
+    end
+end
+
 local checkAndRun = function()
     while true do
         local waitTime = 0.2
@@ -343,7 +349,7 @@ local checkAndRun = function()
                 end
                 return nil
             end) then
-            redrouter.setOutputSignals(true)
+            setRedrouterOutput(true)
             local item = drawer.getItem(recipe.incomplete)
             if item then
                 drawer.transferItemTo(belt, item.name, item.count)
@@ -351,7 +357,7 @@ local checkAndRun = function()
                 storage.transferItemTo(belt, recipe.input, 4)
             end
         else
-            redrouter.setOutputSignals(false)
+            setRedrouterOutput(false)
             waitTime = 1
         end
 
