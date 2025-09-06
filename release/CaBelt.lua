@@ -110,9 +110,10 @@ if
 _bb(dab.input)and
 cba.eval(dab.trigger,function(ccb,dcb)
 if ccb=="item"then return b_b.getItem(dcb)elseif
-ccb=="fluid"then return b_b.getFluid(dcb)end;return nil end)then dbb(true)local ccb=aab.getItem(dab.incomplete)
+ccb=="fluid"then return b_b.getFluid(dcb)end;return nil end)then dbb(true)
+if dab.incomplete then local ccb=aab.getItem(dab.incomplete)
 if ccb then
-aab.transferItemTo(d_b,ccb.name,ccb.count)else b_b.transferItemTo(d_b,dab.input,4)end else dbb(false)bcb=1 end;os.sleep(bcb)end end
+aab.transferItemTo(d_b,ccb.name,ccb.count)else b_b.transferItemTo(d_b,dab.input,4)end else b_b.transferItemTo(d_b,dab.input,4)end else dbb(false)bcb=1 end;os.sleep(bcb)end end
 local acb=function()
 while true do
 for bcb,ccb in ipairs(aab.getItems())do if ccb.name~=dab.incomplete and

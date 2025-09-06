@@ -350,9 +350,13 @@ local checkAndRun = function()
                 return nil
             end) then
             setRedrouterOutput(true)
-            local item = drawer.getItem(recipe.incomplete)
-            if item then
-                drawer.transferItemTo(belt, item.name, item.count)
+            if recipe.incomplete then
+                local item = drawer.getItem(recipe.incomplete)
+                if item then
+                    drawer.transferItemTo(belt, item.name, item.count)
+                else
+                    storage.transferItemTo(belt, recipe.input, 4)
+                end
             else
                 storage.transferItemTo(belt, recipe.input, 4)
             end
