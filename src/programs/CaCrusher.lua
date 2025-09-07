@@ -503,21 +503,13 @@ local function updateRecipesByID(newRecipes)
     marker:init()
 end
 
-local checkInputItem = function(recipe)
-    local item = storage.getItem(recipe.input.items[1])
-    if not item then
-        return false
-    end
-    return true
-end
-
 marker:init()
 
 local checkAndRunRecipe = function()
     while true do
         local triggeredRecipes = {}
         for _, recipe in ipairs(recipes) do
-            if checkInputItem(recipe) and recipe.trigger  then
+            if recipe.trigger  then
                 local triggered = Trigger.eval(recipe.trigger, function(type, itemName)
                     if type == "item" then
                         return storage.getItem(itemName)
