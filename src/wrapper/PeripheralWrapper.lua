@@ -201,7 +201,7 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
         -- for UNLIMITED_PERIPHERAL_INVENTORY
     elseif peripheral.isUnlimitedPeripheralInventory() then
         if string.find(peripheral.getName(), "crafting_storage") or peripheral.getPatternsFor ~= nil then
-            peripheral.isUnlimitedPeripheralSpecificInventory = true
+            peripheral.isUnlimitedPeripheralSpecialInventory = true
 
             peripheral.getItems = function()
                 local items = peripheral.items()
@@ -274,7 +274,7 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
         end
 
         peripheral.transferItemTo = function(toPeripheral, itemName, amount)
-            if toPeripheral.isUnlimitedPeripheralSpecificInventory then
+            if toPeripheral.isUnlimitedPeripheralSpecialInventory then
                 return toPeripheral.transferItemFrom(peripheral, itemName, amount)
             else
                 local totalTransferred = 0
@@ -290,7 +290,7 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
         end
 
         peripheral.transferItemFrom = function(fromPeripheral, itemName, amount)
-            if fromPeripheral.isUnlimitedPeripheralSpecificInventory then
+            if fromPeripheral.isUnlimitedPeripheralSpecialInventory then
                 return fromPeripheral.transferItemTo(peripheral, itemName, amount)
             else
                 local totalTransferred = 0
@@ -366,6 +366,9 @@ PeripheralWrapper.addTankMethods = function(peripheral)
     end
 
     peripheral.transferFluidTo = function(toPeripheral, fluidName, amount, rateLimit)
+        if toPeripheral.isUnlimitedPeripheralSpecialInventory then
+            return toPeripheral.transferFluidFrom(peripheral, fluidName, amount)
+        end
         if toPeripheral.isTank() == false then
             error(string.format("Peripheral '%s' is not a tank", toPeripheral.getName()))
         end
@@ -382,6 +385,9 @@ PeripheralWrapper.addTankMethods = function(peripheral)
     end
 
     peripheral.transferFluidFrom = function(fromPeripheral, fluidName, amount)
+        if fromPeripheral.isUnlimitedPeripheralSpecialInventory then
+            return fromPeripheral.transferFluidTo(peripheral, fluidName, amount)
+        end
         if fromPeripheral.isTank() == false then
             error(string.format("Peripheral '%s' is not a tank", fromPeripheral.getName()))
         end
