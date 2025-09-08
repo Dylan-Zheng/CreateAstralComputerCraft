@@ -23,6 +23,9 @@ local remoteRecipes = {}
 -- Recipe-Group links storage
 local recipeLinks = {}
 
+-- Redrouter mode
+local isSingleRedRouter = false
+
 -- Load groups from file
 local function loadGroups()
     local data = OSUtils.loadTable("cabasin_groups")
@@ -72,11 +75,12 @@ local function loadCommunicatorConfig()
 end
 
 -- Save communicator config to file
-local function saveCommunicatorConfig(side, channel, secret)
+local function saveCommunicatorConfig(side, channel, secret, isSingleRedRouter)
     local config = {
         side = side,
         channel = channel,
-        secret = secret
+        secret = secret,
+        isSingleRedRouter = isSingleRedRouter
     }
     OSUtils.saveTable("cabasin_communicator_config", config)
 end
@@ -85,7 +89,7 @@ end
 local function updateRecipesByID(newRecipes)
     local recipeMap = {}
     local nameChangeMap = {} -- Track recipe name changes
-    
+
     -- Create a map of existing recipes by ID
     for i, recipe in ipairs(recipes) do
         if recipe.id then
@@ -104,7 +108,7 @@ local function updateRecipesByID(newRecipes)
                 if oldName ~= newName then
                     nameChangeMap[oldName] = newName
                 end
-                
+
                 -- Update existing recipe
                 recipes[existingIndex] = newRecipe
             end
@@ -115,7 +119,7 @@ local function updateRecipesByID(newRecipes)
     for oldName, newName in pairs(nameChangeMap) do
         if recipeLinks[oldName] then
             local groupName = recipeLinks[oldName]
-            recipeLinks[oldName] = nil -- Remove old link
+            recipeLinks[oldName] = nil       -- Remove old link
             recipeLinks[newName] = groupName -- Add new link with updated name
         end
     end
@@ -720,10 +724,11 @@ if args ~= nil and #args > 0 then
     local side = args[1]
     local channel = tonumber(args[2])
     local secret = args[3]
+    isSingleRedRouter = args[4] == "true" -- Expect "true" or "false"
 
     if side and channel and secret then
         -- Save communicator config
-        saveCommunicatorConfig(side, channel, secret)
+        saveCommunicatorConfig(side, channel, secret, isSingleRedRouter)
 
         -- Network mode
         Communicator.open(side, channel, "recipe", secret)
@@ -746,10 +751,10 @@ end
 
 PeripheralWrapper.reloadAll()
 local storages = PeripheralWrapper.getAllPeripheralsNameContains("crafting_storage")
-local key = next(storages) -- Assuming only one storage is available
-local storage = storages[key]
+local storage = storages[next(storages)]
 
-
+local redrouters = PeripheralWrapper.getAllPeripheralsNameContains("redrouter")
+local redrouter = redrouters[next(redrouters)]
 
 local linkedRecipes = {}
 local init = function()
@@ -861,23 +866,33 @@ local feedBlazeBurners = function(feeders)
     end
 end
 
+
 local checkAndRunRecipes = function()
     while true do
+        local isAnyTrigger = false
         local waitTime = 1
         for recipeName, link in pairs(linkedRecipes) do
             local isTriggered = Trigger.eval(link.recipe.trigger, getItemFromStorage)
-            local redstones = link.group.redstones
 
-            if redstones ~= nil then
-                for _, red in ipairs(redstones) do
-                    red.setOutputSignals(isTriggered)
+            if not isSingleRedRouter then
+                local redstones = link.group.redstones
+                if redstones ~= nil then
+                    for _, red in ipairs(redstones) do
+                        red.setOutputSignals(isTriggered)
+                    end
                 end
             end
 
-            if (isTriggered) then
+            if isTriggered then
+                isAnyTrigger = true  -- Set isAnyTrigger when any recipe is triggered
                 waitTime = 0.2
                 runLink(link)
                 feedBlazeBurners(link.group.blazeBurnerFeeders)
+            end
+        end
+        if isSingleRedRouter then
+            if redrouter then
+                redrouter.setOutputSignals(isAnyTrigger)
             end
         end
         os.sleep(waitTime)
@@ -888,6 +903,7 @@ init()
 
 local runChannel = function()
     local config = loadCommunicatorConfig()
+    isSingleRedRouter = config and config.isSingleRedRouter or false
     if config and config.side and config.channel and config.secret then
         print("Found saved communicator config, attempting to connect...")
         Communicator.open(config.side, config.channel, "recipe", config.secret)
