@@ -126,27 +126,6 @@ end
 -- Initialize recipes
 loadRecipes()
 
-local runChannel = function()
-    local config = loadCommunicatorConfig()
-    if config and config.side and config.channel and config.secret then
-        Logger.info("Found saved communicator config, attempting to connect...")
-        Communicator.open(config.side, config.channel, "recipe", config.secret)
-        local openChannel = Communicator.communicationChannels[config.side][config.channel]["recipe"]
-        openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
-            remoteRecipes = payload or {}
-        end)
-
-        -- Add update event handler
-        openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
-            if payload and type(payload) == "table" then
-                updateRecipesByID(payload)
-            end
-        end)
-
-        Communicator.listen()
-    end
-end
-
 -- Command line interface
 local function createCommandLine()
     local cli = CommandLine:new("cadepot> ")
@@ -688,7 +667,7 @@ end
 
 local checkAndMoveCompletedRecipe = function()
     while true do
-        for _, depot in ipairs(depots) do
+        for _, depot in pairs(depots) do
             if marker:isUsing(depot) then
                 if marker:isCompleted(depot) then
                     local recipe = onUseDepotInfo.recipe
