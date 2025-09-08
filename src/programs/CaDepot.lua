@@ -106,7 +106,8 @@ local function displayRecipes(recipeList, page, pageSize)
     print(string.format("=== Recipes (Page %d/%d) ===", page, totalPages))
     for i = startIdx, endIdx do
         local recipe = recipeList[i]
-        local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water", "press", "sand_paper" })[recipe.depotType + 1] or "unknown"
+        local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water", "press", "sand_paper" })
+        [recipe.depotType + 1] or "unknown"
         local outputStr = table.concat(recipe.output, ", ")
         print(string.format("%d. [%s] %s -> %s", i, depotTypeName, recipe.input, outputStr))
     end
@@ -421,7 +422,8 @@ local function createCommandLine()
 
         if removed then
             saveRecipes()
-            local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water", "press", "sand_paper" })[removedRecipe.depotType + 1] or
+            local depotTypeName = ({ "none", "fire", "soul_fire", "lava", "water", "press", "sand_paper" })
+                [removedRecipe.depotType + 1] or
                 "unknown"
             print("Recipe removed: [" .. depotTypeName .. "] " .. removedRecipe.input)
         else
@@ -514,7 +516,6 @@ local totalDepots = TableUtils.getLength(depots)
 local marker = {
     recipeOnDepot = {},
     depotOnUse = {},
-    lostTrackDepots = {},
 
     init = function(self)
         for _, recipe in ipairs(recipes) do
@@ -638,8 +639,8 @@ local checkAndRunRecipe = function()
             end
 
             Logger.debug("recipe " ..
-            (recipe.input or "Unnamed") ..
-            " usedDepotsCount: " .. usedDepotsCount .. ", maxMachineForRecipe: " .. maxMachineForRecipe)
+                (recipe.input or "Unnamed") ..
+                " usedDepotsCount: " .. usedDepotsCount .. ", maxMachineForRecipe: " .. maxMachineForRecipe)
             if usedDepotsCount > maxMachineForRecipe then
                 Logger.info("Releasing depots for recipe: " .. (recipe.input or "Unnamed"))
                 local toRemove = usedDepotsCount - maxMachineForRecipe
@@ -664,10 +665,7 @@ local checkAndRunRecipe = function()
                         local transfered = storage.transferItemTo(depot, recipe.input, 64)
                         Logger.info("Transferred {} items to depot {}", transfered, depot.getId())
                         if transfered <= 0 then
-                            if marker:isLoseTrack(depot) then
-                                Logger.info("Lost track of depot {}", depot.getId())
-                                table.insert(marker.lostTrackDepots, depot)
-                            end
+                            Logger.error("Failed to transfer items to depot {}", depot.getId())
                         else
                             marker:set(recipe, depot)
                             depotNeeded = depotNeeded - 1
@@ -690,8 +688,7 @@ end
 
 local checkAndMoveCompletedRecipe = function()
     while true do
-        for key, onUseDepotInfo in pairs(marker.depotOnUse) do
-            local depot = onUseDepotInfo.depot
+        for _, depot in ipairs(depots) do
             if marker:isUsing(depot) then
                 if marker:isCompleted(depot) then
                     local recipe = onUseDepotInfo.recipe
@@ -700,7 +697,7 @@ local checkAndMoveCompletedRecipe = function()
                         local transferred = storage.transferItemFrom(depot, item.name, item.count)
                         if transferred == item.count then
                             Logger.debug("Transferred completed recipe " ..
-                            recipe.input .. " from depot " .. depot.getId())
+                                recipe.input .. " from depot " .. depot.getId())
                         else
                             Logger.error("Failed to transfer completed recipe {} from depot {}", recipe.input,
                                 depot.getId())
@@ -708,17 +705,15 @@ local checkAndMoveCompletedRecipe = function()
                     end
                     marker:remove(depot)
                 end
-            end
-        end
-
-        -- Handle lost track depots
-        for _, depot in ipairs(marker.lostTrackDepots) do
-            for _, item in ipairs(depot.getItems()) do
-                local transfered = storage.transferItemFrom(depot, item.name, item.count)
-                if transfered > 0 then
-                    Logger.debug("Transferred lost item {} from depot {}", item.name, depot.getId())
-                else
-                    Logger.error("Failed to transfer lost item {} from depot {}", item.name, depot.getId())
+            elseif marker:isLoseTrack(depot) then
+                Logger.info("Lost track of depot {}", depot.getId())
+                for _, item in ipairs(depot.getItems()) do
+                    local transfered = storage.transferItemFrom(depot, item.name, item.count)
+                    if transfered > 0 then
+                        Logger.debug("Transferred lost item {} from depot {}", item.name, depot.getId())
+                    else
+                        Logger.error("Failed to transfer lost item {} from depot {}", item.name, depot.getId())
+                    end
                 end
             end
         end

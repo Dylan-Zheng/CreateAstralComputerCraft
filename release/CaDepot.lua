@@ -152,7 +152,7 @@ parallel.waitForAll(daa.listen,function()while next(bca)==nil do
 ccb.send("getRecipesReq","depot")sleep(1)end end,d_b)end end;cba.reloadAll()
 local _ab=cba.getAllPeripheralsNameContains("depot")
 local aab=cba.getAllPeripheralsNameContains("crafting_storage")local bab=next(aab)local cab=aab[bab]local dab=dba.getLength(_ab)
-local _bb={recipeOnDepot={},depotOnUse={},lostTrackDepots={},init=function(_cb)
+local _bb={recipeOnDepot={},depotOnUse={},init=function(_cb)
 for acb,bcb in
 ipairs(aca)do _cb.recipeOnDepot[bcb.id]={recipe=bcb,depots={}}end;for acb,bcb in pairs(_ab)do
 _cb.depotOnUse[bcb.getId()]={onUse=false,depot=bcb,recipe=nil}end end,set=function(_cb,acb,bcb)
@@ -203,28 +203,27 @@ if not _bb:isUsing(__c)then
 local a_c=cab.transferItemTo(__c,_db.input,64)
 caa.info("Transferred {} items to depot {}",a_c,__c.getId())
 if a_c<=0 then
-if _bb:isLoseTrack(__c)then
-caa.info("Lost track of depot {}",__c.getId())table.insert(_bb.lostTrackDepots,__c)end else _bb:set(_db,__c)cdb=cdb-1 end else
+caa.error("Failed to transfer items to depot {}",__c.getId())else _bb:set(_db,__c)cdb=cdb-1 end else
 caa.info("Depot {} is already in use for recipe {}",__c.getId(),_db.input)end end end;acb=acb-bdb;bcb=bcb-1
 ccb=math.max(1,math.floor(acb/math.max(1,bcb)))end;os.sleep(1)end end
 local cbb=function()
 while true do
-for _cb,acb in pairs(_bb.depotOnUse)do local bcb=acb.depot
-if _bb:isUsing(bcb)then
-if
-_bb:isCompleted(bcb)then local ccb=acb.recipe;local dcb=bcb.getItems(ccb.input)
-for _db,adb in ipairs(dcb)do
-local bdb=cab.transferItemFrom(bcb,adb.name,adb.count)
-if bdb==adb.count then
+for _cb,acb in ipairs(_ab)do
+if _bb:isUsing(acb)then
+if _bb:isCompleted(acb)then
+local bcb=onUseDepotInfo.recipe;local ccb=acb.getItems(bcb.input)
+for dcb,_db in ipairs(ccb)do
+local adb=cab.transferItemFrom(acb,_db.name,_db.count)
+if adb==_db.count then
 caa.debug("Transferred completed recipe "..
-ccb.input.." from depot "..bcb.getId())else
-caa.error("Failed to transfer completed recipe {} from depot {}",ccb.input,bcb.getId())end end;_bb:remove(bcb)end end end
-for _cb,acb in ipairs(_bb.lostTrackDepots)do
+bcb.input.." from depot "..acb.getId())else
+caa.error("Failed to transfer completed recipe {} from depot {}",bcb.input,acb.getId())end end;_bb:remove(acb)end elseif _bb:isLoseTrack(acb)then
+caa.info("Lost track of depot {}",acb.getId())
 for bcb,ccb in ipairs(acb.getItems())do
 local dcb=cab.transferItemFrom(acb,ccb.name,ccb.count)
 if dcb>0 then
 caa.debug("Transferred lost item {} from depot {}",ccb.name,acb.getId())else
-caa.error("Failed to transfer lost item {} from depot {}",ccb.name,acb.getId())end end end;os.sleep(1)end end
+caa.error("Failed to transfer lost item {} from depot {}",ccb.name,acb.getId())end end end end;os.sleep(1)end end
 local dbb=function()local _cb=_da()
 if
 _cb and _cb.side and _cb.channel and _cb.secret then
@@ -447,9 +446,9 @@ while ab<_b do
 local bb=ca.pushItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end end elseif ba.isUnlimitedPeripheralInventory()then
 if
 string.find(ba.getName(),"crafting_storage")or ba.getPatternsFor~=nil then
-ba.getItems=function()
-local ca=ba.items()
-for da,_b in ipairs(ca)do _b.displayName=_b.name;_b.name=_b.technicalName end;return ca end
+ba.isUnlimitedPeripheralSpecialInventory=true
+ba.getItems=function()local ca=ba.items()for da,_b in ipairs(ca)do _b.displayName=_b.name
+_b.name=_b.technicalName end;return ca end
 ba.getItemFinder=function(ca)local da=nil
 return
 function()local _b=ba.items()
@@ -468,12 +467,16 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getItem=function(ca)if ba._itemFinders[ca]==nil then
 ba._itemFinders[ca]=ba.getItemFinder(ca)end
 return ba._itemFinders[ca]()end
-ba.transferItemTo=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pushItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end
-ba.transferItemFrom=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end else
+ba.transferItemTo=function(ca,da,_b)
+if ca.isUnlimitedPeripheralSpecialInventory then
+return ca.transferItemFrom(ba,da,_b)else local ab=0
+while ab<_b do local bb=ba.pushItem(ca.getName(),da,_b-ab)if
+bb==0 then return ab end;ab=ab+bb end;return ab end end
+ba.transferItemFrom=function(ca,da,_b)
+if ca.isUnlimitedPeripheralSpecialInventory then return ca.transferItemTo(ba,da,_b)else
+local ab=0;while ab<_b do local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then
+return ab end;ab=ab+bb end
+return ab end end else
 error("Peripheral "..
 ba.getName().." types "..table.concat(_a.getTypes(ba),", ")..
 " is not an inventory")end end
@@ -494,12 +497,14 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getFluid=function(ca)if ba._fluidFinders[ca]==nil then
 ba._fluidFinders[ca]=ba.getFluidFinder(ca)end
 return ba._fluidFinders[ca]()end
-ba.transferFluidTo=function(ca,da,_b,ab)if ca.isTank()==false then
+ba.transferFluidTo=function(ca,da,_b,ab)if ca.isUnlimitedPeripheralSpecialInventory then
+return ca.transferFluidFrom(ba,da,_b)end;if ca.isTank()==false then
 error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local bb=0
 while bb<_b do local cb=ab~=nil and ab or
 (_b-bb)
 local db=ba.pushFluid(ca.getName(),cb,da)if db==0 then return bb end;bb=bb+db end;return bb end
-ba.transferFluidFrom=function(ca,da,_b)if ca.isTank()==false then
+ba.transferFluidFrom=function(ca,da,_b)if ca.isUnlimitedPeripheralSpecialInventory then
+return ca.transferFluidTo(ba,da,_b)end;if ca.isTank()==false then
 error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pullFluid(ca.getName(),
 _b-ab,da)if bb==0 then return ab end
 ab=ab+bb end;return ab end end
