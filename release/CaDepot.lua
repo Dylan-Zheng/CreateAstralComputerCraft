@@ -202,7 +202,7 @@ while true do
 for cbb,dbb in pairs(c_b)do
 if cab:isUsing(dbb)then
 if cab:isCompleted(dbb)then
-local _cb=onUseDepotInfo.recipe;local acb=dbb.getItems(_cb.input)
+local _cb=cab.onUseDepotInfo.recipe;local acb=dbb.getItems(_cb.input)
 for bcb,ccb in ipairs(acb)do
 local dcb=aab.transferItemFrom(dbb,ccb.name,ccb.count)
 if dcb==ccb.count then
