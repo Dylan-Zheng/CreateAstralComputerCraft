@@ -670,16 +670,14 @@ local checkAndMoveCompletedRecipe = function()
         for _, depot in pairs(depots) do
             if marker:isUsing(depot) then
                 if marker:isCompleted(depot) then
-                    local recipe = marker.onUseDepotInfo.recipe
+          
                     local items = depot.getItems(recipe.input)
                     for _, item in ipairs(items) do
                         local transferred = storage.transferItemFrom(depot, item.name, item.count)
                         if transferred == item.count then
-                            Logger.debug("Transferred completed recipe " ..
-                                recipe.input .. " from depot " .. depot.getId())
+                            Logger.debug("Transferred completed at depot {}", depot.getId())
                         else
-                            Logger.error("Failed to transfer completed recipe {} from depot {}", recipe.input,
-                                depot.getId())
+                            Logger.error("Failed to transfer completed at depot {}", depot.getId())
                         end
                     end
                     marker:remove(depot)

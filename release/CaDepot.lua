@@ -202,13 +202,12 @@ while true do
 for cbb,dbb in pairs(c_b)do
 if cab:isUsing(dbb)then
 if cab:isCompleted(dbb)then
-local _cb=cab.onUseDepotInfo.recipe;local acb=dbb.getItems(_cb.input)
-for bcb,ccb in ipairs(acb)do
-local dcb=aab.transferItemFrom(dbb,ccb.name,ccb.count)
-if dcb==ccb.count then
-baa.debug("Transferred completed recipe "..
-_cb.input.." from depot "..dbb.getId())else
-baa.error("Failed to transfer completed recipe {} from depot {}",_cb.input,dbb.getId())end end;cab:remove(dbb)end elseif cab:isLoseTrack(dbb)then
+local _cb=dbb.getItems(recipe.input)
+for acb,bcb in ipairs(_cb)do
+local ccb=aab.transferItemFrom(dbb,bcb.name,bcb.count)
+if ccb==bcb.count then
+baa.debug("Transferred completed at depot {}",dbb.getId())else
+baa.error("Failed to transfer completed at depot {}",dbb.getId())end end;cab:remove(dbb)end elseif cab:isLoseTrack(dbb)then
 baa.info("Lost track of depot {}",dbb.getId())
 for _cb,acb in ipairs(dbb.getItems())do
 local bcb=aab.transferItemFrom(dbb,acb.name,acb.count)
