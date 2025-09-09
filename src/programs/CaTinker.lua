@@ -8,10 +8,10 @@ local TableUtils = require("utils.TableUtils")
 
 local args = { ... }
 
-local recipes = OSUtils.loadTable("cacrusher_recipes") or {}
+local recipes = OSUtils.loadTable("catinker_recipes") or {}
 
 local loadCommunicatorConfig = function()
-    return OSUtils.loadTable("cadepot_communicator_config")
+    return OSUtils.loadTable("catinker_communicator_config")
 end
 
 -- Save communicator config to file
@@ -21,15 +21,15 @@ local saveCommunicatorConfig = function(side, channel, secret)
         channel = channel,
         secret = secret
     }
-    OSUtils.saveTable("cadepot_communicator_config", config)
+    OSUtils.saveTable("catinker_communicator_config", config)
 end
 
-local setMesssageHandler = function(openChannel)
+local setMessageHandler = function(openChannel)
     openChannel.addMessageHandler("getRecipesRes", function(eventCode, payload, senderId)
         local newRecipes = {}
         local allRecipes = payload or {}
         for _, recipe in ipairs(allRecipes) do
-            if recipe.name and recipe.name:lower():find("^TF") then
+            if recipe.name and recipe.name:lower():find("^tf") then
                 table.insert(newRecipes, {
                     id = recipe.id,
                     name = recipe.name,
@@ -43,7 +43,7 @@ local setMesssageHandler = function(openChannel)
             end
         end
         recipes = newRecipes
-        OSUtils.saveTable("cacrusher_recipes", recipes)
+        OSUtils.saveTable("catinker_recipes", recipes)
     end)
 
     -- Add update event handler
@@ -81,6 +81,7 @@ local start = function()
     local drains = PeripheralWrapper.getAllPeripheralsNameContains("tconstruct:scorched_drain")
     local drain = drains[next(drains)]
     local waitTime = 1
+    
     while true do
         waitTime = 1
         for _, recipe in ipairs(recipes) do
@@ -103,14 +104,13 @@ local start = function()
         end
         os.sleep(waitTime)
     end
-
 end
 
 if side and channel and secret then
 
     Communicator.open(side, channel, "recipe", secret)
     local openChannel = Communicator.communicationChannels[side][channel]["recipe"]
-    setMesssageHandler(openChannel)
+    setMessageHandler(openChannel)
 
     parallel.waitForAll(Communicator.listen, start)
 else
