@@ -2,51 +2,52 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CaTinker"] = function(...) local bc=require("utils.Logger")
-local cc=require("programs.common.Communicator")local dc=require("programs.command.CommandLine")
-local _d=require("utils.OSUtils")local ad=require("programs.common.Trigger")
-local bd=require("wrapper.PeripheralWrapper")local cd=require("utils.TableUtils")local dd={...}local __a=
-_d.loadTable("catinker_recipes")or{}
-local a_a=function()return
-_d.loadTable("catinker_communicator_config")end
-local b_a=function(caa,daa,_ba)local aba={side=caa,channel=daa,secret=_ba}
-_d.saveTable("catinker_communicator_config",aba)end
-local c_a=function(caa)
-caa.addMessageHandler("getRecipesRes",function(daa,_ba,aba)local bba={}local cba=_ba or{}
-for dba,_ca in ipairs(cba)do
-if _ca.name and
-_ca.name:lower():find("^tf")then
-table.insert(bba,{id=_ca.id,name=_ca.name,input=_ca.input,output=_ca.output,trigger=_ca.trigger,maxMachine=_ca.maxMachine or-1,inputItemRate=
-_ca.inputItemRate or 1,inputFluidRate=_ca.inputFluidRate or 1})end end;__a=bba;_d.saveTable("catinker_recipes",__a)end)
-caa.addMessageHandler("update",function(daa,_ba,aba)caa.send("getRecipesReq","common")end)end
-local d_a,_aa,aaa=(function()
-if dd~=nil and#dd==3 then local caa=dd[1]local daa=tonumber(dd[2])local _ba=dd[3]
-b_a(caa,daa,_ba)return caa,daa,_ba else local caa=a_a()
-if caa~=nil then return caa.side,caa.channel,caa.secret else
-print("Usage: CaTinker <side> <channel> <secret>")print("Example: CaTinker top 1234 mysecret")
-return nil,nil,nil end end end)()
-local baa=function()
-local caa=bd.getAllPeripheralsNameContains("crafting_storage")local daa=caa[next(caa)]if not daa then
-bc.log("ERROR","No crafting storage found!")return end
-local _ba=bd.getAllPeripheralsNameContains("tconstruct:foundry_controller")local aba=_ba[next(_ba)]if not aba then
-bc.log("ERROR","No tinker foundry controller found!")return end
-local bba=bd.getAllPeripheralsNameContains("tconstruct:scorched_drain")local cba=bba[next(bba)]if not cba then
-bc.log("ERROR","No scorched drain found!")return end;local dba=1
-while true do dba=1
-for _ca,aca in ipairs(__a)do local bca=aca.input and
-aca.input[1]
-if bca then local dca=aba.getItem(bca)
-local _da=
-dca and dca.count and dca.count>= (aca.inputItemRate or 1)
-if _da and
-ad.eval(aca.trigger,function(ada,bda)if ada=="item"then return daa.getItem(bda)elseif ada=="fluid"then return
-daa.getFluid(bda)end end)then
-dba=0.5
-daa.transferItemTo(aba,bca,aca.inputItemRate or 1)end end;local cca=cba.tanks()if cca then
-for dca,_da in pairs(cca)do if _da.amount and _da.amount>0 then
-daa.transferFluidFrom(cba,_da.name,_da.amount)end end end end;os.sleep(dba)end end
-if d_a and _aa and aaa then cc.open(d_a,_aa,"recipe",aaa)
-local caa=cc.communicationChannels[d_a][_aa]["recipe"]c_a(caa)parallel.waitForAll(cc.listen,baa)else
+modules["programs.CaTinker"] = function(...) local a_a=require("utils.Logger")
+local b_a=require("programs.common.Communicator")local c_a=require("programs.command.CommandLine")
+local d_a=require("utils.OSUtils")local _aa=require("programs.common.Trigger")
+local aaa=require("wrapper.PeripheralWrapper")local baa=require("utils.TableUtils")local caa={...}local daa=
+d_a.loadTable("catinker_recipes")or{}
+local _ba=function()return
+d_a.loadTable("catinker_communicator_config")end
+local aba=function(a_b,b_b,c_b)local d_b={side=a_b,channel=b_b,secret=c_b}
+d_a.saveTable("catinker_communicator_config",d_b)end
+local bba=function(a_b)
+a_b.addMessageHandler("getRecipesRes",function(b_b,c_b,d_b)local _ab={}local aab=c_b or{}
+for bab,cab in ipairs(aab)do
+if cab.name and
+cab.name:lower():find("^tf")then
+table.insert(_ab,{id=cab.id,name=cab.name,input=cab.input,output=cab.output,trigger=cab.trigger,maxMachine=cab.maxMachine or-1,inputItemRate=
+cab.inputItemRate or 1,inputFluidRate=cab.inputFluidRate or 1})end end;daa=_ab;d_a.saveTable("catinker_recipes",daa)end)
+a_b.addMessageHandler("update",function(b_b,c_b,d_b)a_b.send("getRecipesReq","common")end)end
+local cba,dba,_ca=(function()
+if caa~=nil and#caa==3 then local a_b=caa[1]local b_b=tonumber(caa[2])
+local c_b=caa[3]aba(a_b,b_b,c_b)return a_b,b_b,c_b else local a_b=_ba()
+if a_b~=nil then
+return a_b.side,a_b.channel,a_b.secret else print("Usage: CaTinker <side> <channel> <secret>")
+print("Example: CaTinker top 1234 mysecret")return nil,nil,nil end end end)()
+local aca=aaa.getAllPeripheralsNameContains("crafting_storage")local bca=aca[next(aca)]
+local cca=aaa.getAllPeripheralsNameContains("tconstruct:foundry_controller")local dca=cca[next(cca)]
+local _da=aaa.getAllPeripheralsNameContains("tconstruct:scorched_drain")local ada=_da[next(_da)]
+local bda=aaa.getAllPeripheralsNameContains("fuel_tank")local cda=bda[next(bda)]
+local dda=function()
+while true do local a_b=1
+for b_b,c_b in ipairs(daa)do
+if
+c_b.input and c_b.input[1]then local _ab=c_b.input[1]local aab=dca.getItem(_ab)local bab=aab~=nil
+if not bab and
+_aa.eval(c_b.trigger,function(cab,dab)if
+cab=="item"then return bca.getItem(dab)elseif cab=="fluid"then
+return bca.getFluid(dab)end end)then
+a_b=0.5
+bca.transferItemTo(dca,_ab,c_b.inputItemRate or 1)end end;local d_b=ada.tanks()if d_b then
+for _ab,aab in pairs(d_b)do if aab.amount and aab.amount>0 then
+bca.transferFluidFrom(ada,aab.name,aab.amount)end end end end;os.sleep(a_b)end end
+local __b=function()
+while true do local a_b=cda.getFluid("minecraft:lava")
+local b_b=a_b and a_b.amount or 0;if b_b<3000 then
+bca.transferFluidTo(cda,"minecraft:lava",4000 -b_b)end;os.sleep(5)end end
+if cba and dba and _ca then b_a.open(cba,dba,"recipe",_ca)
+local a_b=b_a.communicationChannels[cba][dba]["recipe"]bba(a_b)parallel.waitForAll(b_a.listen,dda,__b)else
 print("Invalid arguments. Exiting...")end end
 modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
 b.useDefault=function()

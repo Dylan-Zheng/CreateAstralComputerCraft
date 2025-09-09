@@ -71,34 +71,48 @@ local side, channel, secret = (function()
     end
 end)()
 
+local storages = PeripheralWrapper.getAllPeripheralsNameContains("crafting_storage")
+local storage = storages[next(storages)]
+
+local tcontrollers = PeripheralWrapper.getAllPeripheralsNameContains("tconstruct:foundry_controller")
+local tcontroller = tcontrollers[next(tcontrollers)]
+
+local drains = PeripheralWrapper.getAllPeripheralsNameContains("tconstruct:scorched_drain")
+local drain = drains[next(drains)]
+
+local tFuelTanks = PeripheralWrapper.getAllPeripheralsNameContains("fuel_tank")
+local fuelTank = tFuelTanks[next(tFuelTanks)]
+
 local start = function()
-    local storages = PeripheralWrapper.getAllPeripheralsNameContains("crafting_storage")
-    local storage = storages[next(storages)]
-
-    local tcontrollers = PeripheralWrapper.getAllPeripheralsNameContains("tconstruct:foundry_controller")
-    local tcontroller = tcontrollers[next(tcontrollers)]
-
-    local drains = PeripheralWrapper.getAllPeripheralsNameContains("tconstruct:scorched_drain")
-    local drain = drains[next(drains)]
-    local waitTime = 1
-    
     while true do
-        waitTime = 1
+        local waitTime = 1
         for _, recipe in ipairs(recipes) do
-            if tcontroller.getItem(recipe.input[1]) and Trigger.eval(recipe.trigger, function(type, name)
-                if type == "item" then
-                    return storage.getItem(name)
-                elseif type == "fluid" then
-                    return storage.getFluid(name)
+            -- Check if recipe has valid input
+            if recipe.input and recipe.input[1] then
+                local inputItem = recipe.input[1]
+                local currentItem = tcontroller.getItem(inputItem)
+                local hasItem = currentItem ~= nil
+                
+                -- Only transfer if we DON'T have the item and trigger conditions are met
+                if not hasItem and Trigger.eval(recipe.trigger, function(type, name)
+                        if type == "item" then
+                            return storage.getItem(name)
+                        elseif type == "fluid" then
+                            return storage.getFluid(name)
+                        end
+                    end) then
+                    waitTime = 0.5
+                    storage.transferItemTo(tcontroller, inputItem, recipe.inputItemRate or 1)
                 end
-            end) then
-               waitTime = 0.5
-               storage.transferItemTo(tcontroller, recipe.input[1], recipe.inputItemRate)
             end
+            
+            -- Collect fluids from drain
             local fluids = drain.tanks()
             if fluids then
-                for _, tank in pairs(fluids) do
-                    storage.transferFluidFrom(drain, tank.name, tank.amount)
+                for _, fluid in pairs(fluids) do
+                    if fluid.amount and fluid.amount > 0 then
+                        storage.transferFluidFrom(drain, fluid.name, fluid.amount)
+                    end
                 end
             end
         end
@@ -106,13 +120,23 @@ local start = function()
     end
 end
 
-if side and channel and secret then
+local refillLava = function()
+    while true do
+        local lava = fuelTank.getFluid("minecraft:lava")
+        local lavaAmount = lava and lava.amount or 0
+        if lavaAmount < 3000 then
+            storage.transferFluidTo(fuelTank, "minecraft:lava", 4000 - lavaAmount)
+        end
+        os.sleep(5)
+    end
+end
 
+if side and channel and secret then
     Communicator.open(side, channel, "recipe", secret)
     local openChannel = Communicator.communicationChannels[side][channel]["recipe"]
     setMessageHandler(openChannel)
 
-    parallel.waitForAll(Communicator.listen, start)
+    parallel.waitForAll(Communicator.listen, start, refillLava)
 else
     print("Invalid arguments. Exiting...")
 end
