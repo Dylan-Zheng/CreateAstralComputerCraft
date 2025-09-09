@@ -670,7 +670,6 @@ local checkAndMoveCompletedRecipe = function()
         for _, depot in pairs(depots) do
             if marker:isUsing(depot) then
                 if marker:isCompleted(depot) then
-          
                     local items = depot.getItems()
                     for _, item in ipairs(items) do
                         local transferred = storage.transferItemFrom(depot, item.name, item.count)
