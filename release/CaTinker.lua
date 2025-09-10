@@ -2,50 +2,54 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CaTinker"] = function(...) local cd=require("programs.common.Communicator")
-local dd=require("utils.OSUtils")local __a=require("programs.common.Trigger")
-local a_a=require("wrapper.PeripheralWrapper")a_a.reloadAll()local b_a={...}
-local c_a=dd.loadTable("catinker_recipes")or{}
-local d_a=function()return dd.loadTable("catinker_communicator_config")end
-local _aa=function(_da,ada,bda)local cda={side=_da,channel=ada,secret=bda}
-dd.saveTable("catinker_communicator_config",cda)end
-local aaa=function(_da)
-_da.addMessageHandler("getRecipesRes",function(ada,bda,cda)local dda={}local __b=bda or{}
-for a_b,b_b in ipairs(__b)do
-if b_b.name and
-b_b.name:lower():find("^tf")then
-table.insert(dda,{id=b_b.id,name=b_b.name,input=b_b.input,output=b_b.output,trigger=b_b.trigger,maxMachine=b_b.maxMachine or-1,inputItemRate=
-b_b.inputItemRate or 1,inputFluidRate=b_b.inputFluidRate or 1})end end;c_a=dda;dd.saveTable("catinker_recipes",c_a)end)
-_da.addMessageHandler("update",function(ada,bda,cda)_da.send("getRecipesReq","common")end)end
-local baa,caa,daa=(function()
-if b_a~=nil and#b_a==3 then local _da=b_a[1]local ada=tonumber(b_a[2])
-local bda=b_a[3]_aa(_da,ada,bda)return _da,ada,bda else local _da=d_a()
-if _da~=nil then
-return _da.side,_da.channel,_da.secret else print("Usage: CaTinker <side> <channel> <secret>")
+modules["programs.CaTinker"] = function(...) local dd=require("programs.common.Communicator")
+local __a=require("utils.OSUtils")local a_a=require("programs.common.Trigger")
+local b_a=require("wrapper.PeripheralWrapper")local c_a=require("utils.Logger")c_a.useDefault()
+c_a.currentLevel=c_a.levels.WARN;b_a.reloadAll()local d_a={...}
+local _aa=__a.loadTable("catinker_recipes")or{}
+local aaa=function()return __a.loadTable("catinker_communicator_config")end
+local baa=function(bda,cda,dda)local __b={side=bda,channel=cda,secret=dda}
+__a.saveTable("catinker_communicator_config",__b)end
+local caa=function(bda)
+bda.addMessageHandler("getRecipesRes",function(cda,dda,__b)local a_b={}local b_b=dda or{}
+for c_b,d_b in ipairs(b_b)do
+if d_b.name and
+d_b.name:lower():find("^tf")then
+table.insert(a_b,{id=d_b.id,name=d_b.name,input=d_b.input,output=d_b.output,trigger=d_b.trigger,maxMachine=d_b.maxMachine or-1,inputItemRate=
+d_b.inputItemRate or 1,inputFluidRate=d_b.inputFluidRate or 1})end end;_aa=a_b;__a.saveTable("catinker_recipes",_aa)
+c_a.info("Received recipes")end)
+bda.addMessageHandler("update",function(cda,dda,__b)bda.send("getRecipesReq","common")
+c_a.info("Received update event")end)end
+local daa,_ba,aba=(function()
+if d_a~=nil and#d_a==3 then local bda=d_a[1]local cda=tonumber(d_a[2])
+local dda=d_a[3]baa(bda,cda,dda)return bda,cda,dda else local bda=aaa()
+if bda~=nil then
+return bda.side,bda.channel,bda.secret else print("Usage: CaTinker <side> <channel> <secret>")
 print("Example: CaTinker top 1234 mysecret")return nil,nil,nil end end end)()
-local _ba=a_a.getAllPeripheralsNameContains("crafting_storage")local aba=_ba[next(_ba)]
-local bba=a_a.getAllPeripheralsNameContains("tconstruct:foundry_controller")local cba=bba[next(bba)]
-local dba=a_a.getAllPeripheralsNameContains("tconstruct:scorched_drain")local _ca=dba[next(dba)]
-local aca=a_a.getAllPeripheralsNameContains("tconstruct:scorched_fuel_tank")local bca=aca[next(aca)]
-local cca=function()
-while true do local _da=1
-for ada,bda in ipairs(c_a)do
+local bba=b_a.getAllPeripheralsNameContains("crafting_storage")local cba=bba[next(bba)]
+local dba=b_a.getAllPeripheralsNameContains("tconstruct:foundry_controller")local _ca=dba[next(dba)]
+local aca=b_a.getAllPeripheralsNameContains("tconstruct:scorched_drain")local bca=aca[next(aca)]
+local cca=b_a.getAllPeripheralsNameContains("tconstruct:scorched_fuel_tank")local dca=cca[next(cca)]
+local _da=function()
+while true do local bda=1
+for cda,dda in ipairs(_aa)do
 if
-bda.input and bda.input[1]then local dda=bda.input[1]local __b=cba.getItem(dda)local a_b=__b~=nil
-if not a_b and
-__a.eval(bda.trigger,function(b_b,c_b)if
-b_b=="item"then return aba.getItem(c_b)elseif b_b=="fluid"then
-return aba.getFluid(c_b)end end)then
-_da=0.5
-aba.transferItemTo(cba,dda,bda.inputItemRate or 1)end end;local cda=_ca.tanks()if cda then
-for dda,__b in pairs(cda)do if __b.amount and __b.amount>0 then
-aba.transferFluidFrom(_ca,__b.name,__b.amount)end end end end;os.sleep(_da)end end
-local dca=function()
-while true do local _da=bca.getFluid("minecraft:lava")
-local ada=_da and _da.amount or 0;if ada<3000 then
-aba.transferFluidTo(bca,"minecraft:lava",4000 -ada)end;os.sleep(5)end end
-if baa and caa and daa then cd.open(baa,caa,"recipe",daa)
-local _da=cd.communicationChannels[baa][caa]["recipe"]aaa(_da)parallel.waitForAll(cd.listen,cca,dca)else
+dda.input and dda.input.items and#dda.input.items>0 then
+local a_b=dda.input.items[1]local b_b=_ca.getItem(a_b)local c_b=b_b~=nil
+local d_b=a_a.eval(dda.trigger,function(_ab,aab)
+if _ab=="item"then return
+cba.getItem(aab)elseif _ab=="fluid"then return cba.getFluid(aab)end end)
+c_a.info("Recipe Name: {} has item: {} triggered: {}",dda.name,c_b,d_b)if not c_b and d_b then bda=0.5
+cba.transferItemTo(_ca,a_b,dda.inputItemRate or 1)end else
+c_a.warn("Recipe {} has no valid input",dda.name or"unknown")end;local __b=bca.tanks()if __b then
+for a_b,b_b in pairs(__b)do if b_b.amount and b_b.amount>0 then
+cba.transferFluidFrom(bca,b_b.name,b_b.amount)end end end end;os.sleep(bda)end end
+local ada=function()
+while true do local bda=dca.getFluid("minecraft:lava")
+local cda=bda and bda.amount or 0;if cda<3000 then
+cba.transferFluidTo(dca,"minecraft:lava",4000 -cda)end;os.sleep(5)end end
+if daa and _ba and aba then dd.open(daa,_ba,"recipe",aba)
+local bda=dd.communicationChannels[daa][_ba]["recipe"]caa(bda)parallel.waitForAll(dd.listen,_da,ada)else
 print("Invalid arguments. Exiting...")end end
 modules["programs.common.Communicator"] = function(...) local _b=require("utils.Logger")
 local ab=require("utils.OSUtils")

@@ -2,6 +2,11 @@ local Communicator = require("programs.common.Communicator")
 local OSUtils = require("utils.OSUtils")
 local Trigger = require("programs.common.Trigger")
 local PeripheralWrapper = require("wrapper.PeripheralWrapper")
+local Logger = require("utils.Logger")
+
+
+Logger.useDefault()
+Logger.currentLevel = Logger.levels.WARN
 
 PeripheralWrapper.reloadAll()
 
@@ -43,11 +48,13 @@ local setMessageHandler = function(openChannel)
         end
         recipes = newRecipes
         OSUtils.saveTable("catinker_recipes", recipes)
+        Logger.info("Received recipes")
     end)
 
     -- Add update event handler
     openChannel.addMessageHandler("update", function(eventCode, payload, senderId)
         openChannel.send("getRecipesReq", "common")
+        Logger.info("Received update event")
     end)
 end
 
@@ -87,22 +94,25 @@ local start = function()
         local waitTime = 1
         for _, recipe in ipairs(recipes) do
             -- Check if recipe has valid input
-            if recipe.input and recipe.input[1] then
-                local inputItem = recipe.input[1]
+            if recipe.input and recipe.input.items and #recipe.input.items > 0 then
+                local inputItem = recipe.input.items[1]
                 local currentItem = tcontroller.getItem(inputItem)
                 local hasItem = currentItem ~= nil
-                
-                -- Only transfer if we DON'T have the item and trigger conditions are met
-                if not hasItem and Trigger.eval(recipe.trigger, function(type, name)
+                local isTriggered = Trigger.eval(recipe.trigger, function(type, name)
                         if type == "item" then
                             return storage.getItem(name)
                         elseif type == "fluid" then
                             return storage.getFluid(name)
                         end
-                    end) then
+                    end)
+                Logger.info("Recipe Name: {} has item: {} triggered: {}", recipe.name, hasItem, isTriggered)
+                -- Only transfer if we DON'T have the item and trigger conditions are met
+                if not hasItem and isTriggered then
                     waitTime = 0.5
                     storage.transferItemTo(tcontroller, inputItem, recipe.inputItemRate or 1)
                 end
+            else
+                Logger.warn("Recipe {} has no valid input", recipe.name or "unknown")
             end
             
             -- Collect fluids from drain
