@@ -2,75 +2,51 @@ local modules = {}
 local loadedModules = {}
 local baseRequire = require
 require = function(path) if(modules[path])then if(loadedModules[path]==nil)then loadedModules[path] = modules[path]() end return loadedModules[path] end return baseRequire(path) end
-modules["programs.CaTinker"] = function(...) local a_a=require("utils.Logger")
-local b_a=require("programs.common.Communicator")local c_a=require("programs.command.CommandLine")
-local d_a=require("utils.OSUtils")local _aa=require("programs.common.Trigger")
-local aaa=require("wrapper.PeripheralWrapper")local baa=require("utils.TableUtils")local caa={...}local daa=
-d_a.loadTable("catinker_recipes")or{}
-local _ba=function()return
-d_a.loadTable("catinker_communicator_config")end
-local aba=function(a_b,b_b,c_b)local d_b={side=a_b,channel=b_b,secret=c_b}
-d_a.saveTable("catinker_communicator_config",d_b)end
-local bba=function(a_b)
-a_b.addMessageHandler("getRecipesRes",function(b_b,c_b,d_b)local _ab={}local aab=c_b or{}
-for bab,cab in ipairs(aab)do
-if cab.name and
-cab.name:lower():find("^tf")then
-table.insert(_ab,{id=cab.id,name=cab.name,input=cab.input,output=cab.output,trigger=cab.trigger,maxMachine=cab.maxMachine or-1,inputItemRate=
-cab.inputItemRate or 1,inputFluidRate=cab.inputFluidRate or 1})end end;daa=_ab;d_a.saveTable("catinker_recipes",daa)end)
-a_b.addMessageHandler("update",function(b_b,c_b,d_b)a_b.send("getRecipesReq","common")end)end
-local cba,dba,_ca=(function()
-if caa~=nil and#caa==3 then local a_b=caa[1]local b_b=tonumber(caa[2])
-local c_b=caa[3]aba(a_b,b_b,c_b)return a_b,b_b,c_b else local a_b=_ba()
-if a_b~=nil then
-return a_b.side,a_b.channel,a_b.secret else print("Usage: CaTinker <side> <channel> <secret>")
+modules["programs.CaTinker"] = function(...) local cd=require("programs.common.Communicator")
+local dd=require("utils.OSUtils")local __a=require("programs.common.Trigger")
+local a_a=require("wrapper.PeripheralWrapper")a_a.reloadAll()local b_a={...}
+local c_a=dd.loadTable("catinker_recipes")or{}
+local d_a=function()return dd.loadTable("catinker_communicator_config")end
+local _aa=function(_da,ada,bda)local cda={side=_da,channel=ada,secret=bda}
+dd.saveTable("catinker_communicator_config",cda)end
+local aaa=function(_da)
+_da.addMessageHandler("getRecipesRes",function(ada,bda,cda)local dda={}local __b=bda or{}
+for a_b,b_b in ipairs(__b)do
+if b_b.name and
+b_b.name:lower():find("^tf")then
+table.insert(dda,{id=b_b.id,name=b_b.name,input=b_b.input,output=b_b.output,trigger=b_b.trigger,maxMachine=b_b.maxMachine or-1,inputItemRate=
+b_b.inputItemRate or 1,inputFluidRate=b_b.inputFluidRate or 1})end end;c_a=dda;dd.saveTable("catinker_recipes",c_a)end)
+_da.addMessageHandler("update",function(ada,bda,cda)_da.send("getRecipesReq","common")end)end
+local baa,caa,daa=(function()
+if b_a~=nil and#b_a==3 then local _da=b_a[1]local ada=tonumber(b_a[2])
+local bda=b_a[3]_aa(_da,ada,bda)return _da,ada,bda else local _da=d_a()
+if _da~=nil then
+return _da.side,_da.channel,_da.secret else print("Usage: CaTinker <side> <channel> <secret>")
 print("Example: CaTinker top 1234 mysecret")return nil,nil,nil end end end)()
-local aca=aaa.getAllPeripheralsNameContains("crafting_storage")local bca=aca[next(aca)]
-local cca=aaa.getAllPeripheralsNameContains("tconstruct:foundry_controller")local dca=cca[next(cca)]
-local _da=aaa.getAllPeripheralsNameContains("tconstruct:scorched_drain")local ada=_da[next(_da)]
-local bda=aaa.getAllPeripheralsNameContains("fuel_tank")local cda=bda[next(bda)]
-local dda=function()
-while true do local a_b=1
-for b_b,c_b in ipairs(daa)do
+local _ba=a_a.getAllPeripheralsNameContains("crafting_storage")local aba=_ba[next(_ba)]
+local bba=a_a.getAllPeripheralsNameContains("tconstruct:foundry_controller")local cba=bba[next(bba)]
+local dba=a_a.getAllPeripheralsNameContains("tconstruct:scorched_drain")local _ca=dba[next(dba)]
+local aca=a_a.getAllPeripheralsNameContains("tconstruct:scorched_fuel_tank")local bca=aca[next(aca)]
+local cca=function()
+while true do local _da=1
+for ada,bda in ipairs(c_a)do
 if
-c_b.input and c_b.input[1]then local _ab=c_b.input[1]local aab=dca.getItem(_ab)local bab=aab~=nil
-if not bab and
-_aa.eval(c_b.trigger,function(cab,dab)if
-cab=="item"then return bca.getItem(dab)elseif cab=="fluid"then
-return bca.getFluid(dab)end end)then
-a_b=0.5
-bca.transferItemTo(dca,_ab,c_b.inputItemRate or 1)end end;local d_b=ada.tanks()if d_b then
-for _ab,aab in pairs(d_b)do if aab.amount and aab.amount>0 then
-bca.transferFluidFrom(ada,aab.name,aab.amount)end end end end;os.sleep(a_b)end end
-local __b=function()
-while true do local a_b=cda.getFluid("minecraft:lava")
-local b_b=a_b and a_b.amount or 0;if b_b<3000 then
-bca.transferFluidTo(cda,"minecraft:lava",4000 -b_b)end;os.sleep(5)end end
-if cba and dba and _ca then b_a.open(cba,dba,"recipe",_ca)
-local a_b=b_a.communicationChannels[cba][dba]["recipe"]bba(a_b)parallel.waitForAll(b_a.listen,dda,__b)else
+bda.input and bda.input[1]then local dda=bda.input[1]local __b=cba.getItem(dda)local a_b=__b~=nil
+if not a_b and
+__a.eval(bda.trigger,function(b_b,c_b)if
+b_b=="item"then return aba.getItem(c_b)elseif b_b=="fluid"then
+return aba.getFluid(c_b)end end)then
+_da=0.5
+aba.transferItemTo(cba,dda,bda.inputItemRate or 1)end end;local cda=_ca.tanks()if cda then
+for dda,__b in pairs(cda)do if __b.amount and __b.amount>0 then
+aba.transferFluidFrom(_ca,__b.name,__b.amount)end end end end;os.sleep(_da)end end
+local dca=function()
+while true do local _da=bca.getFluid("minecraft:lava")
+local ada=_da and _da.amount or 0;if ada<3000 then
+aba.transferFluidTo(bca,"minecraft:lava",4000 -ada)end;os.sleep(5)end end
+if baa and caa and daa then cd.open(baa,caa,"recipe",daa)
+local _da=cd.communicationChannels[baa][caa]["recipe"]aaa(_da)parallel.waitForAll(cd.listen,cca,dca)else
 print("Invalid arguments. Exiting...")end end
-modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
-b.useDefault=function()
-b.addPrintFunction(function(c,d,_a,aa)
-print(string.format("[%s][%s:%d] %s",c,d,_a,aa))end)end;b.levels={DEBUG=1,INFO=2,WARN=3,ERROR=4}b.addPrintFunction=function(c)
-table.insert(b.printFunctions,c)end
-b.print=function(c,d,_a,aa,...)
-if
-c>=b.currentLevel then local ba=b.formatBraces(aa,...)for ca,da in ipairs(b.printFunctions)do
-da(c,d,_a,ba)end end end
-b.custom=function(c,d,...)local _a=debug.getinfo(2,"l").currentline
-local aa=debug.getinfo(2,"S").short_src;b.print(c,aa,_a,d,...)end
-b.debug=function(c,...)local d=debug.getinfo(2,"l").currentline
-local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.DEBUG,_a,d,c,...)end
-b.info=function(c,...)local d=debug.getinfo(2,"l").currentline
-local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.INFO,_a,d,c,...)end
-b.warn=function(c,...)local d=debug.getinfo(2,"l").currentline
-local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.WARN,_a,d,c,...)end
-b.error=function(c,...)local d=debug.getinfo(2,"l").currentline
-local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.ERROR,_a,d,c,...)end
-b.formatBraces=function(c,...)local d={...}local _a=1
-local aa=tostring(c):gsub("{}",function()local ba=d[_a]_a=_a+1
-return tostring(ba)end)return aa end;return b end
 modules["programs.common.Communicator"] = function(...) local _b=require("utils.Logger")
 local ab=require("utils.OSUtils")
 local function bb(dc,_d)local ad=""local bd=_d
@@ -142,41 +118,6 @@ function ac.getOpenChannels()local dc={}
 for _d,ad in pairs(ac.communicationChannels)do
 for bd,cd in pairs(ad)do for dd,__a in pairs(cd)do
 table.insert(dc,ac.communicationChannels[_d][bd][dd])end end end;return dc end;return ac end
-modules["programs.command.CommandLine"] = function(...) local ba={}ba.__index=ba
-function ba.filterSuggestions(cb,db)local _c={}db=db or""
-local ac=string.lower(db)for bc,cc in ipairs(cb)do local dc=string.lower(cc)
-if dc:find(ac,1,true)==1 then
-local _d=cc:sub(#db+1)if _d~=""then table.insert(_c,_d)end end end
-return _c end
-function ba:new(cb)local db=setmetatable({},ba)db.suffix=cb or"> "
-db.commands={help={name="help",description="Display available commands",func=function(_c)
-print("Available commands:")for ac,bc in pairs(db.commands)do
-print(string.format(" - %s: %s",ac,bc.description))end end}}return db end
-local ca=function(cb)local db=string.find(cb," ")if db then
-return string.sub(cb,1,db-1),true else return cb,false end end;local da=function(cb,db)return cb.commands[db]end
-local _b=function(cb,db)
-local _c={}local ac,bc=ca(db)
-if bc then local cc=da(cb,ac)
-if cc and cc.complete then
-local dc=string.sub(db,#ac+2)_c=cc.complete(dc)or{}end else local cc={}for dc,_d in pairs(cb.commands)do
-if dc:find(ac)==1 then table.insert(cc,dc)end end
-_c=ba.filterSuggestions(cc,ac)end;return _c end
-local function ab(cb,db)local _c,ac=#cb,#db;local bc={}for i=0,_c do bc[i]={}bc[i][0]=i end;for j=0,ac do
-bc[0][j]=j end
-for i=1,_c do for j=1,ac do
-local cc=(cb:sub(i,i)==db:sub(j,j))and 0 or 1
-bc[i][j]=math.min(bc[i-1][j]+1,bc[i][j-1]+1,bc[i-1][j-1]+cc)end end;return bc[_c][ac]end
-local function bb(cb,db)local _c=nil;local ac=math.huge;local bc=3
-for cc,dc in pairs(cb.commands)do
-local _d=ab(db:lower(),cc:lower())if _d<ac and _d<=bc then ac=_d;_c=cc end end;return _c end;function ba:addCommand(cb,db,_c,ac)
-self.commands[cb]={name=cb,description=db,func=_c,complete=ac}return self end
-function ba:run()
-write(self.suffix)
-local cb=read(nil,nil,function(bc)return _b(self,bc)end)local db,_c=ca(cb)local ac=da(self,db)
-if ac then return ac.func(cb)else local bc=bb(self,db)
-if bc then print(
-"Unknown command: "..db)
-print("Do you mean \""..bc.."\"?")else print("Unknown command: "..db)end end end;function ba:changeSuffix(cb)self.suffix=cb end;return ba end
 modules["utils.OSUtils"] = function(...) local c=require("utils.Logger")local d={}
 d.SIDES={TOP="top",BOTTOM="bottom",LEFT="left",RIGHT="right",FRONT="front",BACK="back"}
 d.timestampBaseIdGenerate=function()local _a=os.epoch("utc")
@@ -375,16 +316,26 @@ _a.isTypeOf(_b,bb)then ca[da]=_b;break end end end;return ca end
 _a.getAllPeripheralsNameContains=function(ba)if ba==nil or ba==""then
 error("Part of name input cannot be nil or empty")end;local ca={}for da,_b in pairs(_a.getAll())do if
 string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
-modules["utils.TableUtils"] = function(...) local b={}
-b.findInArray=function(c,d)if c==nil or d==nil then return nil end;for _a,aa in ipairs(c)do
-if d(aa)then return _a end end;return nil end
-b.getLength=function(c)if c==nil then return 0 end;local d=0;for _a in pairs(c)do d=d+1 end;return d end
-b.getAllKeyValueAsTreeString=function(c,d,_a)d=d or""_a=_a or{}if _a[c]then
-return d.."<circular reference>\n"end;_a[c]=true;local aa=d.."{\n"
-for ba,ca in pairs(c)do
-aa=aa..d.."  ["..tostring(ba)..
-"] = "
-if type(ca)=="table"then
-aa=aa..b.getAllKeyValueAsTreeString(ca,d.."  ",_a)elseif type(ca)=="function"then aa=aa.."function\n"else
-aa=aa..tostring(ca).."\n"end end;aa=aa..d.."}\n"return aa end;return b end
+modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
+b.useDefault=function()
+b.addPrintFunction(function(c,d,_a,aa)
+print(string.format("[%s][%s:%d] %s",c,d,_a,aa))end)end;b.levels={DEBUG=1,INFO=2,WARN=3,ERROR=4}b.addPrintFunction=function(c)
+table.insert(b.printFunctions,c)end
+b.print=function(c,d,_a,aa,...)
+if
+c>=b.currentLevel then local ba=b.formatBraces(aa,...)for ca,da in ipairs(b.printFunctions)do
+da(c,d,_a,ba)end end end
+b.custom=function(c,d,...)local _a=debug.getinfo(2,"l").currentline
+local aa=debug.getinfo(2,"S").short_src;b.print(c,aa,_a,d,...)end
+b.debug=function(c,...)local d=debug.getinfo(2,"l").currentline
+local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.DEBUG,_a,d,c,...)end
+b.info=function(c,...)local d=debug.getinfo(2,"l").currentline
+local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.INFO,_a,d,c,...)end
+b.warn=function(c,...)local d=debug.getinfo(2,"l").currentline
+local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.WARN,_a,d,c,...)end
+b.error=function(c,...)local d=debug.getinfo(2,"l").currentline
+local _a=debug.getinfo(2,"S").short_src;b.print(b.levels.ERROR,_a,d,c,...)end
+b.formatBraces=function(c,...)local d={...}local _a=1
+local aa=tostring(c):gsub("{}",function()local ba=d[_a]_a=_a+1
+return tostring(ba)end)return aa end;return b end
 return modules["programs.CaTinker"](...)

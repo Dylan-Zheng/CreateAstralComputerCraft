@@ -1,10 +1,9 @@
-local Logger = require("utils.Logger")
 local Communicator = require("programs.common.Communicator")
-local CommandLine = require("programs.command.CommandLine")
 local OSUtils = require("utils.OSUtils")
 local Trigger = require("programs.common.Trigger")
 local PeripheralWrapper = require("wrapper.PeripheralWrapper")
-local TableUtils = require("utils.TableUtils")
+
+PeripheralWrapper.reloadAll()
 
 local args = { ... }
 
@@ -80,7 +79,7 @@ local tcontroller = tcontrollers[next(tcontrollers)]
 local drains = PeripheralWrapper.getAllPeripheralsNameContains("tconstruct:scorched_drain")
 local drain = drains[next(drains)]
 
-local tFuelTanks = PeripheralWrapper.getAllPeripheralsNameContains("fuel_tank")
+local tFuelTanks = PeripheralWrapper.getAllPeripheralsNameContains("tconstruct:scorched_fuel_tank")
 local fuelTank = tFuelTanks[next(tFuelTanks)]
 
 local start = function()
