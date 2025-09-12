@@ -127,5 +127,25 @@ function JobManager:enableJob(jobName)
     self:save()
 end
 
+function JobManager:setRate(jobName, rateType, rateValue)
+    local job = self:getJob(jobName)
+    if not job then return false end
+    
+    local numericValue = tonumber(rateValue)
+    if not numericValue or numericValue < 0 then
+        return false
+    end
+    
+    if rateType == "item" then
+        job.itemRate = numericValue
+    elseif rateType == "fluid" then
+        job.fluidRate = numericValue
+    else
+        return false
+    end
+    
+    return true
+end
+
 
 return JobManager

@@ -106,10 +106,10 @@ local function getOrCreateSubCommand()
     end)
     
     -- Describe command
-    sharedSubCommandLine:addCommand("describe", "Show detailed component information. Usage: describe <input|output|filter|blacklist|status> [inventory|tank]", function(input)
+    sharedSubCommandLine:addCommand("describe", "Show detailed component information. Usage: describe <input|output|filter|blacklist|status|rate> [inventory|tank]", function(input)
         local args = parseArgs(input)
         if #args < 2 then
-            print("Usage: describe <input|output|filter|blacklist|status> [inventory|tank]")
+            print("Usage: describe <input|output|filter|blacklist|status|rate> [inventory|tank]")
             return
         end
         
@@ -143,6 +143,13 @@ local function getOrCreateSubCommand()
             else
                 print("This job is disabled and will be skipped during execution")
             end
+        elseif direction == "rate" then
+            local job = JobDataManager:getJob(currentJobName)
+            local itemRate = job and job.itemRate or 0
+            local fluidRate = job and job.fluidRate or 0
+            print(string.format("=== Transfer rates for job '%s' ===", currentJobName))
+            print("Item rate: " .. itemRate .. " items per second")
+            print("Fluid rate: " .. fluidRate .. " mB per second")
         elseif (direction == "input" or direction == "output") and componentClass then
             local componentType = getComponentTypeFromArgs(direction, componentClass)
             if componentType then
@@ -159,14 +166,14 @@ local function getOrCreateSubCommand()
                 print("Invalid component type")
             end
         else
-            print("Usage: describe <input|output|filter|blacklist|status> [inventory|tank]")
+            print("Usage: describe <input|output|filter|blacklist|status|rate> [inventory|tank]")
         end
     end, function(argsText)
         local args = parseArgs("describe " .. argsText)
         local suggestions = {}
         
         if #args == 2 then
-            local directions = {"input", "output", "filter", "blacklist", "status"}
+            local directions = {"input", "output", "filter", "blacklist", "status", "rate"}
             return CommandLine.filterSuggestions(directions, args[2])
         elseif #args == 3 and (args[2] == "input" or args[2] == "output") then
             local types = {"inventory", "tank"}
@@ -377,6 +384,49 @@ local function getOrCreateSubCommand()
         return suggestions
     end)
     
+    -- Rate command
+    sharedSubCommandLine:addCommand("rate", "Set transfer rate. Usage: rate <item|fluid> <number>", function(input)
+        local args = parseArgs(input)
+        if #args < 3 then
+            print("Usage: rate <item|fluid> <number>")
+            return
+        end
+        
+        local rateType = string.lower(args[2])
+        local rateValue = tonumber(args[3])
+        
+        if not rateValue or rateValue < 0 then
+            print("Rate must be a non-negative number")
+            return
+        end
+        
+        if rateType == "item" then
+            if JobDataManager:setRate(currentJobName, "item", rateValue) then
+                print("Set item transfer rate to " .. rateValue .. " items per second")
+            else
+                print("Failed to set item rate")
+            end
+        elseif rateType == "fluid" then
+            if JobDataManager:setRate(currentJobName, "fluid", rateValue) then
+                print("Set fluid transfer rate to " .. rateValue .. " mB per second")
+            else
+                print("Failed to set fluid rate")
+            end
+        else
+            print("Invalid rate type. Use 'item' or 'fluid'")
+        end
+    end, function(argsText)
+        local args = parseArgs("rate " .. argsText)
+        local suggestions = {}
+        
+        if #args == 2 then
+            local types = {"item", "fluid"}
+            return CommandLine.filterSuggestions(types, args[2])
+        end
+        
+        return suggestions
+    end)
+
     -- Exit command
     sharedSubCommandLine:addCommand("exit", "Exit job editing mode. Usage: exit", function(input)
         sharedSubCommandLine:changeSuffix(">")

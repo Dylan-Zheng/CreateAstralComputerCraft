@@ -55,17 +55,17 @@ local function shouldTransferItem(itemName, itemFilter, isBlacklist)
     return (isBlacklist and not isInFilter) or (not isBlacklist and isInFilter)
 end
 
-local transferItems = function(inputInventories, outputInventories, itemFilter, isBlacklist)
+local transferItems = function(inputInventories, outputInventories, itemFilter, isBlacklist, itemRate)
     for inputName, inputPeripheral in pairs(inputInventories) do
         local items = inputPeripheral.getItems()
         Logger.debug("Checking input inventory: {}", inputName)
         for _, item in ipairs(items) do
             Logger.debug("Found item: {} x{}", item.name, item.count)
             if shouldTransferItem(item.name, itemFilter, isBlacklist) then
-                local toTransfer = item.count
+                local toTransfer = itemRate and itemRate or item.count
                 for outputName, outputPeripheral in pairs(outputInventories) do
                     -- Attempt to transfer the item
-                    Logger.debug("Transferring item: {} x{}", item.name, item.count)
+                    Logger.info("Transferring item: {} x{}", item.name, toTransfer)
                     while true do
                         local transferred = inputPeripheral.transferItemTo(outputPeripheral, item.name, toTransfer)
                         toTransfer = toTransfer - transferred
@@ -82,7 +82,7 @@ local transferItems = function(inputInventories, outputInventories, itemFilter, 
     end
 end
 
-local transferFluids = function(inputTanks, outputTanks, fluidFilter, isBlacklist)
+local transferFluids = function(inputTanks, outputTanks, fluidFilter, isBlacklist, fluidRate)
     for inputName, inputPeripheral in pairs(inputTanks) do
         local fluids = inputPeripheral.getFluids()
         for _, fluid in ipairs(fluids) do
@@ -90,7 +90,7 @@ local transferFluids = function(inputTanks, outputTanks, fluidFilter, isBlacklis
                 for outputName, outputPeripheral in pairs(outputTanks) do
                     -- Attempt to transfer the fluid
                     while true do
-                        local transferred = inputPeripheral.transferFluidTo(outputPeripheral, fluid.name, fluid.amount, 500)
+                        local transferred = inputPeripheral.transferFluidTo(outputPeripheral, fluid.name, fluid.amount, fluidRate and fluidRate or 500)
                         if transferred == 0 then
                             break -- Move to next fluid after no more can be transferred
                         end
@@ -169,13 +169,13 @@ function JobExecutor.load(jobsData)
                     -- Transfer items if there are inventories configured
                     if next(inputInventoriesPeripheral) and next(outputInventoriesPeripheral) then
                         Logger.debug("Executing job: {} for item", jobName)
-                        transferItems(inputInventoriesPeripheral, outputInventoriesPeripheral, itemFilter, isBlacklist)
+                        transferItems(inputInventoriesPeripheral, outputInventoriesPeripheral, itemFilter, isBlacklist, job.itemRate)
                     end
                     
                     -- Transfer fluids if there are tanks configured
                     if next(inputTanksPeripheral) and next(outputTanksPeripheral) then
                         Logger.debug("Executing job: {} for fluid", jobName)
-                        transferFluids(inputTanksPeripheral, outputTanksPeripheral, itemFilter, isBlacklist)
+                        transferFluids(inputTanksPeripheral, outputTanksPeripheral, itemFilter, isBlacklist, job.fluidRate)
                     end
                 end
             }
