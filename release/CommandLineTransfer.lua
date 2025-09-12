@@ -294,9 +294,9 @@ if#cd==2 then
 local __a={"input","output","filter","blacklist"}return cb.filterSuggestions(__a,cd[2])elseif#cd==3 and(cd[2]=="input"or
 cd[2]=="output")then
 local __a={"inventory","tank"}return cb.filterSuggestions(__a,cd[3])end;return dd end)
-bc:addCommand("describe","Show detailed component information. Usage: describe <input|output|filter|blacklist|status> [inventory|tank]",function(bd)
+bc:addCommand("describe","Show detailed component information. Usage: describe <input|output|filter|blacklist|status|rate> [inventory|tank]",function(bd)
 local cd=_c(bd)if#cd<2 then
-print("Usage: describe <input|output|filter|blacklist|status> [inventory|tank]")return end
+print("Usage: describe <input|output|filter|blacklist|status|rate> [inventory|tank]")return end
 local dd=string.lower(cd[2])local __a=cd[3]and string.lower(cd[3])
 if dd=="filter"then local a_a=
 bb:getJobDetail(cc,bb.JOB_COMPONENT_TYPES.FILTER)or{}
@@ -312,17 +312,21 @@ local b_a=a_a and a_a.enabled~=false
 print(string.format("=== Status for job '%s' ===",cc))print("Job enabled: "..tostring(b_a))if
 b_a then
 print("This job will be executed when the system runs")else
-print("This job is disabled and will be skipped during execution")end elseif(
-dd=="input"or dd=="output")and __a then local a_a=ad(dd,__a)
+print("This job is disabled and will be skipped during execution")end elseif
+dd=="rate"then local a_a=bb:getJob(cc)local b_a=a_a and a_a.itemRate or 0;local c_a=
+a_a and a_a.fluidRate or 0
+print(string.format("=== Transfer rates for job '%s' ===",cc))
+print("Item rate: "..b_a.." items per second")
+print("Fluid rate: "..c_a.." mB per second")elseif(dd=="input"or dd=="output")and __a then local a_a=ad(dd,__a)
 if a_a then local b_a=
 bb:getJobDetail(cc,a_a)or{}
 print(string.format("=== %s %s for job '%s' ===",dd:gsub("^%l",string.upper),__a:gsub("^%l",string.upper),cc))print("Total components: "..#b_a)for c_a,d_a in ipairs(b_a)do
 print(string.format("%d. %s",c_a,d_a))end else
 print("Invalid component type")end else
-print("Usage: describe <input|output|filter|blacklist|status> [inventory|tank]")end end,function(bd)local cd=_c(
+print("Usage: describe <input|output|filter|blacklist|status|rate> [inventory|tank]")end end,function(bd)local cd=_c(
 "describe "..bd)local dd={}
 if#cd==2 then
-local __a={"input","output","filter","blacklist","status"}return cb.filterSuggestions(__a,cd[2])elseif#cd==3 and(cd[2]=="input"or
+local __a={"input","output","filter","blacklist","status","rate"}return cb.filterSuggestions(__a,cd[2])elseif#cd==3 and(cd[2]=="input"or
 cd[2]=="output")then
 local __a={"inventory","tank"}return cb.filterSuggestions(__a,cd[3])end;return dd end)
 bc:addCommand("add","Add components to job. Usage: add <input|output> <inventory|tank> <name1> [name2]... OR add filter <name1> [name2]...",function(bd)
@@ -398,6 +402,18 @@ print("Blacklist disabled for job '"..cc.."'")else print("Invalid value. Use 'tr
 if#cd==2 then local __a={"set"}return
 cb.filterSuggestions(__a,cd[2])elseif#cd==3 and cd[2]=="set"then
 local __a={"true","false"}return cb.filterSuggestions(__a,cd[3])end;return dd end)
+bc:addCommand("rate","Set transfer rate. Usage: rate <item|fluid> <number>",function(bd)local cd=_c(bd)if#cd<3 then
+print("Usage: rate <item|fluid> <number>")return end;local dd=string.lower(cd[2])
+local __a=tonumber(cd[3])if not __a or __a<0 then
+print("Rate must be a non-negative number")return end
+if dd=="item"then
+if bb:setRate(cc,"item",__a)then
+print(
+"Set item transfer rate to "..__a.." items per second")else print("Failed to set item rate")end elseif dd=="fluid"then
+if bb:setRate(cc,"fluid",__a)then
+print("Set fluid transfer rate to "..__a.." mB per second")else print("Failed to set fluid rate")end else print("Invalid rate type. Use 'item' or 'fluid'")end end,function(bd)local cd=_c(
+"rate "..bd)local dd={}if#cd==2 then local __a={"item","fluid"}return
+cb.filterSuggestions(__a,cd[2])end;return dd end)
 bc:addCommand("exit","Exit job editing mode. Usage: exit",function(bd)bc:changeSuffix(">")return"exit"end)return bc end;local function _d(ad)cc=ad end
 function db.execute(ad)local bd=_c(ad)if#bd<2 then
 print("Usage: job <list|create|edit|save|enable|disable|delete> [name]")return end
@@ -465,7 +481,11 @@ error("Invalid component type: "..tostring(db))end;return _c[ac]or{}end;function
 _c.isFilterBlacklist=db end
 function bb:disableJob(cb)
 local db=self:getJob(cb)if not db then return end;db.enabled=false;self:save()end;function bb:enableJob(cb)local db=self:getJob(cb)if not db then return end;db.enabled=true
-self:save()end;return bb end
+self:save()end
+function bb:setRate(cb,db,_c)
+local ac=self:getJob(cb)if not ac then return false end;local bc=tonumber(_c)
+if not bc or bc<0 then return false end
+if db=="item"then ac.itemRate=bc elseif db=="fluid"then ac.fluidRate=bc else return false end;return true end;return bb end
 modules["programs.command.transfer.JobExecutor"] = function(...) local da=require("wrapper.PeripheralWrapper")
 local _b=require("utils.Logger")local ab={}ab.executableJobs={}local function bb(bc,cc)
 if not bc:find("*")then return bc==cc end;local dc=bc:gsub("%*",".*")dc="^"..dc.."$"
@@ -477,22 +497,23 @@ false end;if not cc or#cc==0 then return true end
 local _d=false;for ad,bd in ipairs(cc)do if bb(bd,bc)then _d=true;break end end
 _b.debug("Item {} is {} {}",bc,
 dc and"blacklist "or"whitelist ",_d and"included"or"excluded")return(dc and not _d)or(not dc and _d)end
-local _c=function(bc,cc,dc,_d)
-for ad,bd in pairs(bc)do local cd=bd.getItems()
-_b.debug("Checking input inventory: {}",ad)
-for dd,__a in ipairs(cd)do
-_b.debug("Found item: {} x{}",__a.name,__a.count)
-if db(__a.name,dc,_d)then local a_a=__a.count
-for b_a,c_a in pairs(cc)do
-_b.debug("Transferring item: {} x{}",__a.name,__a.count)while true do local d_a=bd.transferItemTo(c_a,__a.name,a_a)a_a=a_a-d_a;if d_a==
-0 then break end end;if a_a<=0 then
+local _c=function(bc,cc,dc,_d,ad)
+for bd,cd in pairs(bc)do local dd=cd.getItems()
+_b.debug("Checking input inventory: {}",bd)
+for __a,a_a in ipairs(dd)do
+_b.debug("Found item: {} x{}",a_a.name,a_a.count)
+if db(a_a.name,dc,_d)then local b_a=ad and ad or a_a.count
+for c_a,d_a in pairs(cc)do
+_b.info("Transferring item: {} x{}",a_a.name,b_a)while true do local _aa=cd.transferItemTo(d_a,a_a.name,b_a)b_a=b_a-_aa;if _aa==
+0 then break end end;if b_a<=0 then
 break end end end end end end
-local ac=function(bc,cc,dc,_d)
-for ad,bd in pairs(bc)do local cd=bd.getFluids()
-for dd,__a in ipairs(cd)do
-if db(__a.name,dc,_d)then
-for a_a,b_a in pairs(cc)do while true do
-local c_a=bd.transferFluidTo(b_a,__a.name,__a.amount,500)if c_a==0 then break end end end end end end end
+local ac=function(bc,cc,dc,_d,ad)
+for bd,cd in pairs(bc)do local dd=cd.getFluids()
+for __a,a_a in ipairs(dd)do
+if db(a_a.name,dc,_d)then for b_a,c_a in pairs(cc)do
+while true do
+local d_a=cd.transferFluidTo(c_a,a_a.name,a_a.amount,
+ad and ad or 500)if d_a==0 then break end end end end end end end
 function ab.load(bc)if not bc then return end;da.reloadAll()local cc=da.getAll()
 for dc,_d in pairs(bc)do
 if
@@ -507,10 +528,11 @@ for c_a,d_a in pairs(b_a)do cd[c_a]=d_a end end end
 if _d.outputTanks then for __a,a_a in ipairs(_d.outputTanks)do local b_a=cb(a_a,cc)
 for c_a,d_a in pairs(b_a)do dd[c_a]=d_a end end end
 ab.executableJobs[dc]={enable=true,exec=function()local __a=_d.filters or{}
-local a_a=_d.isFilterBlacklist or false;if next(ad)and next(bd)then
-_b.debug("Executing job: {} for item",dc)_c(ad,bd,__a,a_a)end;if next(cd)and
-next(dd)then _b.debug("Executing job: {} for fluid",dc)
-ac(cd,dd,__a,a_a)end end}else ab.executableJobs[dc]=nil end end end
+local a_a=_d.isFilterBlacklist or false
+if next(ad)and next(bd)then
+_b.debug("Executing job: {} for item",dc)_c(ad,bd,__a,a_a,_d.itemRate)end
+if next(cd)and next(dd)then
+_b.debug("Executing job: {} for fluid",dc)ac(cd,dd,__a,a_a,_d.fluidRate)end end}else ab.executableJobs[dc]=nil end end end
 function ab.run()
 for bc,cc in pairs(ab.executableJobs)do
 if cc.enable then local dc,_d=pcall(cc.exec)if not dc then
