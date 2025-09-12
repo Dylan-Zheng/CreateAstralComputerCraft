@@ -234,26 +234,29 @@ print("Wrapping redstone: ".._cc)table.insert(cbc.redstones,cda.wrap(_cc))end;c_
 local _ac=function(_bc,abc)if _bc=="item"then return __c.getItem(abc)elseif _bc=="fluid"then
 return __c.getFluid(abc)end;return nil end
 local aac=function(_bc)local abc=_bc.recipe;local bbc=_bc.group
-for cbc,dbc in ipairs(bbc.basins)do local _cc=abc.input
-if
-_cc.items~=nil then
-for bcc,ccc in ipairs(_cc.items)do local dcc=dbc.getItem(ccc)
-local _dc=dcc and dcc.count or 0
-if _dc<16 then __c.transferItemTo(dbc,ccc,16 -_dc)end end end
-if _cc.fluids~=nil then
-for bcc,ccc in ipairs(_cc.fluids)do local dcc=dbc.getFluid(ccc)local _dc=
-dcc and dcc.amount or 0;if _dc<1000 then
-__c.transferFluidTo(dbc,ccc,1000 -_dc)end end end;local acc=abc.output
-if acc.items~=nil then
-for bcc,ccc in ipairs(acc.items)do
-local dcc=abc.output.keepItemsAmount or 0;local _dc=dbc.getItem(ccc)
-if _dc~=nil and _dc.count>dcc then __c.transferItemFrom(dbc,ccc,
-_dc.count-dcc)end end end
-if acc.fluids~=nil then
-for bcc,ccc in ipairs(acc.fluids)do
-local dcc=abc.output.keepFluidsAmount or 0;local _dc=dbc.getFluid(ccc)
-if _dc~=nil and _dc.amount>dcc then __c.transferFluidFrom(dbc,ccc,
-_dc.amount-dcc)end end end end end
+local cbc=abc.output.keepItemsAmount or 0;local dbc=abc.output.keepFluidsAmount or 0
+for _cc,acc in
+ipairs(bbc.basins)do local bcc=abc.input
+if bcc.items~=nil then
+for dcc,_dc in ipairs(bcc.items)do
+local adc=acc.getItem(_dc)local bdc=adc and adc.count or 0
+if cbc and cbc>0 and cbc>bdc then __c.transferItemTo(acc,_dc,
+cbc-bdc)elseif
+(cbc==nil or cbc<=0)and bdc<16 then __c.transferItemTo(acc,_dc,16 -bdc)end end end
+if bcc.fluids~=nil then
+for dcc,_dc in ipairs(bcc.fluids)do local adc=acc.getFluid(_dc)local bdc=
+adc and adc.amount or 0
+if dbc and dbc>0 and dbc>bdc then __c.transferFluidTo(acc,_dc,
+dbc-bdc)elseif
+(dbc==nil or dbc<=0)and bdc<1000 then __c.transferFluidTo(acc,_dc,1000 -bdc)end end end;local ccc=abc.output
+if ccc.items~=nil then
+for dcc,_dc in ipairs(ccc.items)do
+local adc=acc.getItem(_dc)if adc~=nil and adc.count>cbc then
+__c.transferItemFrom(acc,_dc,adc.count-cbc)end end end
+if ccc.fluids~=nil then
+for dcc,_dc in ipairs(ccc.fluids)do local adc=acc.getFluid(_dc)if adc~=nil and
+adc.amount>dbc then
+__c.transferFluidFrom(acc,_dc,adc.amount-dbc)end end end end end
 local bac=function(_bc)for abc,bbc in ipairs(_bc)do bbc:feed()end end
 local cac=function()
 while true do local _bc=false;local abc=1

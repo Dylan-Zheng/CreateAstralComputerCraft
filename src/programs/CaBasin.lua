@@ -812,17 +812,24 @@ local getItemFromStorage = function(type, itemName)
     return nil
 end
 
+
+
 local runLink = function(link)
     local recipe = link.recipe
     local group = link.group
+    local itemKeepAmount = recipe.output.keepItemsAmount or 0
+    local fluidKeepAmount = recipe.output.keepFluidsAmount or 0
     for _, basin in ipairs(group.basins) do
         local input = recipe.input
         if input.items ~= nil then
+            
             -- Transfer items to basin
             for _, itemName in ipairs(input.items) do
                 local basinItem = basin.getItem(itemName)
                 local count = basinItem and basinItem.count or 0
-                if count < 16 then
+                if itemKeepAmount and itemKeepAmount > 0 and itemKeepAmount > count then
+                    storage.transferItemTo(basin, itemName, itemKeepAmount - count)
+                elseif (itemKeepAmount == nil or itemKeepAmount <= 0) and count < 16 then
                     storage.transferItemTo(basin, itemName, 16 - count)
                 end
             end
@@ -831,7 +838,9 @@ local runLink = function(link)
             for _, fluidName in ipairs(input.fluids) do
                 local basinFluid = basin.getFluid(fluidName)
                 local amount = basinFluid and basinFluid.amount or 0
-                if amount < 1000 then
+                if fluidKeepAmount and fluidKeepAmount > 0 and fluidKeepAmount > amount then
+                    storage.transferFluidTo(basin, fluidName, fluidKeepAmount - amount)
+                elseif (fluidKeepAmount == nil or fluidKeepAmount <= 0) and amount < 1000 then
                     storage.transferFluidTo(basin, fluidName, 1000 - amount)
                 end
             end
@@ -840,7 +849,6 @@ local runLink = function(link)
         if output.items ~= nil then
             -- Transfer items from basin to storage
             for _, itemName in ipairs(output.items) do
-                local itemKeepAmount = recipe.output.keepItemsAmount or 0
                 local item = basin.getItem(itemName)
                 if item ~= nil and item.count > itemKeepAmount then
                     storage.transferItemFrom(basin, itemName, item.count - itemKeepAmount)
@@ -850,7 +858,6 @@ local runLink = function(link)
         if output.fluids ~= nil then
             -- Transfer fluids from basin to storage
             for _, fluidName in ipairs(output.fluids) do
-                local fluidKeepAmount = recipe.output.keepFluidsAmount or 0
                 local fluid = basin.getFluid(fluidName)
                 if fluid ~= nil and fluid.amount > fluidKeepAmount then
                     storage.transferFluidFrom(basin, fluidName, fluid.amount - fluidKeepAmount)
