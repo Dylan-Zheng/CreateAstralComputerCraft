@@ -372,7 +372,7 @@ end
 local moveToStorage = function()
     while true do
         for _, item in ipairs(drawer.getItems()) do
-            if item.name ~= recipe.incomplete and item.name ~= recipe.input then
+            if item.name ~= recipe.incomplete then
                 storage.transferItemFrom(drawer, item.name, item.count)
             end
         end
