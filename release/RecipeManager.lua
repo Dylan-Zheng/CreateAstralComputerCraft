@@ -2909,10 +2909,12 @@ aba.inputLabel:setText("In: "..dd.ellipsisMiddle(aba.selectedRecipe.input,
 aba.inputLabel:getWidth()-4))
 aba.outputLabel:setText("Out: "..#aba.selectedRecipe.output)
 aba.depotTypeDropdown:setItems(baa(aba.selectedRecipe.depotType))
-aba.maxMachineInput:setText(tostring(aba.selectedRecipe.maxMachine or-1))else
+aba.maxMachineInput:setText(tostring(aba.selectedRecipe.maxMachine or-1))
+aba.rateInput:setText(tostring(aba.selectedRecipe.rate or 64))else
 aba.messageBox:open("Error","Recipe not found!")end else aba.selectedRecipe=nil
 aba.inputLabel:setText("In: ")aba.outputLabel:setText("Out: ")
-aba.depotTypeDropdown:setItems(baa())aba.maxMachineInput:setText("-1")end;aba.recipeListBox:refreshRecipeList()end):setOnNew(function()
+aba.depotTypeDropdown:setItems(baa())aba.maxMachineInput:setText("-1")
+aba.rateInput:setText("64")end;aba.recipeListBox:refreshRecipeList()end):setOnNew(function()
 aba:addNewRecipe()end):setOnDel(function()if
 
 aba.selectedRecipe==nil or aba.selectedRecipe.id==nil then
@@ -2979,9 +2981,14 @@ aba.maxMachineLabel=aba.detailFrame:addLabel():setPosition(2,
 aba.depotTypeDropdown:getY()+aba.depotTypeDropdown:getHeight()+1):setText("Max Machine: "):setBackground(_aa.gray):setForeground(_aa.white)
 aba.maxMachineInput=aba.detailFrame:addInput():setPosition(
 aba.maxMachineLabel:getX()+aba.maxMachineLabel:getWidth()+1,aba.maxMachineLabel:getY()):setSize(
-aba.detailFrame:getWidth()-aba.maxMachineLabel:getWidth()-4,1):setText("-1"):setBackground(_aa.black):setForeground(_aa.white)local bba="Set Trigger"
+aba.detailFrame:getWidth()-aba.maxMachineLabel:getWidth()-4,1):setText("-1"):setBackground(_aa.black):setForeground(_aa.white)
+aba.rateLabel=aba.detailFrame:addLabel():setPosition(2,
+aba.maxMachineInput:getY()+aba.maxMachineInput:getHeight()+1):setText("Rate: "):setBackground(_aa.gray):setForeground(_aa.white)
+aba.rateInput=aba.detailFrame:addInput():setPosition(
+aba.rateLabel:getX()+aba.rateLabel:getWidth()+1,aba.rateLabel:getY()):setSize(
+aba.detailFrame:getWidth()-aba.rateLabel:getWidth()-4,1):setText("64"):setBackground(_aa.black):setForeground(_aa.white)local bba="Set Trigger"
 aba.setTriggerBtn=aba.detailFrame:addButton():setPosition(2,
-aba.maxMachineInput:getY()+aba.maxMachineInput:getHeight()+1):setSize(
+aba.rateInput:getY()+aba.rateInput:getHeight()+1):setSize(
 #bba,1):setText(bba):setBackground(_aa.lightGray):setForeground(_aa.white):onClick(function()
 aba.trigger:open(
 aba.selectedRecipe and aba.selectedRecipe.trigger or nil,function(dba)aba.selectedRecipe=
@@ -2995,24 +3002,28 @@ aba.detailFrame:getWidth()-6,aba.detailFrame:getHeight()-1):setSize(6,1):setText
 aba.selectedRecipe==nil then
 aba.messageBox:open("Error","No recipe selected to save!")return end
 local dba=aba.maxMachineInput:getText()
-if dba and dba~=""then local _ca=tonumber(dba)if _ca then
-aba.selectedRecipe.maxMachine=_ca else
+if dba and dba~=""then local aca=tonumber(dba)if aca then
+aba.selectedRecipe.maxMachine=aca else
 aba.messageBox:open("Error","Max Machine must be a valid number!")return end else aba.selectedRecipe.maxMachine=
--1 end
+-1 end;local _ca=aba.rateInput:getText()
+if _ca and _ca~=""then
+local aca=tonumber(_ca)if aca then aba.selectedRecipe.rate=aca else
+aba.messageBox:open("Error","Rate must be a valid number!")return end else
+aba.selectedRecipe.rate=64 end
 if aba.selectedRecipe.id~=nil then
-local _ca=ad.updateRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not _ca then
+local aca=ad.updateRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not aca then
 aba.messageBox:open("Error","Failed to update recipe!")return end
 aba.recipeListBox:refreshRecipeList()
 aba.messageBox:open("Success","Recipe updated successfully!")return else
-local _ca,aca=ad.addRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not _ca then
+local aca,bca=ad.addRecipe(ad.MACHINE_TYPES.depot,textutils.unserialize(textutils.serialize(aba.selectedRecipe)))if not aca then
 aba.messageBox:open("Error","Failed to add recipe!")return end
-aba.selectedRecipe.id=aca;aba.recipeListBox:refreshRecipeList()
+aba.selectedRecipe.id=bca;aba.recipeListBox:refreshRecipeList()
 aba.messageBox:open("Success","Recipe added successfully!")end end)aba.itemListBox=bd:new(aba.pframe)
 aba.trigger=__a:new(aba.pframe)aba.messageBox=a_a:new(aba.pframe)
 aba.confirmMessageBox=b_a:new(aba.pframe)return aba end
 function DepotRecipeTab:addNewRecipe()self.selectedRecipe=nil
 self.inputLabel:setText("In: ")self.outputLabel:setText("Out: ")
-self.maxMachineInput:setText("-1")end;function DepotRecipeTab:init()
+self.maxMachineInput:setText("-1")self.rateInput:setText("64")end;function DepotRecipeTab:init()
 self.recipeListBox:refreshRecipeList()return self end;return DepotRecipeTab end
 modules["programs.recipe.manager.StoreManager"] = function(...) local aa=require("utils.OSUtils")
 local ba=require("utils.Logger")local ca={machines={depot={},basin={},belt={},common={}}}
@@ -4339,9 +4350,9 @@ while ab<_b do
 local bb=ca.pushItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end end elseif ba.isUnlimitedPeripheralInventory()then
 if
 string.find(ba.getName(),"crafting_storage")or ba.getPatternsFor~=nil then
-ba.getItems=function()
-local ca=ba.items()
-for da,_b in ipairs(ca)do _b.displayName=_b.name;_b.name=_b.technicalName end;return ca end
+ba.isUnlimitedPeripheralSpecialInventory=true
+ba.getItems=function()local ca=ba.items()for da,_b in ipairs(ca)do _b.displayName=_b.name
+_b.name=_b.technicalName end;return ca end
 ba.getItemFinder=function(ca)local da=nil
 return
 function()local _b=ba.items()
@@ -4360,12 +4371,16 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getItem=function(ca)if ba._itemFinders[ca]==nil then
 ba._itemFinders[ca]=ba.getItemFinder(ca)end
 return ba._itemFinders[ca]()end
-ba.transferItemTo=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pushItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end
-ba.transferItemFrom=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end else
+ba.transferItemTo=function(ca,da,_b)
+if ca.isUnlimitedPeripheralSpecialInventory then
+return ca.transferItemFrom(ba,da,_b)else local ab=0
+while ab<_b do local bb=ba.pushItem(ca.getName(),da,_b-ab)if
+bb==0 then return ab end;ab=ab+bb end;return ab end end
+ba.transferItemFrom=function(ca,da,_b)
+if ca.isUnlimitedPeripheralSpecialInventory then return ca.transferItemTo(ba,da,_b)else
+local ab=0;while ab<_b do local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then
+return ab end;ab=ab+bb end
+return ab end end else
 error("Peripheral "..
 ba.getName().." types "..table.concat(_a.getTypes(ba),", ")..
 " is not an inventory")end end
@@ -4386,12 +4401,14 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getFluid=function(ca)if ba._fluidFinders[ca]==nil then
 ba._fluidFinders[ca]=ba.getFluidFinder(ca)end
 return ba._fluidFinders[ca]()end
-ba.transferFluidTo=function(ca,da,_b,ab)if ca.isTank()==false then
+ba.transferFluidTo=function(ca,da,_b,ab)if ca.isUnlimitedPeripheralSpecialInventory then
+return ca.transferFluidFrom(ba,da,_b)end;if ca.isTank()==false then
 error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local bb=0
 while bb<_b do local cb=ab~=nil and ab or
 (_b-bb)
 local db=ba.pushFluid(ca.getName(),cb,da)if db==0 then return bb end;bb=bb+db end;return bb end
-ba.transferFluidFrom=function(ca,da,_b)if ca.isTank()==false then
+ba.transferFluidFrom=function(ca,da,_b)if ca.isUnlimitedPeripheralSpecialInventory then
+return ca.transferFluidTo(ba,da,_b)end;if ca.isTank()==false then
 error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pullFluid(ca.getName(),
 _b-ab,da)if bb==0 then return ab end
 ab=ab+bb end;return ab end end

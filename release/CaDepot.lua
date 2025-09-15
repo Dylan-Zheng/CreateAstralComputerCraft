@@ -191,9 +191,9 @@ if dcb<_db then local adb=_db-dcb
 baa.info("Need {} depots for recipe {} (max: {})",adb,ccb.input,_db)
 for bdb,cdb in pairs(c_b)do if adb<=0 then break end
 if not cab:isUsing(cdb)then
-local ddb=aab.transferItemTo(cdb,ccb.input,64)
-baa.info("Transferred {} items to depot {}",ddb,cdb.getId())
-if ddb<=0 then
+local ddb=ccb.rate or 64;local __c=aab.transferItemTo(cdb,ccb.input,ddb)
+baa.info("Transferred {} items to depot {}",__c,cdb.getId())
+if __c<=0 then
 baa.error("Failed to transfer items to depot {}",cdb.getId())else cab:set(ccb,cdb)adb=adb-1 end else
 baa.info("Depot {} is already in use for recipe {}",cdb.getId(),ccb.input)end end end;dbb=dbb-_db;_cb=_cb-1
 acb=math.max(1,math.floor(dbb/math.max(1,_cb)))end;os.sleep(1)end end

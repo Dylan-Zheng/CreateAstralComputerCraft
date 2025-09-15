@@ -641,7 +641,8 @@ local checkAndRunRecipe = function()
                         break
                     end
                     if not marker:isUsing(depot) then
-                        local transfered = storage.transferItemTo(depot, recipe.input, 64)
+                        local rate = recipe.rate or 64
+                        local transfered = storage.transferItemTo(depot, recipe.input, rate)
                         Logger.info("Transferred {} items to depot {}", transfered, depot.getId())
                         if transfered <= 0 then
                             Logger.error("Failed to transfer items to depot {}", depot.getId())

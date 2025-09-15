@@ -93,6 +93,7 @@ function DepotRecipeTab:new(pframe)
                     this.outputLabel:setText("Out: " .. #this.selectedRecipe.output)
                     this.depotTypeDropdown:setItems(getDepotTypeDisplayItems(this.selectedRecipe.depotType))
                     this.maxMachineInput:setText(tostring(this.selectedRecipe.maxMachine or -1))
+                    this.rateInput:setText(tostring(this.selectedRecipe.rate or 64))
                 else
                     this.messageBox:open("Error", "Recipe not found!")
                 end
@@ -102,6 +103,7 @@ function DepotRecipeTab:new(pframe)
                 this.outputLabel:setText("Out: ")
                 this.depotTypeDropdown:setItems(getDepotTypeDisplayItems())
                 this.maxMachineInput:setText("-1")
+                this.rateInput:setText("64")
             end
             this.recipeListBox:refreshRecipeList()
         end)
@@ -263,9 +265,22 @@ function DepotRecipeTab:new(pframe)
         :setBackground(colors.black)
         :setForeground(colors.white)
 
+    this.rateLabel = this.detailFrame:addLabel()
+        :setPosition(2, this.maxMachineInput:getY() + this.maxMachineInput:getHeight() + 1)
+        :setText("Rate: ")
+        :setBackground(colors.gray)
+        :setForeground(colors.white)
+
+    this.rateInput = this.detailFrame:addInput()
+        :setPosition(this.rateLabel:getX() + this.rateLabel:getWidth() + 1, this.rateLabel:getY())
+        :setSize(this.detailFrame:getWidth() - this.rateLabel:getWidth() - 4, 1)
+        :setText("64")
+        :setBackground(colors.black)
+        :setForeground(colors.white)
+
     local setTiggerBtnText = "Set Trigger"
     this.setTriggerBtn = this.detailFrame:addButton()
-        :setPosition(2, this.maxMachineInput:getY() + this.maxMachineInput:getHeight() + 1)
+        :setPosition(2, this.rateInput:getY() + this.rateInput:getHeight() + 1)
         :setSize(#setTiggerBtnText, 1)
         :setText(setTiggerBtnText)
         :setBackground(colors.lightGray)
@@ -316,6 +331,20 @@ function DepotRecipeTab:new(pframe)
                 this.selectedRecipe.maxMachine = -1
             end
             
+            -- Save rate field
+            local rateText = this.rateInput:getText()
+            if rateText and rateText ~= "" then
+                local rateNum = tonumber(rateText)
+                if rateNum then
+                    this.selectedRecipe.rate = rateNum
+                else
+                    this.messageBox:open("Error", "Rate must be a valid number!")
+                    return
+                end
+            else
+                this.selectedRecipe.rate = 64
+            end
+            
             if this.selectedRecipe.id ~= nil then
                 local success = StoreManager.updateRecipe(StoreManager.MACHINE_TYPES.depot, textutils.unserialize(textutils.serialize(this.selectedRecipe))   )
                 if not success then
@@ -350,6 +379,7 @@ function DepotRecipeTab:addNewRecipe()
     self.inputLabel:setText("In: ")
     self.outputLabel:setText("Out: ")
     self.maxMachineInput:setText("-1")
+    self.rateInput:setText("64")
 end
 
 function DepotRecipeTab:init()
