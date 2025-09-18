@@ -26,8 +26,9 @@ caa=bd.getRecipes()end;for aba,bba in pairs(caa)do
 if
 a_a.triggerEval(bba)and a_a.storeVerify(bba)then if a_a.craft(bba)then _ba=0.2 end end end
 os.sleep(_ba)end end
+pcall(function()
 a_a.setStorage(cd.getByName(b_a.getSettings().storage))
-a_a.setBuffer(cd.getByName(b_a.getSettings().buffer))parallel.waitForAll(cc.run,daa) end
+a_a.setBuffer(cd.getByName(b_a.getSettings().buffer))end)parallel.waitForAll(cc.run,daa) end
 modules["libraries.basalt"] = function(...) local ba=true;local ca={}local da={}local _b={}local ab={}local bb=require
 require=function(cb)if(_b[cb..".lua"])then if
 (ab[cb]==nil)then ab[cb]=_b[cb..".lua"]()end

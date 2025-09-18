@@ -57,7 +57,7 @@ local executeRecipes = function()
         end
         for _, recipe in pairs(recipes) do
             if TurtleCraft.triggerEval(recipe) and TurtleCraft.storeVerify(recipe) then
-                if TurtleCraft.craft(recipe) then 
+                if TurtleCraft.craft(recipe) then
                     waitTime = 0.2
                 end
             end
@@ -66,8 +66,10 @@ local executeRecipes = function()
     end
 end
 
-TurtleCraft.setStorage(PeripheralWrapper.getByName(SettingManager.getSettings().storage))
-TurtleCraft.setBuffer(PeripheralWrapper.getByName(SettingManager.getSettings().buffer))
+pcall(function()
+    TurtleCraft.setStorage(PeripheralWrapper.getByName(SettingManager.getSettings().storage))
+    TurtleCraft.setBuffer(PeripheralWrapper.getByName(SettingManager.getSettings().buffer))
+end)
 
 parallel.waitForAll(
     basalt.run,
