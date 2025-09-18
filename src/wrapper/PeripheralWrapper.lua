@@ -26,6 +26,12 @@ PeripheralWrapper.wrap = function(peripheralName)
     end
 
     local wrappedPeripheral = peripheral.wrap(peripheralName)
+
+    if wrappedPeripheral == nil then
+        Logger.warn("Peripheral '{}' could not be wrapped", peripheralName)
+        return nil
+    end
+
     PeripheralWrapper.addBaseMethods(wrappedPeripheral, peripheralName)
 
     if wrappedPeripheral == nil then

@@ -10,6 +10,14 @@ local TurtleCraft = {}
 local storage = PeripheralWrapper.wrap("front")
 local buffer = PeripheralWrapper.wrap("bottom")
 
+TurtleCraft.setStorage = function(newStorage)
+    storage = newStorage
+end
+
+TurtleCraft.setBuffer = function(newBuffer)
+    buffer = newBuffer
+end
+
 local clearBuffer = function()
     local items = buffer.getItems()
     if items then
