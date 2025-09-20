@@ -6,12 +6,12 @@ modules["programs.CreateCrafter"] = function(...) local db=require("libraries.ba
 local _c=require("wrapper.PeripheralWrapper")_c.reloadAll()local ac=require("elements.TabView")
 local bc=require("utils.Logger")local cc=require("programs.common.SnapShot")
 local dc=require("programs.crafter.create.SettingTab")local _d=require("programs.crafter.create.RecipesTab")
-local ad=require("programs.crafter.create.Executor")local bd=true;bc.level=bc.levels.DEBUG
-db.LOGGER.setEnabled(bd)db.LOGGER.setLogToFile(true)
+local ad=require("programs.crafter.create.Executor")local bd=false;bc.level=bc.levels.ERROR
+db.LOGGER.setEnabled(bd)
 if bd then
-bc.addPrintFunction(function(b_a,c_a,d_a,_aa)
-_aa=string.format("[%s:%d] %s",c_a,d_a,_aa)
-if b_a==bc.levels.DEBUG then db.LOGGER.debug(_aa)elseif
+bc.addPrintFunction(function(b_a,c_a,d_a,_aa)_aa=string.format("[%s:%d] %s",c_a,d_a,_aa)
+if
+b_a==bc.levels.DEBUG then db.LOGGER.debug(_aa)elseif
 b_a==bc.levels.INFO then db.LOGGER.info(_aa)elseif b_a==bc.levels.WARN then
 db.LOGGER.warn(_aa)elseif b_a==bc.levels.ERROR then db.LOGGER.error(_aa)end end)end;cc.loadFromFilesOnly()local cd=db.getMainFrame()
 local dd=ac:new(cd:addFrame(),1,1,cd:getWidth(),cd:getHeight())local __a=dd:createTab("Recipes")
@@ -2800,7 +2800,9 @@ modules["wrapper.PeripheralWrapper"] = function(...) local d=require("utils.Logg
 local aa={DEFAULT_INVENTORY=1,UNLIMITED_PERIPHERAL_INVENTORY=2,TANK=3,REDSTONE=4}_a.SIDES={"top","bottom","left","right","front","back"}
 _a.loadedPeripherals={}
 _a.wrap=function(ba)if ba==nil or ba==""then
-error("Peripheral name cannot be nil or empty")end;local ca=peripheral.wrap(ba)
+error("Peripheral name cannot be nil or empty")end;local ca=peripheral.wrap(ba)if
+ca==nil then
+d.warn("Peripheral '{}' could not be wrapped",ba)return nil end
 _a.addBaseMethods(ca,ba)if ca==nil then
 error("Failed to wrap peripheral '"..ba.."'")end;if ca.isInventory()then
 _a.addInventoryMethods(ca)end

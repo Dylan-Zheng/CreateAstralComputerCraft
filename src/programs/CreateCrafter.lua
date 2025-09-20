@@ -11,11 +11,10 @@ local Executor = require("programs.crafter.create.Executor")
 
 
 -- LOGGER SETUP
-local basaltLogEnabled = true
+local basaltLogEnabled = false
 
-Logger.level = Logger.levels.DEBUG
+Logger.level = Logger.levels.ERROR
 basalt.LOGGER.setEnabled(basaltLogEnabled)
-basalt.LOGGER.setLogToFile(true)
 
 if basaltLogEnabled then
     Logger.addPrintFunction(function(level, src, currentline, message)

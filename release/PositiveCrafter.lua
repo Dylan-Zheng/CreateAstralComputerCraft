@@ -7,14 +7,14 @@ local ac=require("elements.TabView")local bc=require("utils.Logger")
 local cc=require("programs.crafter.positive.CraftingListTab")local dc=require("programs.common.SnapShot")
 local _d=require("programs.crafter.positive.RecipeManager")local ad=require("wrapper.PeripheralWrapper")
 local bd=require("programs.crafter.positive.TurtleTab")
-local cd=require("programs.crafter.positive.TaskDispatchMaster")local dd=true;_c.LOGGER.setEnabled(dd)
+local cd=require("programs.crafter.positive.TaskDispatchMaster")local dd=false;_c.LOGGER.setEnabled(dd)
 _c.LOGGER.setLogToFile(dd)
 if dd then
 bc.addPrintFunction(function(d_a,_aa,aaa,baa)baa=string.format("[%s:%d] %s",_aa,aaa,baa)
 if
 d_a==bc.levels.DEBUG then _c.LOGGER.debug(baa)elseif
 d_a==bc.levels.INFO then _c.LOGGER.info(baa)elseif d_a==bc.levels.WARN then
-_c.LOGGER.warn(baa)elseif d_a==bc.levels.ERROR then _c.LOGGER.error(baa)end end)end;bc.currentLevel=bc.levels.DEBUG;ad.reloadAll()_d.load()
+_c.LOGGER.warn(baa)elseif d_a==bc.levels.ERROR then _c.LOGGER.error(baa)end end)end;bc.currentLevel=bc.levels.ERROR;ad.reloadAll()_d.load()
 dc.takeSnapShot()local __a=_c.getMainFrame()
 local a_a=ac:new(__a:addFrame(),1,1,__a:getWidth(),__a:getHeight())local b_a=a_a:createTab("List")
 cc:new(b_a.frame,1,1,b_a.frame:getWidth(),b_a.frame:getHeight()):init()local c_a=a_a:createTab("Turtles")
@@ -3077,7 +3077,9 @@ modules["wrapper.PeripheralWrapper"] = function(...) local d=require("utils.Logg
 local aa={DEFAULT_INVENTORY=1,UNLIMITED_PERIPHERAL_INVENTORY=2,TANK=3,REDSTONE=4}_a.SIDES={"top","bottom","left","right","front","back"}
 _a.loadedPeripherals={}
 _a.wrap=function(ba)if ba==nil or ba==""then
-error("Peripheral name cannot be nil or empty")end;local ca=peripheral.wrap(ba)
+error("Peripheral name cannot be nil or empty")end;local ca=peripheral.wrap(ba)if
+ca==nil then
+d.warn("Peripheral '{}' could not be wrapped",ba)return nil end
 _a.addBaseMethods(ca,ba)if ca==nil then
 error("Failed to wrap peripheral '"..ba.."'")end;if ca.isInventory()then
 _a.addInventoryMethods(ca)end
@@ -3122,9 +3124,9 @@ while ab<_b do
 local bb=ca.pushItem(ba.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end end elseif ba.isUnlimitedPeripheralInventory()then
 if
 string.find(ba.getName(),"crafting_storage")or ba.getPatternsFor~=nil then
-ba.getItems=function()
-local ca=ba.items()
-for da,_b in ipairs(ca)do _b.displayName=_b.name;_b.name=_b.technicalName end;return ca end
+ba.isUnlimitedPeripheralSpecialInventory=true
+ba.getItems=function()local ca=ba.items()for da,_b in ipairs(ca)do _b.displayName=_b.name
+_b.name=_b.technicalName end;return ca end
 ba.getItemFinder=function(ca)local da=nil
 return
 function()local _b=ba.items()
@@ -3143,12 +3145,16 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getItem=function(ca)if ba._itemFinders[ca]==nil then
 ba._itemFinders[ca]=ba.getItemFinder(ca)end
 return ba._itemFinders[ca]()end
-ba.transferItemTo=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pushItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end
-ba.transferItemFrom=function(ca,da,_b)local ab=0
-while ab<_b do
-local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then return ab end;ab=ab+bb end;return ab end else
+ba.transferItemTo=function(ca,da,_b)
+if ca.isUnlimitedPeripheralSpecialInventory then
+return ca.transferItemFrom(ba,da,_b)else local ab=0
+while ab<_b do local bb=ba.pushItem(ca.getName(),da,_b-ab)if
+bb==0 then return ab end;ab=ab+bb end;return ab end end
+ba.transferItemFrom=function(ca,da,_b)
+if ca.isUnlimitedPeripheralSpecialInventory then return ca.transferItemTo(ba,da,_b)else
+local ab=0;while ab<_b do local bb=ba.pullItem(ca.getName(),da,_b-ab)if bb==0 then
+return ab end;ab=ab+bb end
+return ab end end else
 error("Peripheral "..
 ba.getName().." types "..table.concat(_a.getTypes(ba),", ")..
 " is not an inventory")end end
@@ -3169,11 +3175,14 @@ for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return 
 ba.getFluid=function(ca)if ba._fluidFinders[ca]==nil then
 ba._fluidFinders[ca]=ba.getFluidFinder(ca)end
 return ba._fluidFinders[ca]()end
-ba.transferFluidTo=function(ca,da,_b)if ca.isTank()==false then
-error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pushFluid(ca.getName(),
-_b-ab,da)if bb==0 then return ab end
-ab=ab+bb end;return ab end
-ba.transferFluidFrom=function(ca,da,_b)if ca.isTank()==false then
+ba.transferFluidTo=function(ca,da,_b,ab)if ca.isUnlimitedPeripheralSpecialInventory then
+return ca.transferFluidFrom(ba,da,_b)end;if ca.isTank()==false then
+error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local bb=0
+while bb<_b do local cb=ab~=nil and ab or
+(_b-bb)
+local db=ba.pushFluid(ca.getName(),cb,da)if db==0 then return bb end;bb=bb+db end;return bb end
+ba.transferFluidFrom=function(ca,da,_b)if ca.isUnlimitedPeripheralSpecialInventory then
+return ca.transferFluidTo(ba,da,_b)end;if ca.isTank()==false then
 error(string.format("Peripheral '%s' is not a tank",ca.getName()))end;local ab=0;while ab<_b do local bb=ba.pullFluid(ca.getName(),
 _b-ab,da)if bb==0 then return ab end
 ab=ab+bb end;return ab end end

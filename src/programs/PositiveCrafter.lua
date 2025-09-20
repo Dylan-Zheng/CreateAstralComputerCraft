@@ -10,7 +10,7 @@ local TaskDispatchMaster = require("programs.crafter.positive.TaskDispatchMaster
 
 
 -- LOGGER
-local basaltLogEnabled = true
+local basaltLogEnabled = false
 basalt.LOGGER.setEnabled(basaltLogEnabled)
 basalt.LOGGER.setLogToFile(basaltLogEnabled)
 
@@ -28,7 +28,7 @@ if basaltLogEnabled then
         end
     end)
 end
-Logger.currentLevel = Logger.levels.DEBUG
+Logger.currentLevel = Logger.levels.ERROR
 --
 
 PeripheralWrapper.reloadAll()
