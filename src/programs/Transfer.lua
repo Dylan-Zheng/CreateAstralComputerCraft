@@ -60,9 +60,7 @@ parallel.waitForAll(basalt.run,
             end)
             if not ok then
                 Logger.error("Transfer job execution failed: {}", err)
-                Logger.error("Rebooting system due to critical error...")
-                os.sleep(1) -- Brief delay to ensure log is written
-                os.reboot()
+                os.sleep(10) -- Brief delay to ensure log is written
             end
             os.sleep(0.2)
         end
