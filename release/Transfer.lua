@@ -14,10 +14,9 @@ if
 d_a==_d.levels.DEBUG then _c.LOGGER.debug(baa)elseif
 d_a==_d.levels.INFO then _c.LOGGER.info(baa)elseif d_a==_d.levels.WARN then
 _c.LOGGER.warn(baa)elseif d_a==_d.levels.ERROR then _c.LOGGER.error(baa)end end)end;cc.reloadAll()dc.load()local cd=_c.getMainFrame()
-local dd=ac:new(cd:addFrame(),1,1,cd:getWidth(),cd:getHeight())local __a=dd:createTab("Transfers")
-local a_a=bc:new(__a.frame,dd)local b_a=dd:createTab("Log")
-local c_a=ad:new(b_a.frame,2,2,b_a.frame:getWidth()-2,
-b_a.frame:getHeight()-2,colors.white,colors.gray)a_a:init()dd:init()
+local dd=ac:new(cd:addFrame(),1,1,cd:getWidth(),cd:getHeight())local __a=dd:createTab("Transfers")local a_a=bc:new(__a.frame)
+local b_a=dd:createTab("Log")
+local c_a=ad:new(b_a.frame,2,2,b_a.frame:getWidth()-2,b_a.frame:getHeight()-2,colors.white,colors.gray)a_a:init()dd:init()
 _d.addPrintFunction(function(d_a,_aa,aaa,baa)
 c_a:addLog(string.format("[%d] %s",aaa,baa))end)
 parallel.waitForAll(_c.run,function()
@@ -3234,140 +3233,144 @@ _a.isTypeOf(_b,bb)then ca[da]=_b;break end end end;return ca end
 _a.getAllPeripheralsNameContains=function(ba)if ba==nil or ba==""then
 error("Part of name input cannot be nil or empty")end;local ca={}for da,_b in pairs(_a.getAll())do if
 string.find(da,ba)then ca[da]=_b end end;return ca end;return _a end
-modules["programs.transfer.TransferJobManager"] = function(...) local da=require("utils.OSUtils")
-local _b=require("wrapper.PeripheralWrapper")local ab={}local bb=require("utils.Logger")
-ab.TRIGGER_TYPES={FLUID_COUNT="fluid_count",ITEM_COUNT="item_count",ITEM_COUNT_AT_SLOTS="item_count_at_slot",REDSTONE_SIGNAL="redstone_signal"}
-ab.TRIGGER_CONDITION_TYPES={COUNT_GREATER="count_greater",COUNT_LESS="count_less",COUNT_EQUAL="count_equal"}ab.transfers={}
-ab.load=function()local bc=da.loadTable("transfers")if bc~=nil then
-ab.transfers=bc end end
-ab.save=function()da.saveTable("transfers",ab.transfers)end
-ab.addTransfer=function(bc)
-ab.transfers[bc.id]=textutils.unserialize(textutils.serialize(bc))ab.save()end
-ab.removeTransfer=function(bc)ab.transfers[bc]=nil;ab.save()end
-ab.getTransfer=function(bc)return
-textutils.unserialize(textutils.serialize(ab.transfers[bc]))end
-ab.getAllTransfers=function()return
-textutils.unserialize(textutils.serialize(ab.transfers))end
-ab.exec=function()local bc=ab.buildJobsFns()
-if#bc>0 then
-local cc,dc=pcall(function()
-parallel.waitForAll(table.unpack(bc))end)if not cc then
-bb.error("Error executing transfer jobs: {}",dc)end end end
-ab.buildJobsFns=function()local bc={}
-for cc,dc in pairs(ab.transfers)do
-if not dc.isDisabled then
-local _d=ab.evalTrigger(dc.triggerStatement)
-if _d then
-table.insert(bc,function()
-local ad,bd=pcall(function()
-bb.info("Starting transfer job: {} (ID: {})",dc.name,dc.id)
-for cd,dd in pairs(dc.inputInv)do
-local __a=ab.transferItem(cd,dc.outputInv,dc.itemFilter,dc.isBlackList,dc.inputSlots,dc.outputSlots,dc.itemRate,dc.fluidRate)
-if __a.itemCount>0 or __a.fluidCount>0 then
-bb.info("Transfer job '{}' transferred {} items and {} fluid units from {}",dc.name,__a.itemCount,__a.fluidCount,cd)end end;bb.info("Completed transfer job: {}",dc.name)end)if not ad then
-bb.error("Error executing transfer job '{}' (ID: {}): {}",dc.name,dc.id,bd)end end)else
-bb.debug("Transfer job '{}' skipped: trigger conditions not met",dc.name)end end end;return bc end;local function cb(bc,cc,dc)
-if cc==nil or#cc==0 then local _d=bc.size()for slot=1,_d do dc(slot)end else for _d,ad in ipairs(cc)do
-dc(ad)end end end;local function db(bc,cc,dc)
-if cc==
-nil or next(cc)==nil then return dc else local _d=cc[bc]~=nil;return dc and(not _d)or(
-not dc and _d)end end
-local function _c(bc,cc,dc,_d,ad,bd)
-local cd=0;local dd=_d;if bd and bd>=0 then dd=math.min(_d,bd)end
-for __a,a_a in pairs(cc)do
-local b_a=_b.getByName(__a)if b_a==nil then
-error("Output inventory '"..__a.."' not found")end
-while dd>cd do local c_a
-if ad then
-c_a=bc.transferFluidTo(b_a,dc,dd-cd)else c_a=bc.transferItemTo(b_a,dc,dd-cd)end;if c_a==0 then break end;cd=cd+c_a end;if cd>=dd then break end end;return cd end
-local function ac(bc,cc,dc,_d,ad,bd,cd)local dd=0;local __a=cd;if not bc.isDefaultInventory()then
-bb.warn("Slot-specific transfer requires DEFAULT_INVENTORY type for input: {}",bc.getName())return 0 end
-cb(bc,ad,function(a_a)if
-cd>=0 and __a<=0 then return end;local b_a=bc.getItemDetail(a_a)
+modules["programs.transfer.TransferJobManager"] = function(...) local _b=require("utils.OSUtils")
+local ab=require("wrapper.PeripheralWrapper")
+local bb=require("programs.common.BlazeBurnerFeederFactory")local cb={}local db=require("utils.Logger")
+cb.TRIGGER_TYPES={FLUID_COUNT="fluid_count",ITEM_COUNT="item_count",ITEM_COUNT_AT_SLOTS="item_count_at_slot",REDSTONE_SIGNAL="redstone_signal"}
+cb.TRIGGER_CONDITION_TYPES={COUNT_GREATER="count_greater",COUNT_LESS="count_less",COUNT_EQUAL="count_equal"}cb.transfers={}
+cb.load=function()local dc=_b.loadTable("transfers")if dc~=nil then
+cb.transfers=dc end end
+cb.save=function()_b.saveTable("transfers",cb.transfers)end
+cb.addTransfer=function(dc)
+cb.transfers[dc.id]=textutils.unserialize(textutils.serialize(dc))cb.save()end
+cb.removeTransfer=function(dc)cb.transfers[dc]=nil;cb.save()end
+cb.getTransfer=function(dc)return
+textutils.unserialize(textutils.serialize(cb.transfers[dc]))end
+cb.getAllTransfers=function()return
+textutils.unserialize(textutils.serialize(cb.transfers))end
+cb.exec=function()local dc=cb.buildJobsFns()
+if#dc>0 then
+local _d,ad=pcall(function()
+parallel.waitForAll(table.unpack(dc))end)if not _d then
+db.error("Error executing transfer jobs: {}",ad)end end end
+cb.buildJobsFns=function()local dc={}
+for _d,ad in pairs(cb.transfers)do
+if not ad.isDisabled then
+local bd=cb.evalTrigger(ad.triggerStatement)
+if bd then
+table.insert(dc,function()
+local cd,dd=pcall(function()
+db.info("Starting transfer job: {} (ID: {})",ad.name,ad.id)
+for __a,a_a in pairs(ad.inputInv)do
+local b_a=cb.transferItem(__a,ad.outputInv,ad.itemFilter,ad.isBlackList,ad.inputSlots,ad.outputSlots,ad.itemRate,ad.fluidRate)
+if b_a.itemCount>0 or b_a.fluidCount>0 then
+db.info("Transfer job '{}' transferred {} items and {} fluid units from {}",ad.name,b_a.itemCount,b_a.fluidCount,__a)end end;db.info("Completed transfer job: {}",ad.name)end)if not cd then
+db.error("Error executing transfer job '{}' (ID: {}): {}",ad.name,ad.id,dd)end end)else
+db.debug("Transfer job '{}' skipped: trigger conditions not met",ad.name)end end end;return dc end;local function _c(dc,_d,ad)
+if _d==nil or#_d==0 then local bd=dc.size()for slot=1,bd do ad(slot)end else for bd,cd in ipairs(_d)do
+ad(cd)end end end;local function ac(dc,_d,ad)
+if _d==
+nil or next(_d)==nil then return ad else local bd=_d[dc]~=nil;return ad and(not bd)or(
+not ad and bd)end end
+local function bc(dc,_d,ad,bd,cd,dd)
+local __a=0;local a_a=bd;if dd and dd>=0 then a_a=math.min(bd,dd)end
+for b_a,c_a in pairs(_d)do
+local d_a=ab.getByName(b_a)if d_a==nil then
+error("Output inventory '"..b_a.."' not found")end
+while a_a>__a do local _aa
+if cd then
 if
-b_a and db(b_a.name,dc,_d)then local c_a=b_a.count;if cd>=0 then
-c_a=math.min(c_a,__a)end
-for d_a,_aa in pairs(cc)do if c_a<=0 then break end
-local aaa=_b.getByName(d_a)
-if aaa and aaa.isDefaultInventory()then
-if bd and next(bd)~=nil then
-for baa,caa in
-ipairs(bd)do if c_a<=0 then break end;local daa=bc.pushItems(d_a,a_a,c_a,caa)
-if daa>0 then
-dd=dd+daa;c_a=c_a-daa;if cd>=0 then __a=__a-daa end end end else local baa=bc.pushItems(d_a,a_a,c_a)if baa>0 then dd=dd+baa;c_a=c_a-baa;if cd>=0 then __a=
-__a-baa end end end else
-if not aaa then bb.warn("Output inventory not found: {}",d_a)else
-bb.warn("Slot-specific transfer requires DEFAULT_INVENTORY type for output: {}",d_a)end end end end end)return dd end
-ab.transferItem=function(bc,cc,dc,_d,ad,bd,cd,dd)local __a=_b.getByName(bc)if __a==nil then
-error("Input inventory '"..bc.."' not found")end;local a_a=0;local b_a=0;local c_a=cd or-1;local d_a=dd or-1
+d_a.getName():find("blaze_burner")then local aaa=bb.getFeeder(dc,d_a,ad)aaa:feed()_aa=0 else _aa=dc.transferFluidTo(d_a,ad,a_a-
+__a)end else _aa=dc.transferItemTo(d_a,ad,a_a-__a)end;if _aa==0 then break end;__a=__a+_aa end;if __a>=a_a then break end end;return __a end
+local function cc(dc,_d,ad,bd,cd,dd,__a)local a_a=0;local b_a=__a;if not dc.isDefaultInventory()then
+db.warn("Slot-specific transfer requires DEFAULT_INVENTORY type for input: {}",dc.getName())return 0 end
+_c(dc,cd,function(c_a)if
+__a>=0 and b_a<=0 then return end
+local d_a=dc.getItemDetail(c_a)
+if d_a and ac(d_a.name,ad,bd)then local _aa=d_a.count;if __a>=0 then
+_aa=math.min(_aa,b_a)end
+for aaa,baa in pairs(_d)do if _aa<=0 then break end
+local caa=ab.getByName(aaa)
+if caa and caa.isDefaultInventory()then
+if dd and next(dd)~=nil then
+for daa,_ba in
+ipairs(dd)do if _aa<=0 then break end;local aba=dc.pushItems(aaa,c_a,_aa,_ba)
+if aba>0 then a_a=a_a+
+aba;_aa=_aa-aba;if __a>=0 then b_a=b_a-aba end end end else local daa=dc.pushItems(aaa,c_a,_aa)if daa>0 then a_a=a_a+daa;_aa=_aa-daa;if
+__a>=0 then b_a=b_a-daa end end end else
+if not caa then db.warn("Output inventory not found: {}",aaa)else
+db.warn("Slot-specific transfer requires DEFAULT_INVENTORY type for output: {}",aaa)end end end end end)return a_a end
+cb.transferItem=function(dc,_d,ad,bd,cd,dd,__a,a_a)local b_a=ab.getByName(dc)if b_a==nil then
+error("Input inventory '"..dc.."' not found")end;local c_a=0;local d_a=0;local _aa=__a or-1
+local aaa=a_a or-1
+if b_a.isTank()then local baa=b_a.getFluids()or{}
+for caa,daa in pairs(baa)do if
+a_a and a_a>=0 and aaa<=0 then break end
+if ac(daa.name,ad,bd)then
+local _ba=daa.amount
+if a_a and a_a>=0 then _ba=math.min(daa.amount,aaa)end
+local aba=bc(b_a,_d,daa.name,_ba,true,a_a and a_a>=0 and aaa or nil)
+if aba>0 then d_a=d_a+aba;if a_a and a_a>=0 then aaa=aaa-aba end end end end end
+if b_a.isInventory()then
 if
-__a.isTank()then local _aa=__a.getFluids()or{}
-for aaa,baa in pairs(_aa)do if
-dd and dd>=0 and d_a<=0 then break end
-if db(baa.name,dc,_d)then local caa=baa.amount;if dd and dd>=0 then
-caa=math.min(baa.amount,d_a)end
-local daa=_c(__a,cc,baa.name,caa,true,dd and dd>=0 and d_a or nil)
-if daa>0 then b_a=b_a+daa;if dd and dd>=0 then d_a=d_a-daa end end end end end
-if __a.isInventory()then
+(cd and next(cd)~=nil)or(dd and next(dd)~=nil)then local baa=cc(b_a,_d,ad,bd,cd,dd,_aa)c_a=c_a+baa else
+local baa=b_a:getItems()
+if baa~=nil and#baa>0 then
+for caa,daa in ipairs(baa)do
+if __a and __a>=0 and _aa<=0 then break end
+if ac(daa.name,ad,bd)then local _ba=daa.count;if __a and __a>=0 then
+_ba=math.min(daa.count,_aa)end
+local aba=bc(b_a,_d,daa.name,_ba,false,__a and __a>=0 and _aa or nil)
+if aba>0 then c_a=c_a+aba;if __a and __a>=0 then _aa=_aa-aba end end end end end end end;return{itemCount=c_a,fluidCount=d_a}end
+cb.evalTrigger=function(dc)if not dc or not dc.children then return true end
+for _d,ad in
+ipairs(dc.children)do
+db.debug("Evaluating child node: {}",ad.data and ad.data.name or"Unnamed")if cb.evalTriggerNode(ad)then return true end end;return false end
+cb.evalTriggerNode=function(dc)if not dc or not dc.data then return true end
+local _d=dc.data;local ad=false
+if _d.triggerType==cb.TRIGGER_TYPES.ITEM_COUNT then
+ad=cb.evalItemCountTrigger(_d)elseif _d.triggerType==cb.TRIGGER_TYPES.FLUID_COUNT then
+ad=cb.evalFluidCountTrigger(_d)elseif _d.triggerType==cb.TRIGGER_TYPES.ITEM_COUNT_AT_SLOTS then
+ad=cb.evalItemCountAtSlotsTrigger(_d)elseif _d.triggerType==cb.TRIGGER_TYPES.REDSTONE_SIGNAL then
+ad=cb.evalRedstoneSignalTrigger(_d)else
+db.warn("Unknown trigger type: {}",_d.triggerType)return true end;local bd=true
+if dc.children and#dc.children>0 then bd=false
+for cd,dd in
+ipairs(dc.children)do if cb.evalTriggerNode(dd)then bd=true
+db.debug("Child node passed: {}",dd.data.name)break end end end;return ad and bd end
+cb.evalItemCountTrigger=function(dc)
+if not dc.targetPeripheralId or not dc.itemName then
+db.warn("Invalid ITEM_COUNT trigger data: missing targetPeripheralId or itemName")return false end;local _d=ab.getByName(dc.targetPeripheralId)if not _d or not
+_d.isInventory()then
+db.warn("Peripheral not found or not an inventory: {}",dc.targetPeripheralId)return false end
+local ad=_d.getItem(dc.itemName)local bd=0;if ad and ad then bd=ad.count end;return
+cb.evalCondition(bd,dc.amount,dc.triggerConditionType)end
+cb.evalFluidCountTrigger=function(dc)
+if not dc.targetPeripheralId or not dc.itemName then
+db.warn("Invalid FLUID_COUNT trigger data: missing targetPeripheralId or itemName")return false end;local _d=ab.getByName(dc.targetPeripheralId)if not _d or
+not _d.isTank()then
+db.warn("Peripheral not found or not a tank: {}",dc.targetPeripheralId)return false end
+local ad=_d.getFluids()local bd=0
+if ad then for cd,dd in pairs(ad)do
+if dd.name==dc.itemName then bd=bd+dd.amount end end end
+return cb.evalCondition(bd,dc.amount,dc.triggerConditionType)end
+cb.evalItemCountAtSlotsTrigger=function(dc)
 if
-(ad and next(ad)~=nil)or(bd and next(bd)~=nil)then local _aa=ac(__a,cc,dc,_d,ad,bd,c_a)a_a=a_a+_aa else
-local _aa=__a:getItems()
-if _aa~=nil and#_aa>0 then
-for aaa,baa in ipairs(_aa)do
-if cd and cd>=0 and c_a<=0 then break end
-if db(baa.name,dc,_d)then local caa=baa.count;if cd and cd>=0 then
-caa=math.min(baa.count,c_a)end
-local daa=_c(__a,cc,baa.name,caa,false,cd and cd>=0 and c_a or nil)
-if daa>0 then a_a=a_a+daa;if cd and cd>=0 then c_a=c_a-daa end end end end end end end;return{itemCount=a_a,fluidCount=b_a}end
-ab.evalTrigger=function(bc)if not bc or not bc.children then return true end
-for cc,dc in
-ipairs(bc.children)do
-bb.debug("Evaluating child node: {}",dc.data and dc.data.name or"Unnamed")if ab.evalTriggerNode(dc)then return true end end;return false end
-ab.evalTriggerNode=function(bc)if not bc or not bc.data then return true end
-local cc=bc.data;local dc=false
-if cc.triggerType==ab.TRIGGER_TYPES.ITEM_COUNT then
-dc=ab.evalItemCountTrigger(cc)elseif cc.triggerType==ab.TRIGGER_TYPES.FLUID_COUNT then
-dc=ab.evalFluidCountTrigger(cc)elseif cc.triggerType==ab.TRIGGER_TYPES.ITEM_COUNT_AT_SLOTS then
-dc=ab.evalItemCountAtSlotsTrigger(cc)elseif cc.triggerType==ab.TRIGGER_TYPES.REDSTONE_SIGNAL then
-dc=ab.evalRedstoneSignalTrigger(cc)else
-bb.warn("Unknown trigger type: {}",cc.triggerType)return true end;local _d=true
-if bc.children and#bc.children>0 then _d=false
-for ad,bd in
-ipairs(bc.children)do if ab.evalTriggerNode(bd)then _d=true
-bb.debug("Child node passed: {}",bd.data.name)break end end end;return dc and _d end
-ab.evalItemCountTrigger=function(bc)
-if not bc.targetPeripheralId or not bc.itemName then
-bb.warn("Invalid ITEM_COUNT trigger data: missing targetPeripheralId or itemName")return false end;local cc=_b.getByName(bc.targetPeripheralId)if not cc or not
-cc.isInventory()then
-bb.warn("Peripheral not found or not an inventory: {}",bc.targetPeripheralId)return false end
-local dc=cc.getItem(bc.itemName)local _d=0;if dc and dc then _d=dc.count end;return
-ab.evalCondition(_d,bc.amount,bc.triggerConditionType)end
-ab.evalFluidCountTrigger=function(bc)
-if not bc.targetPeripheralId or not bc.itemName then
-bb.warn("Invalid FLUID_COUNT trigger data: missing targetPeripheralId or itemName")return false end;local cc=_b.getByName(bc.targetPeripheralId)if not cc or
-not cc.isTank()then
-bb.warn("Peripheral not found or not a tank: {}",bc.targetPeripheralId)return false end
-local dc=cc.getFluids()local _d=0
-if dc then for ad,bd in pairs(dc)do
-if bd.name==bc.itemName then _d=_d+bd.amount end end end
-return ab.evalCondition(_d,bc.amount,bc.triggerConditionType)end
-ab.evalItemCountAtSlotsTrigger=function(bc)
-if
-not bc.targetPeripheralId or not bc.itemName or not bc.selectedSlot then
-bb.warn("Invalid ITEM_COUNT_AT_SLOTS trigger data: missing required fields")return false end;local cc=_b.getByName(bc.targetPeripheralId)if not cc then
-bb.warn("Peripheral not found: {}",bc.targetPeripheralId)return false end
+not dc.targetPeripheralId or not dc.itemName or not dc.selectedSlot then
+db.warn("Invalid ITEM_COUNT_AT_SLOTS trigger data: missing required fields")return false end;local _d=ab.getByName(dc.targetPeripheralId)if not _d then
+db.warn("Peripheral not found: {}",dc.targetPeripheralId)return false end
 if not
-cc.isDefaultInventory()then
-bb.warn("ITEM_COUNT_AT_SLOTS trigger requires DEFAULT_INVENTORY type peripheral: {}",bc.targetPeripheralId)return false end;local dc=cc.getItemDetail(bc.selectedSlot)local _d=0;if dc and
-dc.name==bc.itemName then _d=dc.count end;return
-ab.evalCondition(_d,bc.amount,bc.triggerConditionType)end
-ab.evalRedstoneSignalTrigger=function(bc)
-bb.warn("REDSTONE_SIGNAL trigger not implemented yet")return true end
-ab.evalCondition=function(bc,cc,dc)
-if dc==ab.TRIGGER_CONDITION_TYPES.COUNT_GREATER then
-return bc>cc elseif dc==ab.TRIGGER_CONDITION_TYPES.COUNT_LESS then return bc<cc elseif dc==
-ab.TRIGGER_CONDITION_TYPES.COUNT_EQUAL then return bc==cc else
-bb.warn("Unknown condition type: {}",dc)return false end end;return ab end
+_d.isDefaultInventory()then
+db.warn("ITEM_COUNT_AT_SLOTS trigger requires DEFAULT_INVENTORY type peripheral: {}",dc.targetPeripheralId)return false end;local ad=_d.getItemDetail(dc.selectedSlot)local bd=0;if ad and
+ad.name==dc.itemName then bd=ad.count end;return
+cb.evalCondition(bd,dc.amount,dc.triggerConditionType)end
+cb.evalRedstoneSignalTrigger=function(dc)
+db.warn("REDSTONE_SIGNAL trigger not implemented yet")return true end
+cb.evalCondition=function(dc,_d,ad)
+if ad==cb.TRIGGER_CONDITION_TYPES.COUNT_GREATER then
+return dc>_d elseif ad==cb.TRIGGER_CONDITION_TYPES.COUNT_LESS then return dc<_d elseif ad==
+cb.TRIGGER_CONDITION_TYPES.COUNT_EQUAL then return dc==_d else
+db.warn("Unknown condition type: {}",ad)return false end end;return cb end
 modules["utils.Logger"] = function(...) local b={currentLevel=1,printFunctions={}}
 b.useDefault=function()
 b.addPrintFunction(function(c,d,_a,aa)
@@ -3910,4 +3913,15 @@ self:removeNodeFromParent(c_a)self.selectedTreeNode=nil
 self.conditionTree:setNodes(self.tree.children or{})self:updateDetails(nil)return true end;function dd:saveTriggerStatement()
 if self.saveCallback then self.saveCallback(self.tree)end;self:close()end;function dd:close()
 self.frame:setVisible(false)self.saveCallback=nil end;return dd end
+modules["programs.common.BlazeBurnerFeederFactory"] = function(...) local c={}
+c.Types={LAVA="minecraft:lava",HELLFIRE="kubejs:hellfire"}local d={}
+c.getFeeder=function(_a,aa,ba,ca)
+if ba==nil then ba=c.Types.LAVA elseif ba~=c.Types.LAVA and
+ba~=c.Types.HELLFIRE then ba=c.Types.LAVA end;local da=aa.getName()..ba;if d[da]~=nil then return d[da]end;if
+ca==nil then
+if ba==c.Types.LAVA then ca=2000000 elseif ba==c.Types.HELLFIRE then ca=1000000 end end
+local _b={start_timestamp=0,reset=function(ab)
+ab.start_timestamp=os.epoch()end,feed=function(ab)local bb=os.epoch()
+if
+bb-ab.start_timestamp>=ca then _a.transferFluidTo(aa,ba,49)ab:reset()end end}d[da]=_b;return _b end;return c end
 return modules["programs.Transfer"](...)

@@ -39,7 +39,7 @@ local tabView = TabView:new(main:addFrame(), 1, 1, main:getWidth(), main:getHeig
 
 
 local transfers = tabView:createTab("Transfers")
-local transferTab = transferTab:new(transfers.frame, tabView)
+local transferTab = transferTab:new(transfers.frame)
 
 local logTab = tabView:createTab("Log")
 local logBox = LogBox:new(logTab.frame, 2, 2, logTab.frame:getWidth() -2, logTab.frame:getHeight() -2, colors.white, colors.gray)

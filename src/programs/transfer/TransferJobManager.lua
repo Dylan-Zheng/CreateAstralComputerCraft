@@ -1,5 +1,6 @@
 local OSUtils = require("utils.OSUtils")
 local PeripheralWrapper = require("wrapper.PeripheralWrapper")
+local BlazeBurnerFeederFactory = require("programs.common.BlazeBurnerFeederFactory")
 
 local TransferJobManager = {}
 
@@ -149,7 +150,13 @@ local function transferToOutputs(inv, outputInvNames, itemName, totalAmount, isF
         while amountToTransfer > transferred do
             local moved
             if isFluid then
-                moved = inv.transferFluidTo(outputInv, itemName, amountToTransfer - transferred)
+                if outputInv.getName():find("blaze_burner") then
+                    local feeder = BlazeBurnerFeederFactory.getFeeder(inv, outputInv, itemName)
+                    feeder:feed()
+                    moved = 0
+                else
+                    moved = inv.transferFluidTo(outputInv, itemName, amountToTransfer - transferred)
+                end
             else
                 moved = inv.transferItemTo(outputInv, itemName, amountToTransfer - transferred)
             end

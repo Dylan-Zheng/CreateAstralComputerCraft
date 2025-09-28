@@ -5,11 +5,22 @@ BlazeBurnerFeederFactory.Types = {
     HELLFIRE = "kubejs:hellfire",
 }
 
+local feeders = {}
+
 
 BlazeBurnerFeederFactory.getFeeder = function(from, to, type, refill_time_interval)
+
     if type == nil then
         type = BlazeBurnerFeederFactory.Types.LAVA
+    elseif type ~= BlazeBurnerFeederFactory.Types.LAVA and type  ~= BlazeBurnerFeederFactory.Types.HELLFIRE then
+            type = BlazeBurnerFeederFactory.Types.LAVA
     end
+
+    local key = to.getName() .. type
+    if feeders[key] ~= nil then
+        return feeders[key]
+    end
+
     if refill_time_interval == nil then
         if type == BlazeBurnerFeederFactory.Types.LAVA then
             refill_time_interval = 2000000
@@ -17,7 +28,7 @@ BlazeBurnerFeederFactory.getFeeder = function(from, to, type, refill_time_interv
             refill_time_interval = 1000000
         end
     end
-    return {
+    local feeder = {
         start_timestamp = 0,
         reset = function(self)
             self.start_timestamp = os.epoch()
@@ -30,6 +41,8 @@ BlazeBurnerFeederFactory.getFeeder = function(from, to, type, refill_time_interv
             end
         end
     }
+    feeders[key] = feeder
+    return feeder
 end
 
 return BlazeBurnerFeederFactory
