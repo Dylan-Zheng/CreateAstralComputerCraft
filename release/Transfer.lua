@@ -3133,13 +3133,15 @@ if not _b or#_b==0 then return nil end
 if da~=nil and _b[da]and _b[da].technicalName==ca then
 local ab,bb=_b[da],da;ab.displayName=ab.name;ab.name=ab.technicalName;return ab,bb end
 for ab,bb in ipairs(_b)do if bb.technicalName==ca then da=ab;bb.displayName=bb.name
-bb.name=bb.technicalName;return bb,da end end;return nil end end else ba.getItems=function()return ba.items()end
-ba.getItemFinder=function(ca)
-local da=nil
+bb.name=bb.technicalName;return bb,da end end;return nil end end else if string.find(ba.getName(),"custommachinery:custom_machine")then
+ba.isUnlimitedPeripheralSpecialInventory=true end;ba.getItems=function()
+return ba.items()end
+ba.getItemFinder=function(ca)local da=nil
 return
-function()local _b=ba.items()if not _b or#_b==0 then return nil end
-if
-da~=nil and _b[da]and _b[da].name==ca then local ab,bb=_b[da],da;return ab,bb end
+function()local _b=ba.items()if
+not _b or#_b==0 then return nil end
+if da~=nil and _b[da]and
+_b[da].name==ca then local ab,bb=_b[da],da;return ab,bb end
 for ab,bb in ipairs(_b)do if bb.name==ca then da=ab;return bb,da end end;return nil end end end;ba._itemFinders={}
 ba.getItem=function(ca)if ba._itemFinders[ca]==nil then
 ba._itemFinders[ca]=ba.getItemFinder(ca)end

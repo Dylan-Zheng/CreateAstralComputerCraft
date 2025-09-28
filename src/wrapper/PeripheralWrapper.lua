@@ -244,6 +244,10 @@ PeripheralWrapper.addInventoryMethods = function(peripheral)
                 end
             end
         else
+            if string.find(peripheral.getName(), "custommachinery:custom_machine") then
+                peripheral.isUnlimitedPeripheralSpecialInventory = true
+            end
+
             peripheral.getItems = function()
                 return peripheral.items()
             end
